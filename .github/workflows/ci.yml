@@ -78,3 +78,28 @@ jobs:
         run: npm run lint
       - name: Build
         run: npm run build
+
+  convenciones:
+    name: convenciones
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Mensajes de commit
+        env:
+          DESDE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HASTA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: bash scripts/convenciones.sh commits "$DESDE" "$HASTA"
+      - name: Cuerpo del PR
+        if: github.event_name == 'pull_request'
+        env:
+          CUERPO: ${{ github.event.pull_request.body }}
+        run: bash scripts/convenciones.sh pr
