@@ -63,9 +63,9 @@ toque glosario, dominio, Prisma, API y UI a la vez.
 
 ## Roles Scrum
 
-- Product Owner: Andrea.
+- Product Owner: Andrea De la Ossa.
 - Scrum Master: Jesús Cantillo Guerrero.
-- Development Team: Mayi (frontend), Alejandro (backend), Jesús (backend/frontend).
+- Development Team: María Gutiérrez, Mayi (frontend), Alejandro Alonso (backend), Jesús Cantillo (backend/frontend).
 
 ## Flujo de trabajo (GitHub Flow)
 
