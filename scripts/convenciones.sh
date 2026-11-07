@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Convenciones de commits y PRs. Lo usan el hook commit-msg y el job `convenciones` de CI.
-#   convenciones.sh mensaje <archivo>        rechaza trailers de atribución y enlaces de sesión
+#   convenciones.sh mensaje <archivo>        rechaza trailers automáticos de herramientas y enlaces de sesión
 #   convenciones.sh commits <desde> <hasta>  commitlint + mensaje sobre cada commit del rango
-#   convenciones.sh pr                       cuerpo del PR en $CUERPO: exige "Closes #n" y sin atribución
+#   convenciones.sh pr                       cuerpo del PR en $CUERPO: exige "Closes #n" y aplica la misma regla
 set -euo pipefail
 
 PATRON_ATRIBUCION='co-authored-by|generated (with|by)|noreply@|https?://[^ ]+/session'
@@ -11,7 +11,7 @@ PATRON_CIERRE='(close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved) #
 mensaje() {
   local archivo="${1:?archivo con el mensaje}"
   if grep -v '^#' "$archivo" | grep -qiE "$PATRON_ATRIBUCION"; then
-    echo "El mensaje no puede llevar trailers de atribución ni enlaces de sesión. El autor del commit es la persona." >&2
+    echo "El mensaje no puede llevar trailers automáticos de herramientas ni enlaces de sesión. El autor del commit es quien lo hace." >&2
     grep -v '^#' "$archivo" | grep -inE "$PATRON_ATRIBUCION" >&2
     return 1
   fi

@@ -105,8 +105,8 @@ Una historia pasa a Done solo si cumple todo:
   pedida; no toques nada fuera de su alcance.
 - Las semillas son ficticias: nunca datos reales del CLENA.
 - Las actas se escriben en la reunión, por el equipo. Las plantillas de docs/ no llevan fechas.
-- Sin trailers de atribución ("Co-Authored-By", "Generated with", enlaces de sesión) en commits ni PRs.
-  El autor del commit es la persona. El hook `commit-msg` y el job `convenciones` lo rechazan.
+- El autor del commit es quien lo hace. No se agregan trailers automáticos de herramientas ni
+  enlaces externos a commits ni PRs. El hook `commit-msg` y el job `convenciones` lo verifican.
 - Sin comentarios que expliquen lo obvio ni que narren el código línea a línea. Un comentario solo cuando
   explica un porqué no evidente (una regla del CLENA, una decisión técnica, una limitación). Nada de
   `// importar módulo`, `// retornar resultado`, encabezados decorativos ni docstrings vacíos. Mismo

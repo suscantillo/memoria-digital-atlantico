@@ -20,17 +20,17 @@ publicadas respetando las restricciones de acceso de cada una.
 
 ## Equipo
 
-**Equipo de origen (Introducción a la Ingeniería):** Santiago Barros,
-Iván Gómez, Samuel Pimienta, Juan Riaño.
+**Equipo de origen (Introducción a la Ingeniería, grupo [completar]):** Santiago Barros,
+Iván Gómez, Samuel Pimienta, Juan Riaño. Repositorio: [completar enlace].
 
 **Equipo de desarrollo (roles Scrum):**
 
-| Integrante              | Rol                                               |
-| ----------------------- | ------------------------------------------------- |
-| Andrea                  | Product Owner                                     |
-| Jesús Cantillo Guerrero | Scrum Master, Development Team (backend/frontend) |
-| Mayi                    | Development Team (frontend)                       |
-| Alejandro               | Development Team (backend)                        |
+| Integrante                      | Usuario de GitHub                             | Rol                                               |
+| ------------------------------- | --------------------------------------------- | ------------------------------------------------- |
+| Andrea De la Ossa               | [adela088](https://github.com/adela088)       | Product Owner                                     |
+| Jesús Cantillo Guerrero         | [suscantillo](https://github.com/suscantillo) | Scrum Master, Development Team (backend/frontend) |
+| Mayi [completar apellidos]      | [Marigugo24](https://github.com/Marigugo24)   | Development Team (frontend)                       |
+| Alejandro [completar apellidos] | [Makisuky](https://github.com/Makisuky)       | Development Team (backend)                        |
 
 ## Stack
 

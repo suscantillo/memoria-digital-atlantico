@@ -36,16 +36,25 @@ glosario, el dominio, Prisma, la API y la UI a la vez.
 
 ## Rutas de la API
 
-En español, bajo `/api/v1`:
+En español, bajo `/api/v1`. Las historias usan estos nombres tal cual.
 
-- `/auth/{registro,ingresar,refrescar,salir,yo,cuenta}`
-- `/usuarios`
-- `/ubicaciones`
-- `/piezas`
-- `/archivos`
-- `/portal/piezas`
+### Existentes
 
-Salud en `/api/v1/health`; documentación en `/docs`.
+| Ruta              | Método | Acceso                          | Qué hace                                                                |
+| ----------------- | ------ | ------------------------------- | ----------------------------------------------------------------------- |
+| `/auth/ingresar`  | POST   | pública                         | Correo y contraseña; devuelve token de acceso, refresh token y usuario. |
+| `/auth/refrescar` | POST   | pública, lleva el refresh token | Rota la sesión: revoca la anterior y devuelve tokens nuevos.            |
+| `/auth/salir`     | POST   | pública, lleva el refresh token | Revoca la sesión. Responde 204 aunque el token ya no sirva.             |
+| `/auth/yo`        | GET    | con token de acceso             | Usuario autenticado.                                                    |
+| `/ubicaciones`    | GET    | pública (temporal)              | Listado paginado con filtros y orden.                                   |
+| `/ubicaciones`    | POST   | `PERSONAL`, `ADMIN`             | Registra una ubicación.                                                 |
+| `/health`         | GET    | pública                         | Estado de la API y de la base de datos.                                 |
+
+Documentación en `/docs`.
+
+### Previstas
+
+`/auth/registro`, `/auth/cuenta`, `/usuarios`, `/piezas`, `/archivos` y `/portal/piezas`.
 
 Todas las rutas de panel exigen `PERSONAL` o `ADMIN`. Solo son públicas `/portal/*`, `/auth/registro`,
 `/auth/ingresar`, `/auth/refrescar` y `/health`. Excepción temporal: `GET /ubicaciones` es público
