@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Memoria Digital del Atlántico">
+  <rect width="64" height="64" rx="12" fill="#0B2A55"/>
+  <path d="M16 46V18h8l8 14 8-14h8v28h-7V30l-9 15-9-15v16z" fill="#FFF4E3"/>
+  <circle cx="50" cy="14" r="6" fill="#D9480F"/>
+</svg>

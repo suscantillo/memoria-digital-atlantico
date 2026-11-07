@@ -1,0 +1,23 @@
+import { clienteApi } from '../../shared/api/cliente';
+import type { SesionIniciada, Usuario } from '../../shared/tipos/usuario';
+
+export interface CredencialesIngreso {
+  correo: string;
+  contrasena: string;
+}
+
+export const authApi = {
+  async ingresar(credenciales: CredencialesIngreso): Promise<SesionIniciada> {
+    const { data } = await clienteApi.post<SesionIniciada>('/auth/ingresar', credenciales);
+    return data;
+  },
+
+  async salir(tokenRefresco: string): Promise<void> {
+    await clienteApi.post('/auth/salir', { tokenRefresco });
+  },
+
+  async yo(): Promise<Usuario> {
+    const { data } = await clienteApi.get<Usuario>('/auth/yo');
+    return data;
+  },
+};
