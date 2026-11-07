@@ -42,7 +42,7 @@ describe('IniciarSesion y RefrescarSesion', () => {
     });
 
     expect(sesion.tokenAcceso).toBe(`acceso:${admin.id}:ADMIN`);
-    expect(sesion.tokenRefresco).toBe('refresco-1');
+    expect(sesion.tokenRefresco).toMatch(new RegExp(`^refresco:${admin.id}:[0-9a-f-]{36}$`));
     expect(sesion.usuario).toEqual({
       id: admin.id,
       nombre: 'Admin de prueba',
@@ -52,15 +52,16 @@ describe('IniciarSesion y RefrescarSesion', () => {
     expect(sesiones.sesiones.size).toBe(1);
   });
 
-  it('persiste el refresco hasheado, nunca en claro', async () => {
+  it('persiste solo el jti del refresh token, nunca el token', async () => {
     const sesion = await iniciar.ejecutar({
       correo: 'admin@prueba.local',
       contrasena: 'Secreta.123',
     });
     const guardada = [...sesiones.sesiones.values()][0];
+    const { jti } = await tokens.verificarRefresco(sesion.tokenRefresco);
 
-    expect(guardada.tokenHash).toBe(tokens.hashRefresco(sesion.tokenRefresco));
-    expect(guardada.tokenHash).not.toBe(sesion.tokenRefresco);
+    expect(guardada.jti).toBe(jti);
+    expect(guardada.usuarioId).toBe(admin.id);
   });
 
   it('rechaza una contraseña incorrecta sin revelar si el correo existe', async () => {
@@ -86,8 +87,23 @@ describe('IniciarSesion y RefrescarSesion', () => {
     );
   });
 
-  it('rechaza un token de refresco desconocido', async () => {
+  it('rechaza un token de refresco inválido o con jti desconocido', async () => {
     await expect(refrescar.ejecutar({ tokenRefresco: 'inventado' })).rejects.toThrow(
+      ErrorNoAutorizado,
+    );
+    await expect(
+      refrescar.ejecutar({ tokenRefresco: `refresco:${admin.id}:${crypto.randomUUID()}` }),
+    ).rejects.toThrow(ErrorNoAutorizado);
+  });
+
+  it('rechaza un refresh token cuyo sub no coincide con la sesión', async () => {
+    const sesion = await iniciar.ejecutar({
+      correo: 'admin@prueba.local',
+      contrasena: 'Secreta.123',
+    });
+    const { jti } = await tokens.verificarRefresco(sesion.tokenRefresco);
+
+    await expect(refrescar.ejecutar({ tokenRefresco: `refresco:otro:${jti}` })).rejects.toThrow(
       ErrorNoAutorizado,
     );
   });

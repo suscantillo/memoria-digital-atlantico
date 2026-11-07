@@ -1,5 +1,9 @@
 import { HasherContrasenas } from '../../src/application/auth/ports/hasher-contrasenas';
-import { PayloadAcceso, ServicioTokens } from '../../src/application/auth/ports/servicio-tokens';
+import {
+  PayloadAcceso,
+  PayloadRefresco,
+  ServicioTokens,
+} from '../../src/application/auth/ports/servicio-tokens';
 
 export class HasherContrasenasFalso implements HasherContrasenas {
   hash(contrasena: string): Promise<string> {
@@ -12,7 +16,6 @@ export class HasherContrasenasFalso implements HasherContrasenas {
 }
 
 export class ServicioTokensFalso implements ServicioTokens {
-  private contador = 0;
   readonly duracionRefresco = 60_000;
 
   firmarAcceso(payload: PayloadAcceso): Promise<string> {
@@ -29,13 +32,14 @@ export class ServicioTokensFalso implements ServicioTokens {
     });
   }
 
-  generarRefresco(): string {
-    this.contador += 1;
-    return `refresco-${this.contador}`;
+  firmarRefresco(payload: PayloadRefresco): Promise<string> {
+    return Promise.resolve(`refresco:${payload.sub}:${payload.jti}`);
   }
 
-  hashRefresco(token: string): string {
-    return `hash(${token})`;
+  verificarRefresco(token: string): Promise<PayloadRefresco> {
+    const [tipo, sub, jti] = token.split(':');
+    if (tipo !== 'refresco' || !sub || !jti) return Promise.reject(new Error('token inválido'));
+    return Promise.resolve({ sub, jti });
   }
 
   duracionRefrescoMs(): number {

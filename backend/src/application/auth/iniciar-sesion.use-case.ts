@@ -39,23 +39,19 @@ export async function emitirSesion(
   sesiones: SesionRepositorio,
   tokens: ServicioTokens,
 ): Promise<SesionIniciadaDto> {
-  const tokenRefresco = tokens.generarRefresco();
   const sesion = Sesion.crear({
     usuarioId: usuario.id,
-    tokenHash: tokens.hashRefresco(tokenRefresco),
     expiraEn: new Date(Date.now() + tokens.duracionRefrescoMs()),
   });
   await sesiones.guardar(sesion);
 
-  const tokenAcceso = await tokens.firmarAcceso({
+  const respuesta = new SesionIniciadaDto();
+  respuesta.tokenAcceso = await tokens.firmarAcceso({
     sub: usuario.id,
     correo: usuario.correo,
     rol: usuario.rol,
   });
-
-  const respuesta = new SesionIniciadaDto();
-  respuesta.tokenAcceso = tokenAcceso;
-  respuesta.tokenRefresco = tokenRefresco;
+  respuesta.tokenRefresco = await tokens.firmarRefresco({ sub: usuario.id, jti: sesion.jti });
   respuesta.usuario = UsuarioDto.desdeEntidad(usuario);
   return respuesta;
 }

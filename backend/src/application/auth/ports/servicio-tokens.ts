@@ -8,10 +8,15 @@ export interface PayloadAcceso {
   rol: RolUsuario;
 }
 
+export interface PayloadRefresco {
+  sub: string;
+  jti: string;
+}
+
 export interface ServicioTokens {
   firmarAcceso(payload: PayloadAcceso): Promise<string>;
   verificarAcceso(token: string): Promise<PayloadAcceso>;
-  generarRefresco(): string;
-  hashRefresco(token: string): string;
+  firmarRefresco(payload: PayloadRefresco): Promise<string>;
+  verificarRefresco(token: string): Promise<PayloadRefresco>;
   duracionRefrescoMs(): number;
 }

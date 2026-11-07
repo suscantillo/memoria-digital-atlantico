@@ -9,10 +9,8 @@ export class SesionRepositorioMemoria implements SesionRepositorio {
     return Promise.resolve(sesion);
   }
 
-  buscarPorTokenHash(tokenHash: string): Promise<Sesion | null> {
-    return Promise.resolve(
-      [...this.sesiones.values()].find((s) => s.tokenHash === tokenHash) ?? null,
-    );
+  buscarPorJti(jti: string): Promise<Sesion | null> {
+    return Promise.resolve([...this.sesiones.values()].find((s) => s.jti === jti) ?? null);
   }
 
   revocar(id: string, fecha: Date): Promise<void> {
@@ -23,7 +21,7 @@ export class SesionRepositorioMemoria implements SesionRepositorio {
         Sesion.reconstruir({
           id: actual.id,
           usuarioId: actual.usuarioId,
-          tokenHash: actual.tokenHash,
+          jti: actual.jti,
           expiraEn: actual.expiraEn,
           revocadaEn: fecha,
           creadoEn: actual.creadoEn,

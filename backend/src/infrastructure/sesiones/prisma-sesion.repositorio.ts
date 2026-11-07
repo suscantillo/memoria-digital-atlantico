@@ -8,7 +8,7 @@ function aEntidad(fila: SesionFila): Sesion {
   return Sesion.reconstruir({
     id: fila.id,
     usuarioId: fila.usuarioId,
-    tokenHash: fila.tokenHash,
+    jti: fila.jti,
     expiraEn: fila.expiraEn,
     revocadaEn: fila.revocadaEn,
     creadoEn: fila.creadoEn,
@@ -24,7 +24,7 @@ export class PrismaSesionRepositorio implements SesionRepositorio {
       data: {
         id: sesion.id,
         usuarioId: sesion.usuarioId,
-        tokenHash: sesion.tokenHash,
+        jti: sesion.jti,
         expiraEn: sesion.expiraEn,
         revocadaEn: sesion.revocadaEn,
         creadoEn: sesion.creadoEn,
@@ -33,8 +33,8 @@ export class PrismaSesionRepositorio implements SesionRepositorio {
     return aEntidad(fila);
   }
 
-  async buscarPorTokenHash(tokenHash: string): Promise<Sesion | null> {
-    const fila = await this.prisma.sesion.findUnique({ where: { tokenHash } });
+  async buscarPorJti(jti: string): Promise<Sesion | null> {
+    const fila = await this.prisma.sesion.findUnique({ where: { jti } });
     return fila ? aEntidad(fila) : null;
   }
 

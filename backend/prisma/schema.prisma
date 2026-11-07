@@ -53,7 +53,7 @@ model Usuario {
 model Sesion {
   id         String    @id @default(uuid()) @db.Uuid
   usuarioId  String    @map("usuario_id") @db.Uuid
-  tokenHash  String    @unique @map("token_hash")
+  jti        String    @unique @db.Uuid
   expiraEn   DateTime  @map("expira_en")
   revocadaEn DateTime? @map("revocada_en")
   creadoEn   DateTime  @default(now()) @map("creado_en")

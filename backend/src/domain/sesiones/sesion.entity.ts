@@ -3,7 +3,7 @@ import { generarId } from '../comun/identificador';
 export interface PropiedadesSesion {
   id: string;
   usuarioId: string;
-  tokenHash: string;
+  jti: string;
   expiraEn: Date;
   revocadaEn: Date | null;
   creadoEn: Date;
@@ -12,11 +12,11 @@ export interface PropiedadesSesion {
 export class Sesion {
   private constructor(private readonly props: PropiedadesSesion) {}
 
-  static crear(datos: { usuarioId: string; tokenHash: string; expiraEn: Date }): Sesion {
+  static crear(datos: { usuarioId: string; expiraEn: Date }): Sesion {
     return new Sesion({
       id: generarId(),
       usuarioId: datos.usuarioId,
-      tokenHash: datos.tokenHash,
+      jti: generarId(),
       expiraEn: datos.expiraEn,
       revocadaEn: null,
       creadoEn: new Date(),
@@ -33,8 +33,8 @@ export class Sesion {
   get usuarioId(): string {
     return this.props.usuarioId;
   }
-  get tokenHash(): string {
-    return this.props.tokenHash;
+  get jti(): string {
+    return this.props.jti;
   }
   get expiraEn(): Date {
     return this.props.expiraEn;
