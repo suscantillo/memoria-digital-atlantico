@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Glosario del proyecto
+    url: https://github.com/OWNER/REPO/blob/main/docs/glosario.md
+    about: Nombres fijos de entidades, roles, estados y rutas. Cambiarlos exige un PR docs.

@@ -1,0 +1,4 @@
+{
+  "*.{md,yml,yaml,json}": "prettier --write",
+  "scripts/*.sh": "bash -n"
+}

@@ -1,0 +1,19 @@
+{
+  "name": "memoria-digital-atlantico",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Raíz del monorepo: hooks de git (husky), lint-staged y commitlint",
+  "scripts": {
+    "prepare": "husky",
+    "lint": "npm --prefix backend run lint && npm --prefix frontend run lint",
+    "test": "npm --prefix backend test",
+    "coherencia": "bash scripts/coherencia.sh"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2",
+    "prettier": "^3.9.10"
+  }
+}
