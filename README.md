@@ -21,7 +21,7 @@ publicadas respetando las restricciones de acceso de cada una.
 ## Equipo
 
 **Equipo de origen (Introducción a la Ingeniería, grupo 7):** Santiago Barros,
-Iván Gómez, Samuel Pimienta, Juan Riaño. Repositorio: [completar enlace].
+Iván Gómez, Samuel Pimienta, Juan Riaño. Repositorio: [Jrianopro20/clena-biblioteca-piloto](https://github.com/Jrianopro20/clena-biblioteca-piloto).
 
 **Equipo de desarrollo (roles Scrum):**
 
