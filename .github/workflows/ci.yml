@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: mda
+          POSTGRES_PASSWORD: mda_ci
+          POSTGRES_DB: memoria_digital_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U mda -d memoria_digital_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NODE_ENV: test
+      LOG_LEVEL: silent
+      DATABASE_URL: postgresql://mda:mda_ci@localhost:5432/memoria_digital_ci?schema=public
+      JWT_ACCESS_SECRET: secreto-de-acceso-solo-para-ci-no-usar-fuera
+      JWT_REFRESH_SECRET: secreto-de-refresco-solo-para-ci-no-usar-fuera
+      PUBLIC_WEB_URL: http://localhost:5173
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Generar cliente Prisma
+        run: npx prisma generate
+      - name: Lint
+        run: npm run lint
+      - name: Pruebas unitarias
+        run: npm test
+      - name: Migrar base de datos de pruebas
+        run: npx prisma migrate deploy
+      - name: Pruebas e2e
+        run: npm run test:e2e
+      - name: Build
+        run: npm run build
+
+  frontend:
+    name: frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Build
+        run: npm run build

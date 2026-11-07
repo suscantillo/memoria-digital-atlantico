@@ -24,14 +24,11 @@ export default defineConfig({
     port: 5173,
   },
   build: {
+    chunkSizeWarningLimit: 700,
     rollupOptions: {
       output: {
-        // Separa las librerías grandes para que la app cargue en trozos más pequeños.
-        manualChunks: {
-          react: ['react', 'react-dom', 'react-router-dom'],
-          mui: ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
-          consultas: ['@tanstack/react-query', 'axios'],
-        },
+        // separar React de MUI rompe el orden de carga
+        manualChunks: (id) => (id.includes('node_modules') ? 'vendor' : undefined),
       },
     },
   },

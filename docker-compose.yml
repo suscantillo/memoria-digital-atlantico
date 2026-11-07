@@ -1,0 +1,64 @@
+name: memoria-digital-atlantico
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mda}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mda_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-memoria_digital}
+    ports:
+      - '${DB_PORT:-5432}:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-mda} -d ${POSTGRES_DB:-memoria_digital}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-mda}:${POSTGRES_PASSWORD:-mda_dev}@db:5432/${POSTGRES_DB:-memoria_digital}?schema=public
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-cambiar-este-secreto-de-acceso-en-desarrollo}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-cambiar-este-secreto-de-refresco-en-desarrollo}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-7d}
+      PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:5173}
+      STORAGE_DIR: /app/storage
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-Admin.2026}
+      SEED_PERSONAL_PASSWORD: ${SEED_PERSONAL_PASSWORD:-Personal.2026}
+      SEED_PUBLICO_PASSWORD: ${SEED_PUBLICO_PASSWORD:-Publico.2026}
+    ports:
+      - '${BACKEND_PORT:-3000}:3000'
+    volumes:
+      - storage_data:/app/storage
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/api/v1/health >/dev/null || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - '${FRONTEND_PORT:-5173}:80'
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  storage_data:
