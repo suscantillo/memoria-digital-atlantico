@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RolUsuario {
+  ADMIN
+  PERSONAL
+  PUBLICO
+}
+
+enum TipoPieza {
+  DOCUMENTO
+  FOTOGRAFIA
+  PERIODICO
+}
+
+enum EstadoPieza {
+  REGISTRADA
+  ESCANEADA
+  REVISADA
+  PUBLICADA
+}
+
+enum EstadoArchivoDigital {
+  EN_REVISION
+  APROBADO
+  RECHAZADO
+}
+
+model Usuario {
+  id             String     @id @default(uuid()) @db.Uuid
+  nombre         String
+  correo         String     @unique
+  contrasenaHash String     @map("contrasena_hash")
+  rol            RolUsuario
+  activo         Boolean    @default(true)
+  creadoEn       DateTime   @default(now()) @map("creado_en")
+  actualizadoEn  DateTime   @updatedAt @map("actualizado_en")
+
+  sesiones          Sesion[]
+  eventos           EventoPieza[]
+  archivosSubidos   ArchivoDigital[] @relation("ArchivoSubidoPor")
+  archivosRevisados ArchivoDigital[] @relation("ArchivoRevisadoPor")
+
+  @@map("usuarios")
+}
+
+model Sesion {
+  id         String    @id @default(uuid()) @db.Uuid
+  usuarioId  String    @map("usuario_id") @db.Uuid
+  tokenHash  String    @unique @map("token_hash")
+  expiraEn   DateTime  @map("expira_en")
+  revocadaEn DateTime? @map("revocada_en")
+  creadoEn   DateTime  @default(now()) @map("creado_en")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@map("sesiones")
+}
+
+model Ubicacion {
+  id            String   @id @default(uuid()) @db.Uuid
+  deposito      String
+  estanteria    String
+  caja          String
+  descripcion   String?
+  creadoEn      DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+
+  piezas Pieza[]
+
+  @@unique([deposito, estanteria, caja])
+  @@map("ubicaciones")
+}
+
+model Pieza {
+  id            String      @id @default(uuid()) @db.Uuid
+  codigo        String      @unique // MDA-AAAA-NNNN
+  titulo        String
+  descripcion   String?
+  tipo          TipoPieza
+  estado        EstadoPieza @default(REGISTRADA)
+  anio          Int?
+  restringida   Boolean     @default(false)
+  ubicacionId   String      @map("ubicacion_id") @db.Uuid
+  creadoEn      DateTime    @default(now()) @map("creado_en")
+  actualizadoEn DateTime    @updatedAt @map("actualizado_en")
+
+  ubicacion Ubicacion        @relation(fields: [ubicacionId], references: [id], onDelete: Restrict)
+  archivos  ArchivoDigital[]
+  eventos   EventoPieza[]
+
+  @@index([titulo])
+  @@index([estado])
+  @@index([tipo])
+  @@index([anio])
+  @@index([ubicacionId])
+  @@map("piezas")
+}
+
+model ArchivoDigital {
+  id                 String               @id @default(uuid()) @db.Uuid
+  piezaId            String               @map("pieza_id") @db.Uuid
+  nombreOriginal     String               @map("nombre_original")
+  rutaAlmacenamiento String               @map("ruta_almacenamiento")
+  tipoMime           String               @map("tipo_mime")
+  tamanoBytes        Int                  @map("tamano_bytes")
+  estado             EstadoArchivoDigital @default(EN_REVISION)
+  motivoRechazo      String?              @map("motivo_rechazo")
+  subidoPorId        String               @map("subido_por_id") @db.Uuid
+  revisadoPorId      String?              @map("revisado_por_id") @db.Uuid
+  revisadoEn         DateTime?            @map("revisado_en")
+  creadoEn           DateTime             @default(now()) @map("creado_en")
+  actualizadoEn      DateTime             @updatedAt @map("actualizado_en")
+
+  pieza      Pieza    @relation(fields: [piezaId], references: [id], onDelete: Cascade)
+  subidoPor  Usuario  @relation("ArchivoSubidoPor", fields: [subidoPorId], references: [id], onDelete: Restrict)
+  revisadoPor Usuario? @relation("ArchivoRevisadoPor", fields: [revisadoPorId], references: [id], onDelete: SetNull)
+
+  @@index([estado])
+  @@index([piezaId])
+  @@map("archivos_digitales")
+}
+
+model EventoPieza {
+  id        String   @id @default(uuid()) @db.Uuid
+  piezaId   String   @map("pieza_id") @db.Uuid
+  usuarioId String?  @map("usuario_id") @db.Uuid
+  accion    String
+  detalle   String?
+  creadoEn  DateTime @default(now()) @map("creado_en")
+
+  pieza   Pieza    @relation(fields: [piezaId], references: [id], onDelete: Cascade)
+  usuario Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([piezaId])
+  @@index([creadoEn])
+  @@map("eventos_pieza")
+}
