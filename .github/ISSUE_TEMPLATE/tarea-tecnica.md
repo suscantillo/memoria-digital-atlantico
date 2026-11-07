@@ -2,7 +2,7 @@
 name: Tarea técnica
 about: Trabajo necesario que no es una historia de usuario (infraestructura, refactor, docs, CI)
 title: 'Tarea: '
-labels: tarea
+labels: tecnica
 assignees: ''
 ---
 

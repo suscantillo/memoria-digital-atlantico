@@ -20,17 +20,17 @@ publicadas respetando las restricciones de acceso de cada una.
 
 ## Equipo
 
-**Equipo de origen (Introducción a la Ingeniería, grupo [completar]):** Santiago Barros,
+**Equipo de origen (Introducción a la Ingeniería):** Santiago Barros,
 Iván Gómez, Samuel Pimienta, Juan Riaño.
 
 **Equipo de desarrollo (roles Scrum):**
 
-| Integrante | Rol |
-| --- | --- |
-| Andrea | Product Owner |
-| [completar] | Scrum Master, Development Team (backend/frontend) |
-| Mayi | Development Team (frontend) |
-| Alejandro | Development Team (backend) |
+| Integrante              | Rol                                               |
+| ----------------------- | ------------------------------------------------- |
+| Andrea                  | Product Owner                                     |
+| Jesús Cantillo Guerrero | Scrum Master, Development Team (backend/frontend) |
+| Mayi                    | Development Team (frontend)                       |
+| Alejandro               | Development Team (backend)                        |
 
 ## Stack
 
@@ -82,5 +82,6 @@ en `.env.example` (solo para desarrollo). Todos los datos sembrados son ficticio
 ## Documentación
 
 - Glosario: [docs/glosario.md](docs/glosario.md)
-- Cómo contribuir: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Reglas del repositorio y cómo contribuir: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Decisiones técnicas: [docs/decisiones.md](docs/decisiones.md)
 - Actas y plantillas: `docs/`

@@ -13,7 +13,7 @@ glosario, el dominio, Prisma, la API y la UI a la vez.
 | **Pieza**          | Elemento del archivo. Tipo `DOCUMENTO`, `FOTOGRAFIA` o `PERIODICO`. Estado `REGISTRADA`, `ESCANEADA`, `REVISADA` o `PUBLICADA`. Código único `MDA-AAAA-NNNN`. Puede ser `restringida`: en el portal solo se muestra su tipo y ubicación. |
 | **ArchivoDigital** | Escaneo de una pieza. Estado `EN_REVISION`, `APROBADO` o `RECHAZADO`; si se rechaza lleva `motivo_rechazo`.                                                                                                                              |
 | **EventoPieza**    | Entrada del historial de una pieza: quién, qué y cuándo.                                                                                                                                                                                 |
-| **Sesion**         | Refresh token persistido y revocable de un usuario.                                                                                                                                                                                      |
+| **Sesion**         | Refresh token (JWT con `jti`) persistido, rotado en cada uso y revocable. La tabla guarda el `jti`, nunca el token.                                                                                                                      |
 
 ## Roles
 
@@ -36,8 +36,20 @@ glosario, el dominio, Prisma, la API y la UI a la vez.
 
 ## Rutas de la API
 
-Plural en español bajo `/api/v1`: `/piezas`, `/ubicaciones`, `/archivos`, `/usuarios`, `/auth`,
-`/portal`. Salud en `/api/v1/health`; documentación en `/docs`.
+En español, bajo `/api/v1`:
+
+- `/auth/{registro,ingresar,refrescar,salir,yo,cuenta}`
+- `/usuarios`
+- `/ubicaciones`
+- `/piezas`
+- `/archivos`
+- `/portal/piezas`
+
+Salud en `/api/v1/health`; documentación en `/docs`.
+
+Todas las rutas de panel exigen `PERSONAL` o `ADMIN`. Solo son públicas `/portal/*`, `/auth/registro`,
+`/auth/ingresar`, `/auth/refrescar` y `/health`. Excepción temporal: `GET /ubicaciones` es público
+mientras la portada no tenga `/portal/piezas`.
 
 ## Convenciones de nombres
 
