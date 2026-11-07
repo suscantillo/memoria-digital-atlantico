@@ -3,7 +3,7 @@
 ## Clonar y correr
 
 ```bash
-git clone <url-del-repo>
+git clone git@github.com:suscantillo/memoria-digital-atlantico.git
 cd memoria-digital-atlantico
 npm install                  # instala los hooks de git (husky)
 cp .env.example .env
