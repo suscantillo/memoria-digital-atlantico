@@ -9,6 +9,8 @@ export const colores = {
   papel: '#FFFAF0',
 } as const;
 
+const fuenteTitulos = '"Archivo Variable", system-ui, sans-serif';
+
 export const tema = createTheme({
   palette: {
     primary: { main: colores.azulMarino, contrastText: '#FFFFFF' },
@@ -21,10 +23,11 @@ export const tema = createTheme({
   shape: { borderRadius: 8 },
   typography: {
     fontFamily:
-      'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
-    h1: { fontSize: '2rem', fontWeight: 700 },
-    h2: { fontSize: '1.5rem', fontWeight: 700 },
-    h3: { fontSize: '1.25rem', fontWeight: 600 },
+      '"Figtree Variable", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif',
+    h1: { fontFamily: fuenteTitulos, fontSize: '2.5rem', fontWeight: 900, lineHeight: 1.05 },
+    h2: { fontFamily: fuenteTitulos, fontSize: '1.75rem', fontWeight: 800 },
+    h3: { fontFamily: fuenteTitulos, fontSize: '1.25rem', fontWeight: 700 },
+    button: { fontFamily: fuenteTitulos, fontWeight: 700 },
   },
   components: {
     MuiCssBaseline: {
