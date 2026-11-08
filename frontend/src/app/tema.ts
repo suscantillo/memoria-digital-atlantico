@@ -37,6 +37,14 @@ export const tema = createTheme({
           outline: `3px solid ${colores.naranja}`,
           outlineOffset: 2,
         },
+        // quien pide menos movimiento en su sistema no ve animaciones (mareo, distracción)
+        '@media (prefers-reduced-motion: reduce)': {
+          '*, *::before, *::after': {
+            animationDuration: '0.01ms !important',
+            animationIterationCount: '1 !important',
+            transitionDuration: '0.01ms !important',
+          },
+        },
       },
     },
     MuiButton: {
