@@ -5,7 +5,8 @@ export const colores = {
   azulMedio: '#1B3F8F',
   naranja: '#CC3F14',
   amarillo: '#FFC21A',
-  turquesa: '#00808F',
+  turquesa: '#0096A8',
+  turquesaOscuro: '#00808F',
   crema: '#FFF4E0',
   papel: '#FFFAF0',
 } as const;
@@ -16,8 +17,10 @@ export const tema = createTheme({
   palette: {
     primary: { main: colores.azulMarino, contrastText: '#FFFFFF' },
     secondary: { main: colores.naranja, contrastText: '#FFFFFF' },
+    // el texto sobre amarillo va en azul: en blanco no alcanza el contraste mínimo de accesibilidad
     warning: { main: colores.amarillo, contrastText: colores.azulMarino },
-    success: { main: colores.turquesa, contrastText: '#FFFFFF' },
+    // el turquesa del diseño con texto blanco no llega a 4,5:1; para textos se usa el oscuro
+    success: { main: colores.turquesaOscuro, contrastText: '#FFFFFF' },
     background: { default: colores.crema, paper: colores.papel },
     text: { primary: colores.azulMarino, secondary: '#4B5A73' },
   },

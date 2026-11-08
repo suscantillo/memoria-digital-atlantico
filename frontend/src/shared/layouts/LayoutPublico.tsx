@@ -35,7 +35,7 @@ export function LayoutPublico() {
   ];
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'clip' }}>
       <EnlaceSaltar />
 
       <Container component="header" maxWidth="lg" sx={{ pt: { xs: 1.5, sm: 2.5 } }}>
