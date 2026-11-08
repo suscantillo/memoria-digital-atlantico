@@ -20,6 +20,8 @@ export const enrutador = createBrowserRouter([
     children: [
       { path: rutas.inicio, element: <PaginaInicio /> },
       { path: rutas.ingresar, element: <PaginaIngresar /> },
+      // dentro del layout público, para que quien se pierda conserve el menú y el pie
+      { path: '*', element: <PaginaNoEncontrada /> },
     ],
   },
   {
@@ -34,5 +36,4 @@ export const enrutador = createBrowserRouter([
       { path: 'ubicaciones', element: <PaginaUbicacionesPanel /> },
     ],
   },
-  { path: '*', element: <PaginaNoEncontrada /> },
 ]);

@@ -172,14 +172,18 @@ export function LayoutPanel() {
       border: 0,
     },
     // sobre el azul, el contorno de foco naranja casi no se ve; en amarillo sí cumple el contraste
-    '& :focus-visible': { outlineColor: colores.amarillo },
+    '--color-foco': colores.amarillo,
   } as const;
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       <EnlaceSaltar />
 
-      <AppBar position="fixed" component="header" sx={{ display: { md: 'none' } }}>
+      <AppBar
+        position="fixed"
+        component="header"
+        sx={{ display: { md: 'none' }, '--color-foco': colores.amarillo }}
+      >
         <Toolbar sx={{ gap: 1 }}>
           <IconButton
             color="inherit"

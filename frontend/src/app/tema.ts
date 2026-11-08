@@ -36,8 +36,9 @@ export const tema = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
+        // sobre fondos azules el layout cambia --color-foco a amarillo para que el contorno se vea
         '*:focus-visible': {
-          outline: `3px solid ${colores.naranja}`,
+          outline: `3px solid var(--color-foco, ${colores.naranja})`,
           outlineOffset: 2,
         },
         // quien pide menos movimiento en su sistema no ve animaciones (mareo, distracción)
@@ -46,6 +47,17 @@ export const tema = createTheme({
             animationDuration: '0.01ms !important',
             animationIterationCount: '1 !important',
             transitionDuration: '0.01ms !important',
+          },
+        },
+      },
+    },
+    // MUI quita el contorno de sus botones y deja solo una onda suave que con teclado casi no se ve
+    MuiButtonBase: {
+      styleOverrides: {
+        root: {
+          '&:focus-visible': {
+            outline: `3px solid var(--color-foco, ${colores.naranja})`,
+            outlineOffset: 2,
           },
         },
       },

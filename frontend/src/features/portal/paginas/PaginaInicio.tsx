@@ -297,6 +297,8 @@ export function PaginaInicio() {
                 borderRadius: 999,
                 p: apilado ? '5px 5px 5px 16px' : '6px 6px 6px 20px',
                 boxShadow: '0 8px 0 #F5D79E',
+                // el campo no tiene borde propio: el foco se marca en toda la cápsula
+                '&:focus-within': { outline: `3px solid ${colores.naranja}`, outlineOffset: 2 },
                 ...aparecer(0.36),
               }}
             >

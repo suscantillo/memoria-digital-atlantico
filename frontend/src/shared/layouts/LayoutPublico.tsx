@@ -127,7 +127,12 @@ export function LayoutPublico() {
       {/* deja libre el espacio que ocupa la barra inferior del celular */}
       <Box
         component="footer"
-        sx={{ bgcolor: colores.azulMarino, color: '#CFD6E4', pb: { xs: 11, sm: 0 } }}
+        sx={{
+          bgcolor: colores.azulMarino,
+          color: '#CFD6E4',
+          pb: { xs: 11, sm: 0 },
+          '--color-foco': colores.amarillo,
+        }}
       >
         <Container
           maxWidth="lg"
@@ -171,7 +176,7 @@ export function LayoutPublico() {
           borderRadius: 5,
           bgcolor: colores.azulMarino,
           boxShadow: '0 10px 30px rgba(14, 45, 107, 0.35)',
-          '& :focus-visible': { outlineColor: colores.amarillo },
+          '--color-foco': colores.amarillo,
         }}
       >
         {enlacesMovil.map(({ ruta, etiqueta, Icono, fin }) => (
