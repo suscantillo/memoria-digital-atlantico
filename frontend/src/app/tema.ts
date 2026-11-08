@@ -1,17 +1,22 @@
 import { createTheme } from '@mui/material/styles';
 
 export const colores = {
-  azulMarino: '#0B2A55',
-  naranja: '#D9480F',
-  crema: '#FFF4E3',
+  azulMarino: '#0E2D6B',
+  naranja: '#CC3F14',
+  amarillo: '#FFC21A',
+  turquesa: '#00808F',
+  crema: '#FFF4E0',
+  papel: '#FFFAF0',
 } as const;
 
 export const tema = createTheme({
   palette: {
     primary: { main: colores.azulMarino, contrastText: '#FFFFFF' },
     secondary: { main: colores.naranja, contrastText: '#FFFFFF' },
-    background: { default: colores.crema, paper: '#FFFFFF' },
-    text: { primary: '#1A1A1A', secondary: '#4A4A4A' },
+    warning: { main: colores.amarillo, contrastText: colores.azulMarino },
+    success: { main: colores.turquesa, contrastText: '#FFFFFF' },
+    background: { default: colores.crema, paper: colores.papel },
+    text: { primary: colores.azulMarino, secondary: '#4B5A73' },
   },
   shape: { borderRadius: 8 },
   typography: {
