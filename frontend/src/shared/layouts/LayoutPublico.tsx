@@ -119,7 +119,7 @@ export function LayoutPublico() {
         maxWidth="lg"
         id={ID_CONTENIDO}
         tabIndex={-1}
-        sx={{ py: 4, flexGrow: 1 }}
+        sx={{ py: { xs: 2.5, sm: 4 }, flexGrow: 1 }}
       >
         <Outlet />
       </Container>
