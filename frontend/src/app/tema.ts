@@ -2,6 +2,7 @@ import { createTheme } from '@mui/material/styles';
 
 export const colores = {
   azulMarino: '#0E2D6B',
+  azulMedio: '#1B3F8F',
   naranja: '#CC3F14',
   amarillo: '#FFC21A',
   turquesa: '#00808F',
