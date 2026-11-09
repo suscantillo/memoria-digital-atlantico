@@ -120,4 +120,8 @@ describe('Ubicaciones (e2e)', () => {
       message: `Ya existe una ubicación con depósito "${deposito}", estantería "${datos.estanteria}" y caja "${datos.caja}".`,
     });
   });
+
+  it('rechaza el listado si la solicitud no está autenticada', async () => {
+    await request(app.getHttpServer()).get('/api/v1/ubicaciones').expect(401);
+  });
 });
