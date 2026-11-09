@@ -94,4 +94,29 @@ describe('Ubicaciones (e2e)', () => {
       totalPaginas: 1,
     });
   });
+
+  it('responde 409 con un mensaje claro cuando la terna ya existe', async () => {
+    const datos = {
+      deposito,
+      estanteria: 'Estantería de prueba',
+      caja: 'Caja de prueba',
+    };
+
+    await request(app.getHttpServer())
+      .post('/api/v1/ubicaciones')
+      .set('Authorization', `Bearer ${tokenAcceso}`)
+      .send(datos)
+      .expect(201);
+
+    const duplicada = await request(app.getHttpServer())
+      .post('/api/v1/ubicaciones')
+      .set('Authorization', `Bearer ${tokenAcceso}`)
+      .send(datos)
+      .expect(409);
+
+    expect(duplicada.body).toMatchObject({
+      statusCode: 409,
+      message: `Ya existe una ubicación con depósito "${deposito}", estantería "${datos.estanteria}" y caja "${datos.caja}".`,
+    });
+  });
 });
