@@ -1,4 +1,5 @@
 import LogoutIcon from '@mui/icons-material/Logout';
+import Inventory2Icon from '@mui/icons-material/Inventory2';
 import PlaceIcon from '@mui/icons-material/Place';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -17,7 +18,10 @@ import { EnlaceSaltar, ID_CONTENIDO } from '../componentes/EnlaceSaltar';
 
 const ANCHO_MENU = 240;
 
-const secciones = [{ etiqueta: 'Ubicaciones', ruta: '/panel/ubicaciones', Icono: PlaceIcon }];
+const secciones = [
+  { etiqueta: 'Ubicaciones', ruta: '/panel/ubicaciones', Icono: PlaceIcon },
+  { etiqueta: 'Registrar pieza', ruta: '/panel/piezas/nueva', Icono: Inventory2Icon },
+];
 
 export function LayoutPanel() {
   const { usuario, salir } = useAuth();
