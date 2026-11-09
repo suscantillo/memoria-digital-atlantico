@@ -135,4 +135,36 @@ describe('POST /api/v1/auth/ingresar (e2e)', () => {
       .send({ tokenRefresco: tokenRefrescoAnterior })
       .expect(401);
   });
+
+  it('cierra la sesión, revoca el token de refresco y responde 204 idempotentemente', async () => {
+    const ingreso = await request(app.getHttpServer())
+      .post('/api/v1/auth/ingresar')
+      .send({ correo, contrasena })
+      .expect(200);
+    const tokenRefresco = (ingreso.body as { tokenRefresco: string }).tokenRefresco;
+
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/salir')
+      .send({ tokenRefresco })
+      .expect(204);
+
+    const sesiones = await prisma.sesion.findMany({ where: { usuarioId } });
+    expect(sesiones).toHaveLength(1);
+    expect(sesiones[0].revocadaEn).toBeInstanceOf(Date);
+
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/refrescar')
+      .send({ tokenRefresco })
+      .expect(401);
+
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/salir')
+      .send({ tokenRefresco })
+      .expect(204);
+
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/salir')
+      .send({ tokenRefresco: 'token-invalido' })
+      .expect(204);
+  });
 });
