@@ -98,4 +98,41 @@ describe('POST /api/v1/auth/ingresar (e2e)', () => {
     const sesiones = await prisma.sesion.findMany({ where: { usuarioId } });
     expect(sesiones).toHaveLength(0);
   });
+
+  it('renueva los JWT y revoca el token de refresco anterior', async () => {
+    const ingreso = await request(app.getHttpServer())
+      .post('/api/v1/auth/ingresar')
+      .send({ correo, contrasena })
+      .expect(200);
+    const tokenRefrescoAnterior = (ingreso.body as { tokenRefresco: string }).tokenRefresco;
+
+    const respuesta = await request(app.getHttpServer())
+      .post('/api/v1/auth/refrescar')
+      .send({ tokenRefresco: tokenRefrescoAnterior })
+      .expect(200);
+    const cuerpo = respuesta.body as { tokenAcceso: string; tokenRefresco: string };
+    const claimsAcceso = await jwt.verifyAsync<{ sub: string }>(cuerpo.tokenAcceso);
+    const claimsRefresco = await jwt.verifyAsync<{ sub: string; jti: string }>(
+      cuerpo.tokenRefresco,
+      { secret: secretoRefresco },
+    );
+
+    expect(cuerpo.tokenRefresco).not.toBe(tokenRefrescoAnterior);
+    expect(claimsAcceso.sub).toBe(usuarioId);
+    expect(claimsRefresco.sub).toBe(usuarioId);
+
+    const sesiones = await prisma.sesion.findMany({
+      where: { usuarioId },
+      orderBy: { creadoEn: 'asc' },
+    });
+    expect(sesiones).toHaveLength(2);
+    expect(sesiones[0].revocadaEn).toBeInstanceOf(Date);
+    expect(sesiones[1].jti).toBe(claimsRefresco.jti);
+    expect(sesiones[1].revocadaEn).toBeNull();
+
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/refrescar')
+      .send({ tokenRefresco: tokenRefrescoAnterior })
+      .expect(401);
+  });
 });
