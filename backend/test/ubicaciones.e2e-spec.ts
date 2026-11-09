@@ -78,6 +78,7 @@ describe('Ubicaciones (e2e)', () => {
 
     const listado = await request(app.getHttpServer())
       .get('/api/v1/ubicaciones')
+      .set('Authorization', `Bearer ${tokenAcceso}`)
       .query({ busqueda: deposito, pagina: 1, limite: 10 })
       .expect(200);
     const cuerpo = listado.body as {
