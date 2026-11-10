@@ -19,4 +19,5 @@ export interface UsuarioRepositorio {
   listarPersonal(params: ParametrosListadoUsuarios): Promise<ResultadoPaginado<Usuario>>;
   cambiarRol(id: string, rol: RolUsuario, fecha: Date): Promise<Usuario>;
   desactivar(id: string, fecha: Date): Promise<Usuario>;
+  reactivar(id: string): Promise<Usuario>;
 }

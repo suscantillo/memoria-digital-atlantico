@@ -3,6 +3,7 @@ import { CambiarRolUsuario } from '../../application/usuarios/cambiar-rol-usuari
 import { CrearCuentaPersonal } from '../../application/usuarios/crear-cuenta-personal.use-case';
 import { DesactivarUsuario } from '../../application/usuarios/desactivar-usuario.use-case';
 import { ListarUsuarios } from '../../application/usuarios/listar-usuarios.use-case';
+import { ReactivarUsuario } from '../../application/usuarios/reactivar-usuario.use-case';
 import {
   HASHER_CONTRASENAS,
   HasherContrasenas,
@@ -32,6 +33,11 @@ import { UsuariosController } from './usuarios.controller';
     {
       provide: DesactivarUsuario,
       useFactory: (usuarios: UsuarioRepositorio) => new DesactivarUsuario(usuarios),
+      inject: [USUARIO_REPOSITORIO],
+    },
+    {
+      provide: ReactivarUsuario,
+      useFactory: (usuarios: UsuarioRepositorio) => new ReactivarUsuario(usuarios),
       inject: [USUARIO_REPOSITORIO],
     },
   ],

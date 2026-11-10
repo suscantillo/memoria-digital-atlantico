@@ -83,4 +83,22 @@ export class UsuarioRepositorioMemoria implements UsuarioRepositorio {
     this.usuarios.set(id, actualizado);
     return Promise.resolve(actualizado);
   }
+
+  reactivar(id: string): Promise<Usuario> {
+    const usuario = this.usuarios.get(id);
+    if (!usuario)
+      return Promise.reject(new ErrorNoEncontrado(`No se encontró el usuario "${id}".`));
+    const actualizado = Usuario.reconstruir({
+      id: usuario.id,
+      nombre: usuario.nombre,
+      correo: usuario.correo,
+      contrasenaHash: usuario.contrasenaHash,
+      rol: usuario.rol,
+      activo: true,
+      creadoEn: usuario.creadoEn,
+      actualizadoEn: new Date(),
+    });
+    this.usuarios.set(id, actualizado);
+    return Promise.resolve(actualizado);
+  }
 }

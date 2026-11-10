@@ -161,5 +161,20 @@ describe('Administración de usuarios (e2e)', () => {
       .get('/api/v1/auth/yo')
       .set('Authorization', `Bearer ${sesionPersonal.tokenAcceso}`)
       .expect(401);
+
+    await request(app.getHttpServer())
+      .patch(`/api/v1/usuarios/${usuarioCreado.id}/activar`)
+      .set('Authorization', `Bearer ${tokenAdministrador}`)
+      .expect(200)
+      .then(({ body }) => expect((body as UsuarioRespuesta).activo).toBe(true));
+
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/ingresar')
+      .send({ correo: correoPersonal, contrasena: contrasenaPersonal })
+      .expect(200);
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/refrescar')
+      .send({ tokenRefresco: sesionPersonal.tokenRefresco })
+      .expect(401);
   });
 });

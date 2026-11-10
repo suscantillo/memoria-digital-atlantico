@@ -125,4 +125,19 @@ export class PrismaUsuarioRepositorio implements UsuarioRepositorio {
       throw error;
     }
   }
+
+  async reactivar(id: string): Promise<Usuario> {
+    try {
+      const fila = await this.prisma.usuario.update({
+        where: { id },
+        data: { activo: true },
+      });
+      return UsuarioMapper.aEntidad(fila);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        throw new ErrorNoEncontrado(`No se encontró el usuario "${id}".`);
+      }
+      throw error;
+    }
+  }
 }

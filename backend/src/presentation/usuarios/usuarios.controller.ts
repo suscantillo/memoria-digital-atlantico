@@ -26,6 +26,7 @@ import {
   UsuariosPaginadosDto,
 } from '../../application/usuarios/dto/usuario-administrado.dto';
 import { ListarUsuarios } from '../../application/usuarios/listar-usuarios.use-case';
+import { ReactivarUsuario } from '../../application/usuarios/reactivar-usuario.use-case';
 import { DesactivarUsuario } from '../../application/usuarios/desactivar-usuario.use-case';
 import { UsuarioActual } from '../comun/decoradores/usuario-actual.decorator';
 import { Autenticado } from '../comun/decoradores/autenticado.decorator';
@@ -40,6 +41,7 @@ export class UsuariosController {
     private readonly listarUsuarios: ListarUsuarios,
     private readonly cambiarRolUsuario: CambiarRolUsuario,
     private readonly desactivarUsuario: DesactivarUsuario,
+    private readonly reactivarUsuario: ReactivarUsuario,
   ) {}
 
   @Get()
@@ -77,5 +79,12 @@ export class UsuariosController {
     @UsuarioActual() administrador: UsuarioAutenticado,
   ): Promise<UsuarioAdministradoDto> {
     return this.desactivarUsuario.ejecutar(id, administrador.id);
+  }
+
+  @Patch(':id/activar')
+  @ApiOperation({ summary: 'Reactivar una cuenta desactivada' })
+  @ApiOkResponse({ type: UsuarioAdministradoDto })
+  reactivar(@Param('id') id: string): Promise<UsuarioAdministradoDto> {
+    return this.reactivarUsuario.ejecutar(id);
   }
 }

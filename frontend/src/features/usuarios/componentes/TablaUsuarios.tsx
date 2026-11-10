@@ -21,7 +21,12 @@ import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { MensajeError } from '../../../shared/componentes/MensajeError';
 import type { DireccionOrden } from '../../../shared/tipos/api';
-import { useCambiarRolUsuario, useDesactivarUsuario, useUsuarios } from '../hooks';
+import {
+  useCambiarRolUsuario,
+  useDesactivarUsuario,
+  useReactivarUsuario,
+  useUsuarios,
+} from '../hooks';
 import type {
   CampoOrdenUsuario,
   ParametrosListarUsuarios,
@@ -46,6 +51,7 @@ export function TablaUsuarios({ params, administradorId, onCambiar }: Props) {
   const consulta = useUsuarios(params);
   const cambiarRol = useCambiarRolUsuario();
   const desactivar = useDesactivarUsuario();
+  const reactivar = useReactivarUsuario();
   const [seleccionado, setSeleccionado] = useState<UsuarioAdministrado | null>(null);
 
   const cambiarOrden = (campo: CampoOrdenUsuario) => {
@@ -130,14 +136,26 @@ export function TablaUsuarios({ params, administradorId, onCambiar }: Props) {
                     <TableCell>{new Date(usuario.creadoEn).toLocaleDateString('es-CO')}</TableCell>
                     <TableCell>{usuario.activo ? 'Activa' : 'Desactivada'}</TableCell>
                     <TableCell>
-                      <Button
-                        size="small"
-                        color="error"
-                        disabled={esAdministradorActual || !usuario.activo || desactivar.isPending}
-                        onClick={() => setSeleccionado(usuario)}
-                      >
-                        Desactivar
-                      </Button>
+                      {usuario.activo ? (
+                        <Button
+                          size="small"
+                          color="error"
+                          disabled={
+                            esAdministradorActual || desactivar.isPending || reactivar.isPending
+                          }
+                          onClick={() => setSeleccionado(usuario)}
+                        >
+                          Desactivar
+                        </Button>
+                      ) : (
+                        <Button
+                          size="small"
+                          disabled={reactivar.isPending || desactivar.isPending}
+                          onClick={() => reactivar.mutate(usuario.id)}
+                        >
+                          Reactivar
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 );
@@ -167,9 +185,9 @@ export function TablaUsuarios({ params, administradorId, onCambiar }: Props) {
           getItemAriaLabel={(tipo) => (tipo === 'next' ? 'Página siguiente' : 'Página anterior')}
         />
       </Paper>
-      {(cambiarRol.isError || desactivar.isError) && (
+      {(cambiarRol.isError || desactivar.isError || reactivar.isError) && (
         <MensajeError
-          error={cambiarRol.error ?? desactivar.error}
+          error={cambiarRol.error ?? desactivar.error ?? reactivar.error}
           titulo="No se pudo actualizar la cuenta"
         />
       )}

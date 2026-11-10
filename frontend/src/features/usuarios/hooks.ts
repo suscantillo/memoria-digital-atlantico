@@ -39,3 +39,11 @@ export function useDesactivarUsuario() {
     onSuccess: () => clienteConsultas.invalidateQueries({ queryKey: clavesUsuarios.todas }),
   });
 }
+
+export function useReactivarUsuario() {
+  const clienteConsultas = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => usuariosApi.reactivar(id),
+    onSuccess: () => clienteConsultas.invalidateQueries({ queryKey: clavesUsuarios.todas }),
+  });
+}

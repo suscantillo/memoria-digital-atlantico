@@ -6,6 +6,7 @@ import { CambiarRolUsuario } from './cambiar-rol-usuario.use-case';
 import { CrearCuentaPersonal } from './crear-cuenta-personal.use-case';
 import { DesactivarUsuario } from './desactivar-usuario.use-case';
 import { ListarUsuarios } from './listar-usuarios.use-case';
+import { ReactivarUsuario } from './reactivar-usuario.use-case';
 
 describe('Administración de usuarios', () => {
   let repositorio: UsuarioRepositorioMemoria;
@@ -130,5 +131,21 @@ describe('Administración de usuarios', () => {
       activo: false,
     });
     await expect(casoDeUso.ejecutar(personal.id, personal.id)).rejects.toBeInstanceOf(ErrorRegla);
+  });
+
+  it('reactiva una cuenta desactivada', async () => {
+    const personal = Usuario.crear({
+      nombre: 'Ana',
+      correo: 'ana@clena.org',
+      contrasenaHash: 'hash',
+      rol: 'PERSONAL',
+    });
+    repositorio.agregar(personal);
+    await repositorio.desactivar(personal.id);
+
+    await expect(new ReactivarUsuario(repositorio).ejecutar(personal.id)).resolves.toMatchObject({
+      activo: true,
+      rol: 'PERSONAL',
+    });
   });
 });
