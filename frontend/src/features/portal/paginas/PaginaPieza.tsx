@@ -13,7 +13,7 @@ import { MensajeError } from '../../../shared/componentes/MensajeError';
 import { extraerCodigo } from '../../qr/codigo';
 import { VisorDocumento } from '../componentes/VisorDocumento';
 import { usePiezaPortal } from '../hooks';
-import { NOMBRE_TIPO, type PiezaPortal, type TipoPieza } from '../tipos';
+import { NOMBRE_TIPO, tituloVisible as titulo, type PiezaPortal } from '../tipos';
 
 const aparecer = keyframes`
   from { opacity: 0; transform: translateY(24px); }
@@ -24,13 +24,6 @@ const brillar = keyframes`
   0%, 100% { box-shadow: 0 0 0 0 rgba(204, 63, 20, .9); }
   50% { box-shadow: 0 0 0 7px rgba(204, 63, 20, 0); }
 `;
-
-// una pieza restringida no muestra su título; se nombra por su tipo, con el género de cada palabra
-const TITULO_RESTRINGIDA: Record<TipoPieza, string> = {
-  DOCUMENTO: 'Documento restringido',
-  FOTOGRAFIA: 'Fotografía restringida',
-  PERIODICO: 'Periódico restringido',
-};
 
 const MONO = '"Courier New", ui-monospace, monospace';
 const curva = 'cubic-bezier(.2, .8, .2, 1)';
@@ -45,10 +38,6 @@ const chip = {
   fontWeight: 700,
   fontSize: 14,
 } as const;
-
-function titulo(pieza: PiezaPortal) {
-  return pieza.restringida ? TITULO_RESTRINGIDA[pieza.tipo] : (pieza.titulo ?? '');
-}
 
 /** Hoja vacía en el lugar del visor, para que el documento siga siendo el centro aunque falte. */
 function HojaAusente({ restringida }: { restringida: boolean }) {

@@ -1,6 +1,7 @@
 import HomeIcon from '@mui/icons-material/Home';
 import PersonIcon from '@mui/icons-material/Person';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
+import SearchIcon from '@mui/icons-material/Search';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
@@ -32,6 +33,7 @@ export function LayoutPublico() {
 
   const enlacesMovil = [
     { ruta: '/', etiqueta: 'Inicio', Icono: HomeIcon, fin: true },
+    { ruta: '/explorar', etiqueta: 'Explorar', Icono: SearchIcon },
     { ruta: '/escanear', etiqueta: 'Escanear', Icono: QrCodeScannerIcon },
     { ruta: cuenta.ruta, etiqueta: puedeEntrarAlPanel ? 'Panel' : 'Cuenta', Icono: PersonIcon },
   ];
@@ -102,6 +104,9 @@ export function LayoutPublico() {
           >
             <Button component={NavLink} to="/" end sx={estiloPildora}>
               Inicio
+            </Button>
+            <Button component={NavLink} to="/explorar" sx={estiloPildora}>
+              Explorar
             </Button>
             <Button component={NavLink} to="/escanear" sx={estiloPildora}>
               Escanear QR
