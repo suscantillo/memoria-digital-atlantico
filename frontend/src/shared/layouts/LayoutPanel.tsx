@@ -1,4 +1,5 @@
 import LogoutIcon from '@mui/icons-material/Logout';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import PlaceIcon from '@mui/icons-material/Place';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -17,11 +18,15 @@ import { EnlaceSaltar, ID_CONTENIDO } from '../componentes/EnlaceSaltar';
 
 const ANCHO_MENU = 240;
 
-const secciones = [{ etiqueta: 'Ubicaciones', ruta: '/panel/ubicaciones', Icono: PlaceIcon }];
-
 export function LayoutPanel() {
   const { usuario, salir } = useAuth();
   const navegar = useNavigate();
+  const secciones = [
+    { etiqueta: 'Ubicaciones', ruta: '/panel/ubicaciones', Icono: PlaceIcon },
+    ...(usuario?.rol === 'ADMIN'
+      ? [{ etiqueta: 'Usuarios', ruta: '/panel/usuarios', Icono: ManageAccountsIcon }]
+      : []),
+  ];
 
   const cerrarSesion = async () => {
     await salir();
