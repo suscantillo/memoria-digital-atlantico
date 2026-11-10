@@ -119,45 +119,11 @@ export function LayoutPublico() {
         maxWidth="lg"
         id={ID_CONTENIDO}
         tabIndex={-1}
-        sx={{ py: { xs: 2.5, sm: 4 }, flexGrow: 1 }}
+        // abajo deja libre el espacio que ocupa la barra inferior del celular
+        sx={{ pt: { xs: 2.5, sm: 4 }, pb: { xs: 13, sm: 6 }, flexGrow: 1 }}
       >
         <Outlet />
       </Container>
-
-      {/* deja libre el espacio que ocupa la barra inferior del celular */}
-      <Box
-        component="footer"
-        sx={{
-          bgcolor: colores.azulMarino,
-          color: '#CFD6E4',
-          pb: { xs: 11, sm: 0 },
-          '--color-foco': colores.amarillo,
-        }}
-      >
-        <Container
-          maxWidth="lg"
-          sx={{
-            py: 4,
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'space-between',
-            gap: 2,
-            '& a': { color: colores.amarillo },
-          }}
-        >
-          <Typography variant="body2">
-            <Box component="strong" sx={{ color: '#FFFFFF' }}>
-              Memoria Digital del Atlántico
-            </Box>{' '}
-            · Proyecto académico para el CLENA · Universidad del Norte
-          </Typography>
-          <Typography variant="body2">
-            <Link href="/docs" target="_blank" rel="noopener">
-              Documentación de la API
-            </Link>
-          </Typography>
-        </Container>
-      </Box>
 
       {/* en el celular la navegación va abajo, al alcance del pulgar */}
       <Box

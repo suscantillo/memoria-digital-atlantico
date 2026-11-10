@@ -1,7 +1,6 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
-import { colores } from '../../app/tema';
 
 export const FUENTE_FICHA = '"Courier New", ui-monospace, monospace';
 
@@ -26,19 +25,6 @@ export function EncabezadoPanel({ titulo, descripcion, accion }: Props) {
       }}
     >
       <Box sx={{ minWidth: 0 }}>
-        {/* las semillas son ficticias: el aviso evita que alguien las tome por el inventario real */}
-        <Typography
-          sx={{
-            fontFamily: FUENTE_FICHA,
-            fontWeight: 700,
-            fontSize: { xs: 12, sm: 14 },
-            letterSpacing: '0.04em',
-            color: colores.naranja,
-            textTransform: 'uppercase',
-          }}
-        >
-          Datos de prueba · no es el inventario real del CLENA
-        </Typography>
         <Typography
           variant="h1"
           sx={{

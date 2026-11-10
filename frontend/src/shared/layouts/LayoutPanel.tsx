@@ -3,6 +3,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
 import MenuIcon from '@mui/icons-material/Menu';
 import PlaceIcon from '@mui/icons-material/Place';
+import PublicIcon from '@mui/icons-material/Public';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import type { SvgIconComponent } from '@mui/icons-material';
 import AppBar from '@mui/material/AppBar';
@@ -144,10 +145,27 @@ export function LayoutPanel() {
           ))}
       </List>
 
+      <ListItemButton
+        component={RouterLink}
+        to="/"
+        onClick={() => setMenuAbierto(false)}
+        sx={{
+          ...estiloSeccion,
+          mt: 'auto',
+          flex: 'none',
+          border: '2px solid #4A5D86',
+          '&:hover': { bgcolor: colores.azulMedio, color: '#FFFFFF' },
+        }}
+      >
+        <ListItemIcon sx={{ color: 'inherit', minWidth: 40 }}>
+          <PublicIcon aria-hidden />
+        </ListItemIcon>
+        <ListItemText primary="Ir al portal público" />
+      </ListItemButton>
+
       {usuario && (
         <Box
           sx={{
-            mt: 'auto',
             p: 1.75,
             borderRadius: 4.5,
             bgcolor: colores.azulMedio,
@@ -245,6 +263,15 @@ export function LayoutPanel() {
           <Typography variant="h6" component="p" noWrap sx={{ fontWeight: 900 }}>
             Panel
           </Typography>
+          <Button
+            component={RouterLink}
+            to="/"
+            color="inherit"
+            startIcon={<PublicIcon />}
+            sx={{ ml: 'auto', borderRadius: 999, fontWeight: 700 }}
+          >
+            Portal
+          </Button>
         </Toolbar>
       </AppBar>
 
