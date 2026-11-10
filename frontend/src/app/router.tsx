@@ -5,7 +5,9 @@ import { PaginaPrivacidad } from '../features/auth/paginas/PaginaPrivacidad';
 import { PaginaRegistro } from '../features/auth/paginas/PaginaRegistro';
 import { PaginaCalidad } from '../features/calidad/paginas/PaginaCalidad';
 import { PaginaEtiquetas } from '../features/etiquetas/paginas/PaginaEtiquetas';
+import { PaginaFichaPieza } from '../features/inventario/paginas/PaginaFichaPieza';
 import { PaginaInventario } from '../features/inventario/paginas/PaginaInventario';
+import { PaginaNuevaPieza } from '../features/inventario/paginas/PaginaNuevaPieza';
 import { PaginaExplorar } from '../features/portal/paginas/PaginaExplorar';
 import { PaginaInicio } from '../features/portal/paginas/PaginaInicio';
 import { PaginaPieza } from '../features/portal/paginas/PaginaPieza';
@@ -28,6 +30,8 @@ export const rutas = {
   pieza: '/p/:codigo',
   panel: '/panel',
   panelInventario: '/panel/inventario',
+  panelNuevaPieza: '/panel/piezas/nueva',
+  panelPieza: '/panel/piezas/:id',
   panelCalidad: '/panel/calidad',
   panelUbicaciones: '/panel/ubicaciones',
   panelEtiquetas: '/panel/etiquetas',
@@ -67,6 +71,8 @@ export const enrutador = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to={rutas.panelInventario} replace /> },
       { path: 'inventario', element: <PaginaInventario /> },
+      { path: 'piezas/nueva', element: <PaginaNuevaPieza /> },
+      { path: 'piezas/:id', element: <PaginaFichaPieza /> },
       { path: 'calidad', element: <PaginaCalidad /> },
       { path: 'ubicaciones', element: <PaginaUbicacionesPanel /> },
       { path: 'etiquetas', element: <PaginaEtiquetas /> },

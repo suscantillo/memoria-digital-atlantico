@@ -1,7 +1,9 @@
+import AddIcon from '@mui/icons-material/Add';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import Link from '@mui/material/Link';
 import LinearProgress from '@mui/material/LinearProgress';
 import MenuItem from '@mui/material/MenuItem';
 import Snackbar from '@mui/material/Snackbar';
@@ -17,6 +19,7 @@ import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import { colores } from '../../../app/tema';
 import { guardarBlob, pedirArchivo } from '../../../shared/api/descargas';
 import { BuscadorPanel } from '../../../shared/componentes/BuscadorPanel';
@@ -100,7 +103,14 @@ function FilaPieza({
             {NOMBRE_TIPO[pieza.tipo][0]}
           </Box>
           <Box sx={{ minWidth: 0 }}>
-            <Typography sx={{ fontWeight: 700 }}>{pieza.titulo}</Typography>
+            <Link
+              component={RouterLink}
+              to={`/panel/piezas/${pieza.id}`}
+              underline="hover"
+              sx={{ display: 'block', fontWeight: 700, color: 'inherit' }}
+            >
+              {pieza.titulo}
+            </Link>
             <Typography sx={{ fontFamily: FUENTE_FICHA, fontSize: 14, color: 'text.secondary' }}>
               {pieza.codigo} · {NOMBRE_TIPO[pieza.tipo]}
             </Typography>
@@ -174,6 +184,24 @@ export function PaginaInventario() {
       <EncabezadoPanel
         titulo="Inventario"
         descripcion="Todas las piezas del archivo, dónde están y en qué paso de la digitalización van."
+        accion={
+          <Button
+            component={RouterLink}
+            to="/panel/piezas/nueva"
+            variant="contained"
+            color="secondary"
+            startIcon={<AddIcon />}
+            sx={{
+              borderRadius: 999,
+              px: 3,
+              py: 1.25,
+              fontWeight: 800,
+              boxShadow: '0 5px 0 #8F2A0C',
+            }}
+          >
+            Nueva pieza
+          </Button>
+        }
       />
 
       <Box
