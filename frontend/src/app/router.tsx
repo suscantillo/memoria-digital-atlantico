@@ -1,5 +1,8 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { PaginaIngresar } from '../features/auth/paginas/PaginaIngresar';
+import { PaginaMiCuenta } from '../features/auth/paginas/PaginaMiCuenta';
+import { PaginaPrivacidad } from '../features/auth/paginas/PaginaPrivacidad';
+import { PaginaRegistro } from '../features/auth/paginas/PaginaRegistro';
 import { PaginaCalidad } from '../features/calidad/paginas/PaginaCalidad';
 import { PaginaEtiquetas } from '../features/etiquetas/paginas/PaginaEtiquetas';
 import { PaginaInventario } from '../features/inventario/paginas/PaginaInventario';
@@ -17,6 +20,9 @@ import { LayoutPublico } from '../shared/layouts/LayoutPublico';
 export const rutas = {
   inicio: '/',
   ingresar: '/ingresar',
+  registro: '/registro',
+  privacidad: '/privacidad',
+  miCuenta: '/mi-cuenta',
   explorar: '/explorar',
   escanear: '/escanear',
   pieza: '/p/:codigo',
@@ -34,6 +40,16 @@ export const enrutador = createBrowserRouter([
     children: [
       { path: rutas.inicio, element: <PaginaInicio /> },
       { path: rutas.ingresar, element: <PaginaIngresar /> },
+      { path: rutas.registro, element: <PaginaRegistro /> },
+      { path: rutas.privacidad, element: <PaginaPrivacidad /> },
+      {
+        path: rutas.miCuenta,
+        element: (
+          <RutaProtegida>
+            <PaginaMiCuenta />
+          </RutaProtegida>
+        ),
+      },
       { path: rutas.explorar, element: <PaginaExplorar /> },
       { path: rutas.escanear, element: <PaginaEscanear /> },
       { path: rutas.pieza, element: <PaginaPieza /> },

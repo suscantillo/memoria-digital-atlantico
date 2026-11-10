@@ -1,10 +1,11 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState, type FormEvent } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { colores } from '../../../app/tema';
 import { useAuth } from '../../../shared/auth/useAuth';
 import { Isotipo } from '../../../shared/componentes/Isotipo';
@@ -132,6 +133,12 @@ export function PaginaIngresar() {
             >
               {enviando ? 'Ingresando…' : 'Ingresar'}
             </Button>
+            <Typography sx={{ textAlign: 'center' }}>
+              ¿No tienes cuenta?{' '}
+              <Link component={RouterLink} to="/registro" state={state} sx={{ fontWeight: 700 }}>
+                Créala gratis
+              </Link>
+            </Typography>
           </Stack>
         </Box>
       </Box>

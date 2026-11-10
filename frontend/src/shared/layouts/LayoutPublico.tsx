@@ -28,14 +28,16 @@ export function LayoutPublico() {
   const { usuario } = useAuth();
   const puedeEntrarAlPanel = usuario?.rol === 'ADMIN' || usuario?.rol === 'PERSONAL';
   const cuenta = puedeEntrarAlPanel
-    ? { ruta: '/panel', etiqueta: 'Panel' }
-    : { ruta: '/ingresar', etiqueta: 'Iniciar sesión' };
+    ? { ruta: '/panel', etiqueta: 'Panel', corta: 'Panel' }
+    : usuario
+      ? { ruta: '/mi-cuenta', etiqueta: 'Mi cuenta', corta: 'Cuenta' }
+      : { ruta: '/ingresar', etiqueta: 'Iniciar sesión', corta: 'Ingresar' };
 
   const enlacesMovil = [
     { ruta: '/', etiqueta: 'Inicio', Icono: HomeIcon, fin: true },
     { ruta: '/explorar', etiqueta: 'Explorar', Icono: SearchIcon },
     { ruta: '/escanear', etiqueta: 'Escanear', Icono: QrCodeScannerIcon },
-    { ruta: cuenta.ruta, etiqueta: puedeEntrarAlPanel ? 'Panel' : 'Cuenta', Icono: PersonIcon },
+    { ruta: cuenta.ruta, etiqueta: cuenta.corta, Icono: PersonIcon },
   ];
 
   return (

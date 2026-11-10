@@ -95,7 +95,9 @@ function Palabra({ texto, retraso }: { texto: string; retraso: number }) {
 }
 
 export function PaginaInicio() {
-  const { state } = useLocation() as { state?: { sinPermiso?: boolean } };
+  const { state } = useLocation() as {
+    state?: { sinPermiso?: boolean; cuentaEliminada?: boolean };
+  };
   const navegar = useNavigate();
   const consulta = useUbicaciones({ pagina: 1, limite: 20, orden: 'deposito', direccion: 'asc' });
   const [busqueda, setBusqueda] = useState('');
@@ -155,6 +157,11 @@ export function PaginaInicio() {
       {state?.sinPermiso && (
         <Alert severity="warning" role="alert">
           Tu cuenta no tiene permiso para entrar al panel.
+        </Alert>
+      )}
+      {state?.cuentaEliminada && (
+        <Alert severity="success" role="status">
+          Eliminamos tu cuenta y tus datos. Puedes seguir explorando el archivo sin cuenta.
         </Alert>
       )}
 
