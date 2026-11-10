@@ -4,7 +4,9 @@ import { PaginaCalidad } from '../features/calidad/paginas/PaginaCalidad';
 import { PaginaEtiquetas } from '../features/etiquetas/paginas/PaginaEtiquetas';
 import { PaginaInventario } from '../features/inventario/paginas/PaginaInventario';
 import { PaginaInicio } from '../features/portal/paginas/PaginaInicio';
+import { PaginaPieza } from '../features/portal/paginas/PaginaPieza';
 import { PaginaNoEncontrada } from '../features/portal/paginas/PaginaNoEncontrada';
+import { PaginaEscanear } from '../features/qr/paginas/PaginaEscanear';
 import { PaginaUbicacionesPanel } from '../features/ubicaciones/paginas/PaginaUbicacionesPanel';
 import { PaginaUsuarios } from '../features/usuarios/paginas/PaginaUsuarios';
 import { RutaProtegida } from '../shared/componentes/RutaProtegida';
@@ -14,6 +16,8 @@ import { LayoutPublico } from '../shared/layouts/LayoutPublico';
 export const rutas = {
   inicio: '/',
   ingresar: '/ingresar',
+  escanear: '/escanear',
+  pieza: '/p/:codigo',
   panel: '/panel',
   panelInventario: '/panel/inventario',
   panelCalidad: '/panel/calidad',
@@ -28,6 +32,8 @@ export const enrutador = createBrowserRouter([
     children: [
       { path: rutas.inicio, element: <PaginaInicio /> },
       { path: rutas.ingresar, element: <PaginaIngresar /> },
+      { path: rutas.escanear, element: <PaginaEscanear /> },
+      { path: rutas.pieza, element: <PaginaPieza /> },
       // dentro del layout público, para que quien se pierda conserve el menú y el pie
       { path: '*', element: <PaginaNoEncontrada /> },
     ],

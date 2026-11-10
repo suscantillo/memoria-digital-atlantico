@@ -1,8 +1,12 @@
-import { clienteApi } from './cliente';
+import { BASE_API, clienteApi } from './cliente';
 
-/** Pide un archivo con la sesión: una etiqueta <img> o <a> no envía el token del panel. */
+/**
+ * Pide un archivo con la sesión: una etiqueta <img> o <a> no envía el token.
+ * Acepta la ruta corta (/piezas/…) o la dirección completa que devuelve la API (/api/v1/…).
+ */
 export async function pedirArchivo(ruta: string): Promise<Blob> {
-  const { data } = await clienteApi.get<Blob>(ruta, { responseType: 'blob' });
+  const relativa = ruta.startsWith(BASE_API) ? ruta.slice(BASE_API.length) : ruta;
+  const { data } = await clienteApi.get<Blob>(relativa, { responseType: 'blob' });
   return data;
 }
 

@@ -20,7 +20,7 @@ export function PaginaIngresar() {
   const [error, setError] = useState<unknown>(null);
 
   if (usuario) {
-    const destino = usuario.rol === 'PUBLICO' ? '/' : (state?.desde ?? '/panel');
+    const destino = state?.desde ?? (usuario.rol === 'PUBLICO' ? '/' : '/panel');
     return <Navigate to={destino} replace />;
   }
 
@@ -30,7 +30,7 @@ export function PaginaIngresar() {
     setError(null);
     try {
       const ingresado = await ingresar({ correo: correo.trim(), contrasena });
-      navegar(ingresado.rol === 'PUBLICO' ? '/' : (state?.desde ?? '/panel'), { replace: true });
+      navegar(state?.desde ?? (ingresado.rol === 'PUBLICO' ? '/' : '/panel'), { replace: true });
     } catch (e) {
       setError(e);
     } finally {
