@@ -11,6 +11,7 @@ describe('CrearPieza', () => {
     tipo: 'DOCUMENTO',
     estado: 'REGISTRADA',
     anio: 1888,
+    descripcion: null,
     ubicacionId: 'ubicacion-id',
     creadoEn: new Date('2026-11-09T12:00:00.000Z'),
     actualizadoEn: new Date('2026-11-09T12:00:00.000Z'),
@@ -19,11 +20,16 @@ describe('CrearPieza', () => {
     ReturnType<PiezaRepositorio['registrar']>,
     Parameters<PiezaRepositorio['registrar']>
   >();
+  const repositorio: PiezaRepositorio = {
+    registrar: (...argumentos) => registrar(...argumentos),
+    buscarFicha: () => Promise.resolve(null),
+    editar: () => Promise.reject(new Error('No se esperaba editar una pieza.')),
+  };
   let casoDeUso: CrearPieza;
 
   beforeEach(() => {
     registrar.mockReset().mockResolvedValue(piezaRegistrada);
-    casoDeUso = new CrearPieza({ registrar });
+    casoDeUso = new CrearPieza(repositorio);
   });
 
   it('registra la pieza con el usuario autenticado y devuelve el código generado', async () => {

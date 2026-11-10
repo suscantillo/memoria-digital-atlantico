@@ -15,6 +15,7 @@ export const PiezaMapper = {
       tipo: fila.tipo,
       estado: fila.estado,
       anio: fila.anio,
+      descripcion: fila.descripcion,
       ubicacionId: fila.ubicacionId,
       creadoEn: fila.creadoEn,
       actualizadoEn: fila.actualizadoEn,
