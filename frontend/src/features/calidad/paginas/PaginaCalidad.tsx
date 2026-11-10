@@ -1,13 +1,16 @@
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import LinearProgress from '@mui/material/LinearProgress';
+import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -17,6 +20,7 @@ import { EncabezadoPanel, FUENTE_FICHA } from '../../../shared/componentes/Encab
 import { MensajeError } from '../../../shared/componentes/MensajeError';
 import { usePublicarPieza } from '../../inventario/hooks';
 import { NOMBRE_TIPO } from '../../inventario/tipos';
+import { ColaRevision } from '../componentes/ColaRevision';
 import { VisorEscaneo } from '../componentes/VisorEscaneo';
 import { useArchivosEnRevision, useResolverArchivo } from '../hooks';
 import type { ArchivoDigital } from '../tipos';
@@ -55,65 +59,6 @@ interface Resultado {
   publicada: boolean;
 }
 
-/** Ficha de la cola: el color dice su estado sin tener que leerla. */
-function FichaCola({
-  archivo,
-  actual,
-  resultado,
-  onClick,
-}: {
-  archivo: ArchivoDigital;
-  actual: boolean;
-  resultado: Resultado | undefined;
-  onClick: () => void;
-}) {
-  const fondo = actual
-    ? colores.azulMarino
-    : resultado
-      ? resultado.aprobado
-        ? '#CFF4F7'
-        : '#FFDCCF'
-      : '#FFFFFF';
-  return (
-    <Box
-      component="button"
-      type="button"
-      onClick={onClick}
-      aria-current={actual ? 'step' : undefined}
-      aria-label={`${archivo.pieza.codigo}, ${archivo.pieza.titulo}${
-        resultado ? (resultado.aprobado ? ', aprobado' : ', rechazado') : ', por revisar'
-      }`}
-      sx={{
-        flex: 'none',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1,
-        minHeight: 44,
-        px: 1.75,
-        border: 0,
-        borderRadius: 999,
-        bgcolor: fondo,
-        color: actual ? '#FFFFFF' : colores.azulMarino,
-        fontFamily: FUENTE_FICHA,
-        fontWeight: 700,
-        fontSize: 14,
-        cursor: 'pointer',
-        boxShadow: actual ? `0 4px 0 ${colores.naranja}` : '0 4px 0 #F5D79E',
-        transition: 'transform .2s',
-        '&:hover': { transform: 'translateY(-2px)' },
-      }}
-    >
-      {resultado &&
-        (resultado.aprobado ? (
-          <CheckIcon aria-hidden fontSize="small" />
-        ) : (
-          <CloseIcon aria-hidden fontSize="small" />
-        ))}
-      {archivo.pieza.codigo}
-    </Box>
-  );
-}
-
 export function PaginaCalidad() {
   const consulta = useArchivosEnRevision();
   const resolver = useResolverArchivo();
@@ -124,6 +69,7 @@ export function PaginaCalidad() {
   const [rechazando, setRechazando] = useState(false);
   const [motivo, setMotivo] = useState('');
   const [motivoVacio, setMotivoVacio] = useState(false);
+  const [colaAbierta, setColaAbierta] = useState(false);
 
   // al resolver un escaneo la API lo saca de EN_REVISION; se conserva aquí para ver el avance
   const cola = useMemo(() => {
@@ -136,8 +82,16 @@ export function PaginaCalidad() {
   const pendientes = cola.filter((a) => !resultados[a.id]);
   const actual = cola.find((a) => a.id === seleccionId) ?? pendientes[0] ?? cola[0] ?? null;
   const resultado = actual ? resultados[actual.id] : undefined;
-  const siguiente = pendientes.find((a) => a.id !== actual?.id) ?? null;
-  const revisados = cola.length - pendientes.length;
+  const indice = actual ? pendientes.findIndex((a) => a.id === actual.id) : -1;
+  const posicion = indice + 1;
+  // la API cuenta lo que sigue EN_REVISION; los revisados en esta sesión ya no están ahí
+  const totalPendientes = consulta.data?.meta.total ?? pendientes.length;
+  const anterior = indice > 0 ? pendientes[indice - 1] : null;
+  const siguiente =
+    indice >= 0
+      ? (pendientes[indice + 1] ?? null)
+      : (pendientes.find((a) => a.id !== actual?.id) ?? null);
+  const revisados = Object.keys(resultados).length;
   const marcadosCount = CRITERIOS.filter((c) => marcados[c.clave]).length;
 
   const irA = (id: string) => {
@@ -206,43 +160,80 @@ export function PaginaCalidad() {
           <Box
             component="nav"
             aria-label="Escaneos por revisar"
-            sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: { xs: 1.5, sm: 2.5 },
+              px: 2,
+              py: 1.25,
+              bgcolor: colores.papel,
+              borderRadius: 999,
+              boxShadow: '0 6px 0 #F5D79E',
+            }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-              <Typography
-                role="status"
-                sx={{ fontFamily: 'h1.fontFamily', fontWeight: 800, fontSize: 18 }}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <IconButton
+                aria-label="Escaneo anterior por revisar"
+                disabled={!anterior}
+                onClick={() => anterior && irA(anterior.id)}
+                sx={{ color: colores.azulMarino }}
               >
-                {pendientes.length === 0
-                  ? `¡Listo! Revisaste los ${cola.length} escaneos`
-                  : `${revisados} de ${cola.length} revisados`}
-              </Typography>
-              <LinearProgress
-                variant="determinate"
-                value={cola.length ? (revisados / cola.length) * 100 : 0}
-                aria-hidden
-                sx={{
-                  flex: '1 1 160px',
-                  maxWidth: 320,
-                  height: 10,
-                  borderRadius: 999,
-                  bgcolor: '#F5D79E',
-                  '& .MuiLinearProgress-bar': { bgcolor: colores.turquesa, borderRadius: 999 },
-                }}
-              />
+                <ChevronLeftIcon />
+              </IconButton>
+              <Box sx={{ textAlign: 'center', minWidth: 150 }}>
+                <Typography sx={{ fontFamily: FUENTE_FICHA, fontWeight: 700, lineHeight: 1.2 }}>
+                  {actual.pieza.codigo}
+                </Typography>
+                <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+                  {posicion > 0 ? `${posicion} de ${totalPendientes}` : 'ya revisado'}
+                </Typography>
+              </Box>
+              <IconButton
+                aria-label="Siguiente escaneo por revisar"
+                disabled={!siguiente}
+                onClick={() => siguiente && irA(siguiente.id)}
+                sx={{ color: colores.azulMarino }}
+              >
+                <ChevronRightIcon />
+              </IconButton>
             </Box>
-            <Box sx={{ display: 'flex', gap: 1.25, overflowX: 'auto', pb: 1, pt: 0.5 }}>
-              {cola.map((archivo) => (
-                <FichaCola
-                  key={archivo.id}
-                  archivo={archivo}
-                  actual={archivo.id === actual.id}
-                  resultado={resultados[archivo.id]}
-                  onClick={() => irA(archivo.id)}
-                />
-              ))}
-            </Box>
+            <Typography
+              role="status"
+              sx={{ flex: '1 1 200px', fontFamily: 'h1.fontFamily', fontWeight: 800 }}
+            >
+              {totalPendientes === 0
+                ? '¡Listo! No quedan escaneos por revisar'
+                : `Quedan ${totalPendientes} por revisar`}
+              {revisados > 0 && (
+                <Box
+                  component="span"
+                  sx={{ fontFamily: 'body1.fontFamily', fontWeight: 600, color: 'text.secondary' }}
+                >
+                  {' '}
+                  · {revisados} {revisados === 1 ? 'revisado' : 'revisados'} en esta sesión
+                </Box>
+              )}
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<FormatListBulletedIcon />}
+              onClick={() => setColaAbierta(true)}
+              sx={{ borderRadius: 999, fontWeight: 700 }}
+            >
+              Ver cola
+            </Button>
           </Box>
+
+          <ColaRevision
+            abierta={colaAbierta}
+            onCerrar={() => setColaAbierta(false)}
+            cola={cola}
+            totalPendientes={totalPendientes}
+            actualId={actual.id}
+            resultados={resultados}
+            onElegir={irA}
+          />
 
           <Box
             sx={{
