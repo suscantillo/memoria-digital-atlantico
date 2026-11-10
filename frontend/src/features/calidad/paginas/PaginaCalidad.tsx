@@ -1,12 +1,17 @@
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
+import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { colores } from '../../../app/tema';
 import { EncabezadoPanel, FUENTE_FICHA } from '../../../shared/componentes/EncabezadoPanel';
 import { MensajeError } from '../../../shared/componentes/MensajeError';
@@ -19,10 +24,18 @@ import type { ArchivoDigital } from '../tipos';
 const CRITERIOS = [
   { clave: 'legible', texto: 'Se lee completo y nítido' },
   { clave: 'completo', texto: 'No le falta ninguna página' },
-  { clave: 'coincide', texto: 'Coincide con la ficha de la pieza' },
+  { clave: 'coincide', texto: 'Corresponde a esta pieza' },
 ] as const;
 
-const fecha = new Intl.DateTimeFormat('es-CO', { dateStyle: 'short', timeStyle: 'short' });
+// los motivos más comunes se eligen con un clic; el campo sigue libre para lo demás
+const MOTIVOS_RAPIDOS = [
+  'Imagen borrosa',
+  'Falta una página',
+  'Recortado o torcido',
+  'No corresponde a la pieza',
+];
+
+const fecha = new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium' });
 
 function tamanoLegible(bytes: number) {
   return bytes >= 1_000_000
@@ -36,34 +49,100 @@ function formato(tipoMime: string) {
     : (tipoMime.split('/')[1] ?? tipoMime).toUpperCase();
 }
 
-interface Resuelto {
+interface Resultado {
   archivo: ArchivoDigital;
   aprobado: boolean;
   publicada: boolean;
 }
 
-const botonPildora = { borderRadius: 999, minHeight: 52, fontSize: 17, fontWeight: 800 } as const;
+/** Ficha de la cola: el color dice su estado sin tener que leerla. */
+function FichaCola({
+  archivo,
+  actual,
+  resultado,
+  onClick,
+}: {
+  archivo: ArchivoDigital;
+  actual: boolean;
+  resultado: Resultado | undefined;
+  onClick: () => void;
+}) {
+  const fondo = actual
+    ? colores.azulMarino
+    : resultado
+      ? resultado.aprobado
+        ? '#CFF4F7'
+        : '#FFDCCF'
+      : '#FFFFFF';
+  return (
+    <Box
+      component="button"
+      type="button"
+      onClick={onClick}
+      aria-current={actual ? 'step' : undefined}
+      aria-label={`${archivo.pieza.codigo}, ${archivo.pieza.titulo}${
+        resultado ? (resultado.aprobado ? ', aprobado' : ', rechazado') : ', por revisar'
+      }`}
+      sx={{
+        flex: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+        minHeight: 44,
+        px: 1.75,
+        border: 0,
+        borderRadius: 999,
+        bgcolor: fondo,
+        color: actual ? '#FFFFFF' : colores.azulMarino,
+        fontFamily: FUENTE_FICHA,
+        fontWeight: 700,
+        fontSize: 14,
+        cursor: 'pointer',
+        boxShadow: actual ? `0 4px 0 ${colores.naranja}` : '0 4px 0 #F5D79E',
+        transition: 'transform .2s',
+        '&:hover': { transform: 'translateY(-2px)' },
+      }}
+    >
+      {resultado &&
+        (resultado.aprobado ? (
+          <CheckIcon aria-hidden fontSize="small" />
+        ) : (
+          <CloseIcon aria-hidden fontSize="small" />
+        ))}
+      {archivo.pieza.codigo}
+    </Box>
+  );
+}
 
 export function PaginaCalidad() {
   const consulta = useArchivosEnRevision();
   const resolver = useResolverArchivo();
   const publicar = usePublicarPieza();
   const [seleccionId, setSeleccionId] = useState<string | null>(null);
-  const [resuelto, setResuelto] = useState<Resuelto | null>(null);
+  const [resultados, setResultados] = useState<Record<string, Resultado>>({});
   const [marcados, setMarcados] = useState<Record<string, boolean>>({});
-  const [faltanCriterios, setFaltanCriterios] = useState(false);
   const [rechazando, setRechazando] = useState(false);
   const [motivo, setMotivo] = useState('');
   const [motivoVacio, setMotivoVacio] = useState(false);
 
-  const cola = consulta.data?.datos ?? [];
-  const actual = resuelto?.archivo ?? cola.find((a) => a.id === seleccionId) ?? cola[0] ?? null;
+  // al resolver un escaneo la API lo saca de EN_REVISION; se conserva aquí para ver el avance
+  const cola = useMemo(() => {
+    const porId = new Map<string, ArchivoDigital>();
+    Object.values(resultados).forEach((r) => porId.set(r.archivo.id, r.archivo));
+    (consulta.data?.datos ?? []).forEach((a) => porId.set(a.id, a));
+    return [...porId.values()].sort((a, b) => a.creadoEn.localeCompare(b.creadoEn));
+  }, [consulta.data, resultados]);
 
-  const empezarCon = (id: string | null) => {
+  const pendientes = cola.filter((a) => !resultados[a.id]);
+  const actual = cola.find((a) => a.id === seleccionId) ?? pendientes[0] ?? cola[0] ?? null;
+  const resultado = actual ? resultados[actual.id] : undefined;
+  const siguiente = pendientes.find((a) => a.id !== actual?.id) ?? null;
+  const revisados = cola.length - pendientes.length;
+  const marcadosCount = CRITERIOS.filter((c) => marcados[c.clave]).length;
+
+  const irA = (id: string) => {
     setSeleccionId(id);
-    setResuelto(null);
     setMarcados({});
-    setFaltanCriterios(false);
     setRechazando(false);
     setMotivo('');
     setMotivoVacio(false);
@@ -71,37 +150,29 @@ export function PaginaCalidad() {
     publicar.reset();
   };
 
-  const aprobar = () => {
+  const decidir = (aprobado: boolean) => {
     if (!actual) return;
-    if (!CRITERIOS.every((c) => marcados[c.clave])) {
-      setFaltanCriterios(true);
-      return;
-    }
-    resolver.mutate(
-      { id: actual.id },
-      { onSuccess: () => setResuelto({ archivo: actual, aprobado: true, publicada: false }) },
-    );
-  };
-
-  const rechazar = () => {
-    if (!actual) return;
-    if (!motivo.trim()) {
+    if (!aprobado && !motivo.trim()) {
       setMotivoVacio(true);
       return;
     }
+    const archivo = actual;
     resolver.mutate(
-      { id: actual.id, motivoRechazo: motivo.trim() },
-      { onSuccess: () => setResuelto({ archivo: actual, aprobado: false, publicada: false }) },
+      { id: archivo.id, motivoRechazo: aprobado ? undefined : motivo.trim() },
+      {
+        onSuccess: () => {
+          setSeleccionId(archivo.id);
+          setResultados((r) => ({ ...r, [archivo.id]: { archivo, aprobado, publicada: false } }));
+        },
+      },
     );
   };
 
-  const siguiente = cola.find((a) => a.id !== resuelto?.archivo.id) ?? null;
-
   return (
-    <Stack spacing={3.5}>
+    <Stack spacing={3}>
       <EncabezadoPanel
         titulo="Control de calidad"
-        descripcion="Revisa cada escaneo antes de que llegue al portal: si se lee bien, está completo y corresponde a su pieza."
+        descripcion="Revisa cada escaneo antes de que llegue al portal."
       />
 
       {consulta.isPending && (
@@ -113,7 +184,7 @@ export function PaginaCalidad() {
         <MensajeError error={consulta.error} titulo="No se pudieron cargar los escaneos" />
       )}
 
-      {consulta.isSuccess && !actual && (
+      {consulta.isSuccess && cola.length === 0 && (
         <Box
           sx={{
             p: 5,
@@ -131,301 +202,304 @@ export function PaginaCalidad() {
       )}
 
       {actual && (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', lg: '260px minmax(0, 1fr) 320px' },
-            gap: 3,
-            alignItems: 'start',
-          }}
-        >
-          <Box component="section" aria-labelledby="titulo-cola">
-            <Typography
-              id="titulo-cola"
-              component="h2"
-              sx={{ fontFamily: FUENTE_FICHA, fontWeight: 700, fontSize: 15, mb: 1.5 }}
-            >
-              {cola.length} EN_REVISION
-            </Typography>
-            <Box
-              component="ul"
-              sx={{
-                listStyle: 'none',
-                m: 0,
-                p: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 1.5,
-              }}
-            >
-              {cola.map((archivo) => {
-                const elegido = archivo.id === actual.id;
-                return (
-                  <li key={archivo.id}>
-                    <Box
-                      component="button"
-                      type="button"
-                      aria-current={elegido}
-                      onClick={() => empezarCon(archivo.id)}
-                      sx={{
-                        width: '100%',
-                        textAlign: 'left',
-                        p: '14px 16px 14px 18px',
-                        border: 0,
-                        borderLeft: `8px solid ${colores.amarillo}`,
-                        borderRadius: '4px 14px 14px 4px',
-                        bgcolor: elegido ? '#FFFFFF' : colores.papel,
-                        color: colores.azulMarino,
-                        fontFamily: 'inherit',
-                        cursor: 'pointer',
-                        boxShadow: elegido ? `8px 8px 0 ${colores.azulMarino}` : '0 6px 0 #F5D79E',
-                        transition: 'transform .3s',
-                        '&:hover': { transform: 'translateX(6px)' },
-                      }}
-                    >
-                      <Box
-                        component="span"
-                        sx={{
-                          display: 'block',
-                          fontFamily: FUENTE_FICHA,
-                          fontWeight: 700,
-                          fontSize: 14,
-                        }}
-                      >
-                        {archivo.pieza.codigo} · {formato(archivo.tipoMime)}
-                      </Box>
-                      <Box
-                        component="span"
-                        sx={{ display: 'block', mt: 0.5, fontWeight: 800, lineHeight: 1.25 }}
-                      >
-                        {archivo.pieza.titulo}
-                      </Box>
-                    </Box>
-                  </li>
-                );
-              })}
+        <>
+          <Box
+            component="nav"
+            aria-label="Escaneos por revisar"
+            sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+              <Typography
+                role="status"
+                sx={{ fontFamily: 'h1.fontFamily', fontWeight: 800, fontSize: 18 }}
+              >
+                {pendientes.length === 0
+                  ? `¡Listo! Revisaste los ${cola.length} escaneos`
+                  : `${revisados} de ${cola.length} revisados`}
+              </Typography>
+              <LinearProgress
+                variant="determinate"
+                value={cola.length ? (revisados / cola.length) * 100 : 0}
+                aria-hidden
+                sx={{
+                  flex: '1 1 160px',
+                  maxWidth: 320,
+                  height: 10,
+                  borderRadius: 999,
+                  bgcolor: '#F5D79E',
+                  '& .MuiLinearProgress-bar': { bgcolor: colores.turquesa, borderRadius: 999 },
+                }}
+              />
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1.25, overflowX: 'auto', pb: 1, pt: 0.5 }}>
+              {cola.map((archivo) => (
+                <FichaCola
+                  key={archivo.id}
+                  archivo={archivo}
+                  actual={archivo.id === actual.id}
+                  resultado={resultados[archivo.id]}
+                  onClick={() => irA(archivo.id)}
+                />
+              ))}
             </Box>
           </Box>
 
-          <VisorEscaneo key={actual.id} archivo={actual} />
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1fr) 340px' },
+              gap: 3,
+              alignItems: 'start',
+            }}
+          >
+            <VisorEscaneo key={actual.id} archivo={actual} />
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
             <Box
+              component="section"
+              aria-labelledby="titulo-decision"
               sx={{
-                p: '18px 20px',
+                position: { md: 'sticky' },
+                top: { md: 24 },
+                p: 2.5,
                 bgcolor: colores.papel,
                 borderTop: `8px solid ${colores.naranja}`,
                 boxShadow: '8px 8px 0 #F5D79E',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
               }}
             >
-              <Typography
-                component="h2"
-                sx={{
-                  fontFamily: 'h1.fontFamily',
-                  fontWeight: 900,
-                  fontSize: 24,
-                  lineHeight: 1.1,
-                  mb: 1.5,
-                }}
-              >
-                {actual.pieza.titulo}
-              </Typography>
-              <Box
-                component="dl"
-                sx={{
-                  m: 0,
-                  display: 'grid',
-                  gridTemplateColumns: 'auto 1fr',
-                  gap: '6px 12px',
-                  fontFamily: FUENTE_FICHA,
-                  fontSize: 15,
-                  '& dt': { fontWeight: 700, color: colores.naranja },
-                  '& dd': { m: 0, fontWeight: 700, overflowWrap: 'anywhere' },
-                }}
-              >
-                <dt>Pieza</dt>
-                <dd>
-                  {actual.pieza.codigo} · {NOMBRE_TIPO[actual.pieza.tipo]}
-                </dd>
-                <dt>Archivo</dt>
-                <dd>
-                  {formato(actual.tipoMime)} · {tamanoLegible(actual.tamano)}
-                </dd>
-                <dt>Subido por</dt>
-                <dd>{actual.subidoPor.nombre}</dd>
-                <dt>Fecha</dt>
-                <dd>{fecha.format(new Date(actual.creadoEn))}</dd>
+              <Box>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 1 }}>
+                  <Chip
+                    label={actual.pieza.codigo}
+                    size="small"
+                    sx={{
+                      bgcolor: colores.azulMarino,
+                      color: '#FFFFFF',
+                      fontFamily: FUENTE_FICHA,
+                      fontWeight: 700,
+                    }}
+                  />
+                  <Chip
+                    label={NOMBRE_TIPO[actual.pieza.tipo]}
+                    size="small"
+                    sx={{ bgcolor: '#FFE7A8', fontWeight: 700 }}
+                  />
+                  <Chip
+                    label={`${formato(actual.tipoMime)} · ${tamanoLegible(actual.tamano)}`}
+                    size="small"
+                    variant="outlined"
+                    sx={{ fontWeight: 700 }}
+                  />
+                </Box>
+                <Typography
+                  id="titulo-decision"
+                  component="h2"
+                  sx={{
+                    fontFamily: 'h1.fontFamily',
+                    fontWeight: 900,
+                    fontSize: 22,
+                    lineHeight: 1.15,
+                  }}
+                >
+                  {actual.pieza.titulo}
+                </Typography>
+                <Typography sx={{ mt: 0.75, fontSize: 14, color: 'text.secondary' }}>
+                  Subido por {actual.subidoPor.nombre} · {fecha.format(new Date(actual.creadoEn))}
+                </Typography>
               </Box>
-            </Box>
 
-            {!resuelto && (
-              <>
-                <Box component="fieldset" sx={{ m: 0, p: 0, border: 0 }}>
-                  <Typography
-                    component="legend"
-                    sx={{ fontFamily: 'h1.fontFamily', fontWeight: 800, fontSize: 18, mb: 1 }}
-                  >
-                    Lista de calidad
-                  </Typography>
-                  <Stack spacing={1}>
-                    {CRITERIOS.map(({ clave, texto }) => (
-                      <FormControlLabel
-                        key={clave}
-                        control={
-                          <Checkbox
-                            checked={!!marcados[clave]}
-                            onChange={(e) => {
-                              setMarcados((m) => ({ ...m, [clave]: e.target.checked }));
-                              setFaltanCriterios(false);
-                            }}
-                            sx={{ '&.Mui-checked': { color: colores.turquesaOscuro } }}
-                          />
-                        }
-                        label={texto}
-                        sx={{
-                          m: 0,
-                          pr: 1.5,
-                          minHeight: 48,
-                          border: '2px solid',
-                          borderColor: marcados[clave] ? colores.turquesaOscuro : '#D8C9A8',
-                          borderRadius: 3.5,
-                          bgcolor: marcados[clave] ? '#CFF4F7' : '#FFFFFF',
-                          '& .MuiFormControlLabel-label': { fontWeight: 700 },
-                        }}
-                      />
-                    ))}
-                  </Stack>
-                </Box>
-
-                <Box aria-live="assertive">
-                  {faltanCriterios && (
-                    <Typography sx={{ fontWeight: 700, color: '#A8320F' }}>
-                      Marca los tres criterios antes de aprobar.
+              {!resultado && !rechazando && (
+                <>
+                  <Box sx={{ borderTop: '2px dashed #EBD9B0' }} aria-hidden />
+                  <Box component="fieldset" sx={{ m: 0, p: 0, border: 0 }}>
+                    <Typography component="legend" sx={{ fontWeight: 800, mb: 1, p: 0 }}>
+                      ¿Está listo para el portal?{' '}
+                      <Box
+                        component="span"
+                        sx={{ fontFamily: FUENTE_FICHA, color: 'text.secondary' }}
+                      >
+                        {marcadosCount}/3
+                      </Box>
                     </Typography>
-                  )}
-                  {resolver.isError && (
-                    <MensajeError error={resolver.error} titulo="No se pudo guardar la revisión" />
-                  )}
-                </Box>
-
-                {!rechazando ? (
+                    <Stack spacing={0.5}>
+                      {CRITERIOS.map(({ clave, texto }) => (
+                        <FormControlLabel
+                          key={clave}
+                          control={
+                            <Checkbox
+                              checked={!!marcados[clave]}
+                              onChange={(e) =>
+                                setMarcados((m) => ({ ...m, [clave]: e.target.checked }))
+                              }
+                              sx={{ '&.Mui-checked': { color: colores.turquesaOscuro } }}
+                            />
+                          }
+                          label={texto}
+                          sx={{
+                            m: 0,
+                            minHeight: 44,
+                            '& .MuiFormControlLabel-label': { fontWeight: 600 },
+                          }}
+                        />
+                      ))}
+                    </Stack>
+                  </Box>
                   <Stack spacing={1.25}>
                     <Button
                       variant="contained"
                       color="success"
-                      onClick={aprobar}
-                      disabled={resolver.isPending}
-                      sx={{ ...botonPildora, boxShadow: `0 6px 0 ${colores.azulMarino}` }}
+                      size="large"
+                      startIcon={<CheckIcon />}
+                      disabled={marcadosCount < CRITERIOS.length || resolver.isPending}
+                      onClick={() => decidir(true)}
+                      sx={{ borderRadius: 999, minHeight: 52, fontSize: 17, fontWeight: 800 }}
                     >
-                      ✓ Aprobar escaneo
+                      Aprobar
                     </Button>
+                    {marcadosCount < CRITERIOS.length && (
+                      <Typography
+                        sx={{ fontSize: 14, color: 'text.secondary', textAlign: 'center' }}
+                      >
+                        Marca los tres criterios para aprobar.
+                      </Typography>
+                    )}
                     <Button
                       variant="outlined"
                       color="secondary"
+                      size="large"
+                      startIcon={<CloseIcon />}
                       onClick={() => setRechazando(true)}
-                      sx={{ ...botonPildora, borderWidth: 3, '&:hover': { borderWidth: 3 } }}
+                      sx={{
+                        borderRadius: 999,
+                        minHeight: 48,
+                        fontWeight: 800,
+                        borderWidth: 2,
+                        '&:hover': { borderWidth: 2 },
+                      }}
                     >
-                      ✕ Rechazar
+                      Rechazar
                     </Button>
                   </Stack>
-                ) : (
-                  <Stack spacing={1.25}>
-                    <TextField
-                      id="motivo-rechazo"
-                      label="Motivo del rechazo"
-                      value={motivo}
-                      onChange={(e) => {
-                        setMotivo(e.target.value);
-                        setMotivoVacio(false);
-                      }}
-                      multiline
-                      minRows={3}
-                      required
-                      error={motivoVacio}
-                      helperText={
-                        motivoVacio
-                          ? 'Escribe el motivo para poder rechazar.'
-                          : 'Queda en el historial de la pieza y lo ve quien cargó el escaneo.'
-                      }
-                      placeholder="Ej.: imagen borrosa, falta una página…"
-                      sx={{ '& .MuiOutlinedInput-root': { bgcolor: '#FFFFFF' } }}
-                    />
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                      <Button
-                        variant="contained"
-                        color="secondary"
-                        onClick={rechazar}
-                        disabled={resolver.isPending}
-                        sx={{ ...botonPildora, flex: '1 1 160px' }}
-                      >
-                        Confirmar rechazo
-                      </Button>
-                      <Button
+                </>
+              )}
+
+              {!resultado && rechazando && (
+                <Stack spacing={1.5} sx={{ borderTop: '2px dashed #EBD9B0', pt: 2 }}>
+                  <Typography sx={{ fontWeight: 800 }}>¿Qué le pasa al escaneo?</Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                    {MOTIVOS_RAPIDOS.map((m) => (
+                      <Chip
+                        key={m}
+                        label={m}
+                        clickable
+                        color={motivo === m ? 'secondary' : 'default'}
+                        variant={motivo === m ? 'filled' : 'outlined'}
                         onClick={() => {
-                          setRechazando(false);
+                          setMotivo(m);
                           setMotivoVacio(false);
                         }}
-                        sx={{ ...botonPildora, flex: '1 1 100px', fontWeight: 700 }}
-                      >
-                        Cancelar
-                      </Button>
-                    </Box>
-                  </Stack>
-                )}
-              </>
-            )}
-
-            {resuelto && (
-              <Box
-                role="status"
-                sx={{
-                  p: 2.5,
-                  borderRadius: 4.5,
-                  bgcolor: resuelto.aprobado ? '#CFF4F7' : '#FFDCCF',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1.25,
-                }}
-              >
-                <Typography
-                  sx={{
-                    fontFamily: 'h1.fontFamily',
-                    fontWeight: 900,
-                    fontSize: 21,
-                    lineHeight: 1.2,
-                  }}
-                >
-                  {!resuelto.aprobado
-                    ? 'Escaneo RECHAZADO.'
-                    : resuelto.publicada
-                      ? '¡Publicada! Ya aparece en el portal.'
-                      : 'Escaneo APROBADO.'}
-                </Typography>
-                <Typography>
-                  {!resuelto.aprobado
-                    ? 'El motivo quedó en el historial de la pieza. Hay que cargar un escaneo nuevo.'
-                    : resuelto.publicada
-                      ? 'La pieza pasó a PUBLICADA.'
-                      : 'La pieza pasa a REVISADA. Puedes publicarla ahora o después.'}
-                </Typography>
-                {publicar.isError && (
-                  <MensajeError error={publicar.error} titulo="No se pudo publicar" />
-                )}
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {resuelto.aprobado && !resuelto.publicada && (
+                        sx={{ fontWeight: 700 }}
+                      />
+                    ))}
+                  </Box>
+                  <TextField
+                    id="motivo-rechazo"
+                    label="Motivo del rechazo"
+                    value={motivo}
+                    onChange={(e) => {
+                      setMotivo(e.target.value);
+                      setMotivoVacio(false);
+                    }}
+                    multiline
+                    minRows={2}
+                    required
+                    error={motivoVacio}
+                    helperText={
+                      motivoVacio ? 'Elige o escribe el motivo.' : 'Lo verá quien cargó el escaneo.'
+                    }
+                    sx={{ '& .MuiOutlinedInput-root': { bgcolor: '#FFFFFF' } }}
+                  />
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button
+                      onClick={() => {
+                        setRechazando(false);
+                        setMotivoVacio(false);
+                      }}
+                      sx={{ borderRadius: 999, fontWeight: 700 }}
+                    >
+                      Volver
+                    </Button>
                     <Button
                       variant="contained"
                       color="secondary"
+                      disabled={resolver.isPending}
+                      onClick={() => decidir(false)}
+                      sx={{ flex: 1, borderRadius: 999, minHeight: 48, fontWeight: 800 }}
+                    >
+                      Confirmar rechazo
+                    </Button>
+                  </Box>
+                </Stack>
+              )}
+
+              {resolver.isError && (
+                <MensajeError error={resolver.error} titulo="No se pudo guardar" />
+              )}
+
+              {resultado && (
+                <Stack spacing={1.5} sx={{ borderTop: '2px dashed #EBD9B0', pt: 2 }}>
+                  <Box
+                    sx={{
+                      alignSelf: 'flex-start',
+                      px: 1.75,
+                      py: 0.75,
+                      border: `4px solid ${resultado.aprobado ? colores.turquesaOscuro : colores.naranja}`,
+                      borderRadius: 2,
+                      color: resultado.aprobado ? colores.turquesaOscuro : colores.naranja,
+                      fontFamily: 'h1.fontFamily',
+                      fontWeight: 900,
+                      fontSize: 22,
+                      letterSpacing: '0.08em',
+                      rotate: '-3deg',
+                    }}
+                  >
+                    {resultado.aprobado
+                      ? resultado.publicada
+                        ? 'PUBLICADO'
+                        : 'APROBADO'
+                      : 'RECHAZADO'}
+                  </Box>
+                  <Typography role="status">
+                    {!resultado.aprobado
+                      ? 'El motivo quedó en el historial. Hay que cargar un escaneo nuevo.'
+                      : resultado.publicada
+                        ? 'La pieza ya aparece en el portal.'
+                        : 'La pieza pasa a REVISADA. Puedes publicarla ahora o después desde el inventario.'}
+                  </Typography>
+                  {publicar.isError && (
+                    <MensajeError error={publicar.error} titulo="No se pudo publicar" />
+                  )}
+                  {resultado.aprobado && !resultado.publicada && (
+                    <Button
+                      variant="outlined"
+                      color="secondary"
                       disabled={publicar.isPending}
                       onClick={() =>
-                        publicar.mutate(resuelto.archivo.pieza.id, {
-                          onSuccess: () => setResuelto({ ...resuelto, publicada: true }),
+                        publicar.mutate(resultado.archivo.pieza.id, {
+                          onSuccess: () =>
+                            setResultados((r) => ({
+                              ...r,
+                              [resultado.archivo.id]: { ...resultado, publicada: true },
+                            })),
                         })
                       }
                       sx={{
                         borderRadius: 999,
                         fontWeight: 800,
-                        boxShadow: `0 5px 0 ${colores.azulMarino}`,
+                        borderWidth: 2,
+                        '&:hover': { borderWidth: 2 },
                       }}
                     >
                       Publicar en el portal
@@ -434,17 +508,19 @@ export function PaginaCalidad() {
                   {siguiente && (
                     <Button
                       variant="contained"
-                      onClick={() => empezarCon(siguiente.id)}
-                      sx={{ borderRadius: 999, fontWeight: 700 }}
+                      size="large"
+                      endIcon={<ArrowForwardIcon />}
+                      onClick={() => irA(siguiente.id)}
+                      sx={{ borderRadius: 999, minHeight: 52, fontWeight: 800 }}
                     >
-                      Siguiente escaneo →
+                      Siguiente: {siguiente.pieza.codigo}
                     </Button>
                   )}
-                </Box>
-              </Box>
-            )}
+                </Stack>
+              )}
+            </Box>
           </Box>
-        </Box>
+        </>
       )}
     </Stack>
   );

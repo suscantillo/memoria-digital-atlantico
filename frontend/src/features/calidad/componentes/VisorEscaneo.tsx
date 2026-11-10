@@ -1,6 +1,8 @@
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
-import Link from '@mui/material/Link';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import { colores } from '../../../app/tema';
@@ -8,7 +10,7 @@ import { MensajeError } from '../../../shared/componentes/MensajeError';
 import { useContenidoArchivo } from '../hooks';
 import type { ArchivoDigital } from '../tipos';
 
-/** Muestra el escaneo tal como se cargó: PDF con el visor del navegador o imagen. */
+/** El escaneo tal como se cargó, ocupando todo el alto disponible: es lo que se está juzgando. */
 export function VisorEscaneo({ archivo }: { archivo: ArchivoDigital }) {
   const contenido = useContenidoArchivo(archivo.id);
   const [url, setUrl] = useState<string | null>(null);
@@ -25,60 +27,75 @@ export function VisorEscaneo({ archivo }: { archivo: ArchivoDigital }) {
   return (
     <Box
       sx={{
-        position: 'relative',
-        height: { xs: 420, md: 580 },
-        borderRadius: 6,
+        height: { xs: '70vh', md: 'calc(100vh - 230px)' },
+        minHeight: 460,
+        borderRadius: 5,
         overflow: 'hidden',
         bgcolor: colores.azulMarino,
         display: 'flex',
         flexDirection: 'column',
+        boxShadow: `0 8px 0 ${colores.amarillo}`,
+        '--color-foco': colores.amarillo,
       }}
     >
       <Box
         sx={{
+          flex: 'none',
           display: 'flex',
           alignItems: 'center',
           gap: 1,
-          px: 2,
-          py: 1.25,
+          pl: 2,
+          pr: 1,
+          py: 0.75,
           color: '#FFFFFF',
           borderBottom: '1px solid rgba(255, 255, 255, .12)',
-          '--color-foco': colores.amarillo,
         }}
       >
-        <Typography sx={{ fontFamily: 'monospace', fontWeight: 700, overflowWrap: 'anywhere' }}>
+        <Typography
+          title={archivo.nombre}
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            fontFamily: 'monospace',
+            fontWeight: 700,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
           {archivo.nombre}
         </Typography>
         {url && (
-          <Link
-            href={url}
-            target="_blank"
-            rel="noopener"
-            sx={{ ml: 'auto', color: colores.amarillo, fontWeight: 700, flex: 'none' }}
-          >
-            Abrir en otra pestaña
-          </Link>
+          <Tooltip title="Abrir en otra pestaña">
+            <IconButton
+              component="a"
+              href={url}
+              target="_blank"
+              rel="noopener"
+              aria-label="Abrir el escaneo en otra pestaña"
+              sx={{ color: '#FFFFFF', '&:hover': { bgcolor: colores.azulMedio } }}
+            >
+              <OpenInNewIcon />
+            </IconButton>
+          </Tooltip>
         )}
       </Box>
-      <Box sx={{ flex: 1, minHeight: 0, display: 'grid', placeItems: 'center', p: esPdf ? 0 : 3 }}>
+      <Box sx={{ flex: 1, minHeight: 0, display: 'grid', placeItems: 'center' }}>
         {contenido.isPending && (
           <CircularProgress aria-label="Cargando el escaneo" sx={{ color: colores.amarillo }} />
         )}
         {contenido.isError && (
-          <MensajeError error={contenido.error} titulo="No se pudo abrir el escaneo" />
+          <Box sx={{ p: 3 }}>
+            <MensajeError error={contenido.error} titulo="No se pudo abrir el escaneo" />
+          </Box>
         )}
         {url && esPdf && (
           <Box
-            component="object"
-            data={url}
-            type="application/pdf"
-            aria-label={`Escaneo de ${archivo.pieza.codigo}`}
-            sx={{ width: '100%', height: '100%', border: 0 }}
-          >
-            <Typography sx={{ color: '#FFFFFF', p: 3 }}>
-              Este navegador no muestra PDF aquí; usa «Abrir en otra pestaña».
-            </Typography>
-          </Box>
+            component="iframe"
+            src={url}
+            title={`Escaneo de ${archivo.pieza.codigo}`}
+            sx={{ width: '100%', height: '100%', border: 0, bgcolor: '#525659' }}
+          />
         )}
         {url && !esPdf && (
           <Box
@@ -86,10 +103,10 @@ export function VisorEscaneo({ archivo }: { archivo: ArchivoDigital }) {
             src={url}
             alt={`Escaneo de ${archivo.pieza.codigo}: ${archivo.pieza.titulo}`}
             sx={{
-              maxWidth: '100%',
-              maxHeight: '100%',
+              maxWidth: 'calc(100% - 48px)',
+              maxHeight: 'calc(100% - 48px)',
               objectFit: 'contain',
-              boxShadow: '0 24px 40px rgba(0,0,0,.45)',
+              boxShadow: '0 24px 40px rgba(0, 0, 0, .45)',
             }}
           />
         )}
