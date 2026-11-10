@@ -31,18 +31,17 @@ const ID_MENU = 'menu-panel';
 
 interface Seccion {
   etiqueta: string;
-  /** Sin ruta, la sección aún no existe: se muestra para que el menú tenga su forma final. */
-  ruta?: string;
+  ruta: string;
   Icono: SvgIconComponent;
   soloAdmin?: boolean;
 }
 
 const secciones: Seccion[] = [
-  { etiqueta: 'Inventario', Icono: Inventory2Icon },
-  { etiqueta: 'Control de calidad', Icono: FactCheckIcon },
+  { etiqueta: 'Inventario', ruta: '/panel/inventario', Icono: Inventory2Icon },
+  { etiqueta: 'Control de calidad', ruta: '/panel/calidad', Icono: FactCheckIcon },
   { etiqueta: 'Ubicaciones', ruta: '/panel/ubicaciones', Icono: PlaceIcon },
-  { etiqueta: 'Etiquetas QR', Icono: QrCode2Icon },
-  { etiqueta: 'Usuarios', Icono: GroupIcon, soloAdmin: true },
+  { etiqueta: 'Etiquetas QR', ruta: '/panel/etiquetas', Icono: QrCode2Icon },
+  { etiqueta: 'Usuarios', ruta: '/panel/usuarios', Icono: GroupIcon, soloAdmin: true },
 ];
 
 const NOMBRE_ROL: Record<RolUsuario, string> = {
@@ -112,74 +111,35 @@ export function LayoutPanel() {
           .filter((s) => !s.soloAdmin || usuario?.rol === 'ADMIN')
           .map(({ etiqueta, ruta, Icono, soloAdmin }) => (
             <ListItem key={etiqueta} disablePadding>
-              {ruta ? (
-                <ListItemButton
-                  component={NavLink}
-                  to={ruta}
-                  onClick={() => setMenuAbierto(false)}
-                  sx={{
-                    ...estiloSeccion,
-                    '&:hover': {
-                      bgcolor: colores.azulMedio,
-                      color: '#FFFFFF',
-                      transform: 'translateX(4px)',
-                    },
-                    '&.active': {
-                      bgcolor: colores.naranja,
-                      color: '#FFFFFF',
-                      fontWeight: 700,
-                      boxShadow: '0 5px 0 #8F2A0C',
-                    },
-                  }}
-                >
-                  <ListItemIcon sx={{ color: 'inherit', minWidth: 40 }}>
-                    <Icono aria-hidden />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={etiqueta}
-                    secondary={soloAdmin ? 'Solo administrador' : undefined}
-                    primaryTypographyProps={{ fontWeight: 'inherit' }}
-                    secondaryTypographyProps={{ sx: { color: '#B9C3D6', fontSize: 12 } }}
-                  />
-                </ListItemButton>
-              ) : (
-                // no es enlace ni recibe foco: el lector de pantalla la lee como "pronto"
-                <Box
-                  sx={{
-                    ...estiloSeccion,
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    px: 2,
-                    color: '#93A0BA',
-                  }}
-                >
-                  <Icono aria-hidden sx={{ mr: 2 }} />
-                  <Box component="span" sx={{ flex: 1 }}>
-                    {etiqueta}
-                    {soloAdmin && (
-                      <Box component="span" sx={{ display: 'block', fontSize: 12 }}>
-                        Solo administrador
-                      </Box>
-                    )}
-                  </Box>
-                  <Box
-                    component="span"
-                    sx={{
-                      px: 1,
-                      py: 0.25,
-                      borderRadius: 999,
-                      border: '1px solid #4A5D86',
-                      fontSize: 11,
-                      fontWeight: 700,
-                      letterSpacing: '0.04em',
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    Pronto
-                  </Box>
-                </Box>
-              )}
+              <ListItemButton
+                component={NavLink}
+                to={ruta}
+                onClick={() => setMenuAbierto(false)}
+                sx={{
+                  ...estiloSeccion,
+                  '&:hover': {
+                    bgcolor: colores.azulMedio,
+                    color: '#FFFFFF',
+                    transform: 'translateX(4px)',
+                  },
+                  '&.active': {
+                    bgcolor: colores.naranja,
+                    color: '#FFFFFF',
+                    fontWeight: 700,
+                    boxShadow: '0 5px 0 #8F2A0C',
+                  },
+                }}
+              >
+                <ListItemIcon sx={{ color: 'inherit', minWidth: 40 }}>
+                  <Icono aria-hidden />
+                </ListItemIcon>
+                <ListItemText
+                  primary={etiqueta}
+                  secondary={soloAdmin ? 'Solo administrador' : undefined}
+                  primaryTypographyProps={{ fontWeight: 'inherit' }}
+                  secondaryTypographyProps={{ sx: { color: '#B9C3D6', fontSize: 12 } }}
+                />
+              </ListItemButton>
             </ListItem>
           ))}
       </List>
