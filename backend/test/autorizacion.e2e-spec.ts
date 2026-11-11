@@ -11,11 +11,12 @@ import { RolUsuario } from '../src/domain/usuarios/rol-usuario';
 import { CLAVE_PUBLICA } from '../src/presentation/comun/decoradores/publica.decorator';
 
 // Las únicas rutas que se pueden usar sin token. Si una historia abre otra (por ejemplo
-// GET /portal/piezas o POST /auth/registro), se agrega aquí a propósito.
+// GET /portal/piezas), se agrega aquí a propósito.
 const RUTAS_PUBLICAS = [
   'GET /health',
   'POST /auth/ingresar',
   'POST /auth/refrescar',
+  'POST /auth/registro',
   'POST /auth/salir',
 ];
 
