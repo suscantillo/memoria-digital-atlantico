@@ -67,3 +67,10 @@ aplicación no arranca. Se agrupa todo `node_modules` en `vendor`.
 
 La portada usa el listado de ubicaciones como prueba de conexión mientras no exista `/portal/piezas`.
 Cuando exista, `GET /ubicaciones` pasa a exigir `PERSONAL` o `ADMIN` como el resto del panel.
+
+## 13. La versión del aviso de privacidad la valida el backend
+
+`POST /auth/registro` recibe `aceptaPrivacidad` y `versionPrivacidad`. La versión vigente es una constante
+del dominio y el registro se rechaza si la enviada no coincide: así queda constancia de qué texto aceptó
+cada persona y una pantalla desactualizada no puede registrar consentimientos sobre un aviso viejo. Las
+cuentas internas (`ADMIN`, `PERSONAL`) no pasan por el aviso y dejan esos campos vacíos.
