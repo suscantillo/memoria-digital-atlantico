@@ -14,6 +14,7 @@ import { CLAVE_PUBLICA } from '../src/presentation/comun/decoradores/publica.dec
 // GET /portal/piezas o POST /auth/registro), se agrega aquí a propósito.
 const RUTAS_PUBLICAS = [
   'GET /health',
+  'GET /portal/piezas/:codigo',
   'POST /auth/ingresar',
   'POST /auth/refrescar',
   'POST /auth/salir',

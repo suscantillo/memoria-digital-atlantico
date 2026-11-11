@@ -1,4 +1,5 @@
-import { Pieza, TipoPieza } from '../../../domain/piezas/pieza.entity';
+import { Pieza } from '../../../domain/piezas/pieza.entity';
+import { TipoPieza } from '../../../domain/piezas/tipo-pieza';
 
 export class ArchivoPortalDto {
   url!: string;
@@ -24,7 +25,7 @@ export class PiezaPortalDto {
 
   static desdeEntidad(pieza: Pieza): PiezaPortalDto {
     const dto = new PiezaPortalDto();
-    dto.codigo = pieza.codigo;
+    dto.codigo = pieza.codigo.valor;
     dto.tipo = pieza.tipo;
     dto.restringida = pieza.restringida;
     // Una pieza restringida oculta su contenido en el portal y solo expone su tipo y ubicación.

@@ -13,6 +13,7 @@ describe('GET /api/v1/portal/piezas/:codigo (e2e)', () => {
   let ubicacionId: string;
   const codigoPublica = 'MDA-9999-0001';
   const codigoRestringida = 'MDA-9999-0002';
+  const codigoNoPublicada = 'MDA-9999-0003';
 
   beforeAll(async () => {
     process.env.LOG_LEVEL = 'silent';
@@ -55,6 +56,16 @@ describe('GET /api/v1/portal/piezas/:codigo (e2e)', () => {
           restringida: true,
           ubicacionId,
         },
+        {
+          codigo: codigoNoPublicada,
+          titulo: 'Pieza en revisión no pública',
+          descripcion: 'Aún no debe verse en el portal',
+          tipo: 'PERIODICO',
+          estado: 'REVISADA',
+          anio: 1921,
+          restringida: false,
+          ubicacionId,
+        },
       ],
     });
   });
@@ -62,14 +73,14 @@ describe('GET /api/v1/portal/piezas/:codigo (e2e)', () => {
   afterAll(async () => {
     if (prisma && ubicacionId) {
       await prisma.pieza.deleteMany({
-        where: { codigo: { in: [codigoPublica, codigoRestringida] } },
+        where: { codigo: { in: [codigoPublica, codigoRestringida, codigoNoPublicada] } },
       });
       await prisma.ubicacion.delete({ where: { id: ubicacionId } });
     }
     await app?.close();
   });
 
-  it('devuelve la ficha pública con ubicación para un código válido', async () => {
+  it('devuelve la ficha pública con ubicación para un código válido publicado', async () => {
     const respuesta = await request(app.getHttpServer())
       .get(`/api/v1/portal/piezas/${codigoPublica}`)
       .expect(200);
@@ -110,6 +121,17 @@ describe('GET /api/v1/portal/piezas/:codigo (e2e)', () => {
         estanteria: 'Estantería 1',
         caja: 'Caja 01',
       },
+    });
+  });
+
+  it('responde 404 cuando la pieza existe pero aún no está en estado PUBLICADA', async () => {
+    const respuesta = await request(app.getHttpServer())
+      .get(`/api/v1/portal/piezas/${codigoNoPublicada}`)
+      .expect(404);
+
+    expect(respuesta.body).toMatchObject({
+      statusCode: 404,
+      path: `/api/v1/portal/piezas/${codigoNoPublicada}`,
     });
   });
 

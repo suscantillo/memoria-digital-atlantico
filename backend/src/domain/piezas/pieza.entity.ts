@@ -1,11 +1,8 @@
 import { ErrorNoEncontrado } from '../comun/errores';
 import { TernaUbicacion } from '../ubicaciones/ubicacion.entity';
-
-export const TIPOS_PIEZA = ['DOCUMENTO', 'FOTOGRAFIA', 'PERIODICO'] as const;
-export type TipoPieza = (typeof TIPOS_PIEZA)[number];
-
-export const ESTADOS_PIEZA = ['REGISTRADA', 'ESCANEADA', 'REVISADA', 'PUBLICADA'] as const;
-export type EstadoPieza = (typeof ESTADOS_PIEZA)[number];
+import { CodigoPieza } from './codigo-pieza';
+import { EstadoPieza } from './estado-pieza';
+import { TipoPieza } from './tipo-pieza';
 
 export interface UbicacionPieza extends TernaUbicacion {
   id: string;
@@ -18,7 +15,7 @@ export interface ArchivoAprobadoPieza {
 
 export interface PropiedadesPieza {
   id: string;
-  codigo: string;
+  codigo: CodigoPieza;
   titulo: string;
   descripcion: string | null;
   tipo: TipoPieza;
@@ -41,7 +38,7 @@ export class Pieza {
   get id(): string {
     return this.props.id;
   }
-  get codigo(): string {
+  get codigo(): CodigoPieza {
     return this.props.codigo;
   }
   get titulo(): string {
@@ -73,6 +70,10 @@ export class Pieza {
   }
   get actualizadoEn(): Date {
     return this.props.actualizadoEn;
+  }
+
+  estaPublicada(): boolean {
+    return this.props.estado === 'PUBLICADA';
   }
 }
 

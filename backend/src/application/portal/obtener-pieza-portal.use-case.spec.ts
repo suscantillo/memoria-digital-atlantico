@@ -1,3 +1,4 @@
+import { CodigoPieza } from '../../domain/piezas/codigo-pieza';
 import { Pieza, PiezaNoEncontradaError, PropiedadesPieza } from '../../domain/piezas/pieza.entity';
 import { PiezaRepositorioMemoria } from '../../../test/dobles/pieza-repositorio.memoria';
 import { ObtenerPiezaPortal } from './obtener-pieza-portal.use-case';
@@ -6,7 +7,7 @@ function fabricarPieza(parcial: Partial<PropiedadesPieza> = {}): Pieza {
   const ahora = new Date('2026-11-10T00:00:00.000Z');
   return Pieza.reconstruir({
     id: '11111111-1111-1111-1111-111111111111',
-    codigo: 'MDA-2026-0004',
+    codigo: CodigoPieza.desde('MDA-2026-0004'),
     titulo: 'Fotografía ficticia de una fábrica textil',
     descripcion: 'Descripción de prueba de la pieza',
     tipo: 'FOTOGRAFIA',
@@ -38,7 +39,7 @@ describe('ObtenerPiezaPortal', () => {
     casoDeUso = new ObtenerPiezaPortal(repositorio);
   });
 
-  it('devuelve la ficha pública con archivo y ubicación cuando la pieza existe', async () => {
+  it('devuelve la ficha pública con archivo y ubicación cuando la pieza está publicada', async () => {
     repositorio.agregar(fabricarPieza());
 
     const resultado = await casoDeUso.ejecutar('  mda-2026-0004 ');
@@ -63,12 +64,16 @@ describe('ObtenerPiezaPortal', () => {
     });
   });
 
-  it('devuelve archivo null si la pieza aún no tiene copia digital aprobada', async () => {
+  it('devuelve archivo null si la pieza publicada aún no tiene copia digital aprobada', async () => {
     repositorio.agregar(
-      fabricarPieza({ codigo: 'MDA-2026-0001', estado: 'REGISTRADA', archivoAprobado: null }),
+      fabricarPieza({
+        codigo: CodigoPieza.desde('MDA-2026-0005'),
+        estado: 'PUBLICADA',
+        archivoAprobado: null,
+      }),
     );
 
-    const resultado = await casoDeUso.ejecutar('MDA-2026-0001');
+    const resultado = await casoDeUso.ejecutar('MDA-2026-0005');
 
     expect(resultado.archivo).toBeNull();
     expect(resultado.titulo).toBe('Fotografía ficticia de una fábrica textil');
@@ -76,7 +81,9 @@ describe('ObtenerPiezaPortal', () => {
   });
 
   it('oculta título, descripción, año y archivo cuando la pieza es restringida', async () => {
-    repositorio.agregar(fabricarPieza({ codigo: 'MDA-2026-0007', restringida: true }));
+    repositorio.agregar(
+      fabricarPieza({ codigo: CodigoPieza.desde('MDA-2026-0007'), restringida: true }),
+    );
 
     const resultado = await casoDeUso.ejecutar('MDA-2026-0007');
 
@@ -97,8 +104,24 @@ describe('ObtenerPiezaPortal', () => {
     });
   });
 
-  it('lanza PiezaNoEncontradaError cuando el código no existe', async () => {
+  it.each(['REGISTRADA', 'ESCANEADA', 'REVISADA'] as const)(
+    'lanza PiezaNoEncontradaError cuando la pieza está en estado %s (no publicada)',
+    async (estado) => {
+      repositorio.agregar(
+        fabricarPieza({ codigo: CodigoPieza.desde('MDA-2026-0001'), estado }),
+      );
+
+      await expect(casoDeUso.ejecutar('MDA-2026-0001')).rejects.toBeInstanceOf(
+        PiezaNoEncontradaError,
+      );
+    },
+  );
+
+  it('lanza PiezaNoEncontradaError cuando el código no existe o tiene formato inválido', async () => {
     await expect(casoDeUso.ejecutar('MDA-2026-9999')).rejects.toBeInstanceOf(
+      PiezaNoEncontradaError,
+    );
+    await expect(casoDeUso.ejecutar('codigo-invalido')).rejects.toBeInstanceOf(
       PiezaNoEncontradaError,
     );
   });

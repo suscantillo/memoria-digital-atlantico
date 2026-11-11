@@ -3,6 +3,7 @@ import {
   Pieza as PiezaFila,
   Ubicacion as UbicacionFila,
 } from '@prisma/client';
+import { CodigoPieza } from '../../domain/piezas/codigo-pieza';
 import { Pieza } from '../../domain/piezas/pieza.entity';
 
 export type PiezaConRelaciones = PiezaFila & {
@@ -15,7 +16,7 @@ export const PiezaMapper = {
     const archivo = fila.archivos[0] ?? null;
     return Pieza.reconstruir({
       id: fila.id,
-      codigo: fila.codigo,
+      codigo: CodigoPieza.desde(fila.codigo),
       titulo: fila.titulo,
       descripcion: fila.descripcion,
       tipo: fila.tipo,
