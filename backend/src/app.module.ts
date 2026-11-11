@@ -9,6 +9,7 @@ import { PrismaModule } from './infrastructure/prisma/prisma.module';
 import { AuthModule } from './presentation/auth/auth.module';
 import { GuardiaJwt } from './presentation/comun/guards/guardia-jwt.guard';
 import { GuardiaRoles } from './presentation/comun/guards/guardia-roles.guard';
+import { PortalModule } from './presentation/portal/portal.module';
 import { SaludModule } from './presentation/salud/salud.module';
 import { UbicacionesModule } from './presentation/ubicaciones/ubicaciones.module';
 
@@ -47,6 +48,7 @@ const RUTAS_SIN_LOG = new Set(['/api/v1/health']);
     SaludModule,
     AuthModule,
     UbicacionesModule,
+    PortalModule,
   ],
   // el orden importa: primero se identifica al usuario y después se revisa su rol
   providers: [
