@@ -33,14 +33,17 @@ enum EstadoArchivoDigital {
 }
 
 model Usuario {
-  id             String     @id @default(uuid()) @db.Uuid
-  nombre         String
-  correo         String     @unique
-  contrasenaHash String     @map("contrasena_hash")
-  rol            RolUsuario
-  activo         Boolean    @default(true)
-  creadoEn       DateTime   @default(now()) @map("creado_en")
-  actualizadoEn  DateTime   @updatedAt @map("actualizado_en")
+  id                String     @id @default(uuid()) @db.Uuid
+  nombre            String
+  correo            String     @unique
+  contrasenaHash    String     @map("contrasena_hash")
+  rol               RolUsuario
+  activo            Boolean    @default(true)
+  // Solo en cuentas PUBLICO creadas por registro; las internas no pasan por el aviso.
+  consentimientoEn  DateTime?  @map("consentimiento_en")
+  versionPrivacidad String?    @map("version_privacidad")
+  creadoEn          DateTime   @default(now()) @map("creado_en")
+  actualizadoEn     DateTime   @updatedAt @map("actualizado_en")
 
   sesiones          Sesion[]
   eventos           EventoPieza[]
@@ -119,8 +122,8 @@ model ArchivoDigital {
   creadoEn           DateTime             @default(now()) @map("creado_en")
   actualizadoEn      DateTime             @updatedAt @map("actualizado_en")
 
-  pieza      Pieza    @relation(fields: [piezaId], references: [id], onDelete: Cascade)
-  subidoPor  Usuario  @relation("ArchivoSubidoPor", fields: [subidoPorId], references: [id], onDelete: Restrict)
+  pieza       Pieza    @relation(fields: [piezaId], references: [id], onDelete: Cascade)
+  subidoPor   Usuario  @relation("ArchivoSubidoPor", fields: [subidoPorId], references: [id], onDelete: Restrict)
   revisadoPor Usuario? @relation("ArchivoRevisadoPor", fields: [revisadoPorId], references: [id], onDelete: SetNull)
 
   @@index([estado])
