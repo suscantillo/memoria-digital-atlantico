@@ -68,11 +68,10 @@ El proyecto parte de ese material, y el equipo de origen valida el backlog (#32)
 | Datos personales en algunos registros y en las cuentas de usuario | Media        | Alto    | Aviso de privacidad y consentimiento (#1). Consulta y eliminación de los propios datos (#4). Datos de prueba ficticios (#25). |
 | Publicar escaneos ilegibles o de una pieza equivocada             | Media        | Alto    | Control de calidad obligatorio antes de publicar (#10)                                                                        |
 | Que se perjudique el original durante el escaneo                  | Media        | Alto    | Escanear cada documento una sola vez y conservar el archivo digital (#9)                                                      |
-| Plazo corto para la entrega 1                                     | Alta         | Alto    | Prioridades en el backlog. PR pequeños, uno por historia.                                                                     |
 
 ## Acuerdos de trabajo
 
-- Horario de dailies: [por confirmar]. Se hacen por Microsoft Teams.
+- Dailies: por Microsoft Teams.
 - Canal de comunicación: Microsoft Teams y los issues y PR de GitHub.
 - Definición de terminado: ver CONTRIBUTING.md.
 - Criterio para cambiar el glosario: un PR `docs:` que toque a la vez el glosario, el dominio, Prisma, la API y la UI (CONTRIBUTING.md).
