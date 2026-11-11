@@ -19,6 +19,7 @@ ENV NODE_ENV=production
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY package.json package-lock.json docker-entrypoint.sh ./
+RUN sed -i 's/\r$//' ./docker-entrypoint.sh
 COPY prisma ./prisma
 RUN mkdir -p /app/storage && chown -R node:node /app
 USER node
