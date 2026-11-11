@@ -136,6 +136,18 @@ describe('POST /api/v1/auth/ingresar (e2e)', () => {
       .expect(401);
   });
 
+  it('rechaza un token de refresco vencido con 401', async () => {
+    const tokenRefrescoVencido = await jwt.signAsync(
+      { sub: usuarioId },
+      { secret: secretoRefresco, expiresIn: '-1s', jwtid: randomUUID() },
+    );
+
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/refrescar')
+      .send({ tokenRefresco: tokenRefrescoVencido })
+      .expect(401);
+  });
+
   it('cierra la sesión, revoca el token de refresco y responde 204 idempotentemente', async () => {
     const ingreso = await request(app.getHttpServer())
       .post('/api/v1/auth/ingresar')
