@@ -1,12 +1,13 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState, type FormEvent } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { colores } from '../../../app/tema';
 import { useAuth } from '../../../shared/auth/useAuth';
+import { Isotipo } from '../../../shared/componentes/Isotipo';
 import { MensajeError } from '../../../shared/componentes/MensajeError';
 
 export function PaginaIngresar() {
@@ -38,17 +39,64 @@ export function PaginaIngresar() {
   };
 
   return (
-    <Box sx={{ display: 'grid', placeItems: 'center' }}>
-      <Paper
-        component="section"
-        aria-labelledby="titulo-ingresar"
-        sx={{ p: 4, width: '100%', maxWidth: 420 }}
+    <Box
+      component="section"
+      aria-labelledby="titulo-ingresar"
+      sx={{
+        mx: 'auto',
+        width: '100%',
+        maxWidth: 880,
+        display: 'grid',
+        gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+        overflow: 'hidden',
+        borderRadius: 6,
+        bgcolor: 'background.paper',
+        boxShadow: '0 8px 0 #F5D79E',
+      }}
+    >
+      <Box
+        sx={{
+          display: { xs: 'none', md: 'flex' },
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          gap: 4,
+          p: 5,
+          bgcolor: colores.azulMarino,
+          color: '#DDE3EE',
+        }}
       >
+        <Isotipo color={colores.amarillo} tamano={72} />
+        <Box>
+          <Typography
+            component="p"
+            sx={{
+              fontFamily: 'h1.fontFamily',
+              fontWeight: 900,
+              fontSize: '2.4rem',
+              lineHeight: 0.95,
+              textTransform: 'uppercase',
+              color: '#FFFFFF',
+              mb: 2,
+            }}
+          >
+            Bienvenida
+            <Box component="span" sx={{ display: 'block', color: colores.amarillo }}>
+              al archivo
+            </Box>
+          </Typography>
+          <Typography>
+            El personal registra, digitaliza y revisa cada pieza. Con una cuenta pública consultas
+            lo que requiere sesión.
+          </Typography>
+        </Box>
+      </Box>
+
+      <Box sx={{ p: { xs: 3, sm: 5 } }}>
         <Typography id="titulo-ingresar" variant="h1" gutterBottom>
-          Ingresar
+          Iniciar sesión
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Acceso para el personal del archivo.
+        <Typography color="text.secondary" sx={{ mb: 3 }}>
+          Entra con el correo y la contraseña de tu cuenta del archivo.
         </Typography>
 
         <Box component="form" onSubmit={enviar} noValidate>
@@ -74,12 +122,19 @@ export function PaginaIngresar() {
               fullWidth
             />
             <Box aria-live="assertive">{error !== null && <MensajeError error={error} />}</Box>
-            <Button type="submit" variant="contained" size="large" disabled={enviando}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="secondary"
+              size="large"
+              disabled={enviando}
+              sx={{ borderRadius: 999, py: 1.5, boxShadow: '0 5px 0 #8F2A0C' }}
+            >
               {enviando ? 'Ingresando…' : 'Ingresar'}
             </Button>
           </Stack>
         </Box>
-      </Paper>
+      </Box>
     </Box>
   );
 }

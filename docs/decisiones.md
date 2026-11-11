@@ -67,3 +67,9 @@ aplicación no arranca. Se agrupa todo `node_modules` en `vendor`.
 
 La portada usa el listado de ubicaciones como prueba de conexión mientras no exista `/portal/piezas`.
 Cuando exista, `GET /ubicaciones` pasa a exigir `PERSONAL` o `ADMIN` como el resto del panel.
+
+## 13. Fuentes autoalojadas
+
+Archivo (títulos) y Figtree (texto) se instalan con Fontsource y se sirven desde la propia app en lugar
+de enlazar Google Fonts. Así el navegador del visitante no consulta a un tercero (menos datos
+personales expuestos) y la interfaz se ve igual sin conexión dentro de Docker.
