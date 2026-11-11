@@ -15,6 +15,7 @@ import { IniciarSesion } from '../../application/auth/iniciar-sesion.use-case';
 import { ObtenerPerfil } from '../../application/auth/obtener-perfil.use-case';
 import { RefrescarSesion } from '../../application/auth/refrescar-sesion.use-case';
 import { Autenticado } from '../comun/decoradores/autenticado.decorator';
+import { Publica } from '../comun/decoradores/publica.decorator';
 import { UsuarioActual } from '../comun/decoradores/usuario-actual.decorator';
 import { UsuarioAutenticado } from '../comun/solicitud-autenticada';
 
@@ -29,6 +30,7 @@ export class AuthController {
   ) {}
 
   @Post('ingresar')
+  @Publica()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Iniciar sesión con correo y contraseña' })
   @ApiOkResponse({ type: SesionIniciadaDto })
@@ -38,6 +40,7 @@ export class AuthController {
   }
 
   @Post('refrescar')
+  @Publica()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Renovar el token de acceso (rota el token de refresco)' })
   @ApiOkResponse({ type: SesionIniciadaDto })
@@ -47,6 +50,7 @@ export class AuthController {
   }
 
   @Post('salir')
+  @Publica()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Cerrar sesión (revoca el token de refresco)' })
   @ApiNoContentResponse()
