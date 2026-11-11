@@ -107,9 +107,7 @@ describe('ObtenerPiezaPortal', () => {
   it.each(['REGISTRADA', 'ESCANEADA', 'REVISADA'] as const)(
     'lanza PiezaNoEncontradaError cuando la pieza está en estado %s (no publicada)',
     async (estado) => {
-      repositorio.agregar(
-        fabricarPieza({ codigo: CodigoPieza.desde('MDA-2026-0001'), estado }),
-      );
+      repositorio.agregar(fabricarPieza({ codigo: CodigoPieza.desde('MDA-2026-0001'), estado }));
 
       await expect(casoDeUso.ejecutar('MDA-2026-0001')).rejects.toBeInstanceOf(
         PiezaNoEncontradaError,
