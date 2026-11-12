@@ -274,7 +274,7 @@ export function HeroAduana({ mouse, compacto, inicio, animar }: Props) {
               color: '#5A4A2E',
             }}
           >
-            Puerto · 1925 (prueba)
+            Puerto · 1925
           </Box>
         </Box>
       </Box>
