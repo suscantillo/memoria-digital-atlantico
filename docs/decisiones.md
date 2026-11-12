@@ -80,3 +80,10 @@ cuentas internas (`ADMIN`, `PERSONAL`) no pasan por el aviso y dejan esos campos
 Archivo (títulos) y Figtree (texto) se instalan con Fontsource y se sirven desde la propia app en lugar
 de enlazar Google Fonts. Así el navegador del visitante no consulta a un tercero (menos datos
 personales expuestos) y la interfaz se ve igual sin conexión dentro de Docker.
+
+## 15. Las piezas restringidas no se encuentran por texto ni por década
+
+`GET /portal/piezas` muestra las piezas restringidas solo con tipo y ubicación. Si la búsqueda por texto
+o por década las alcanzara, el resultado revelaría el título o el año que el portal oculta. Por eso esos
+dos filtros las excluyen y en el listado van siempre al final, sin importar el orden pedido: ordenarlas
+por título o año también delataría el dato. El filtro por tipo sí las incluye, porque el tipo es público.

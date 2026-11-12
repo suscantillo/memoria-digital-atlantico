@@ -142,6 +142,15 @@ const piezas: PiezaSemilla[] = [
     restringida: false,
     ubicacion: 2,
   },
+  {
+    codigo: 'MDA-2026-0011',
+    titulo: 'Fotografía ficticia de una comparsa de carnaval',
+    tipo: 'FOTOGRAFIA',
+    estado: 'PUBLICADA',
+    anio: 1946,
+    restringida: false,
+    ubicacion: 2,
+  },
 ];
 
 // La cuenta PUBLICO de la demo queda como si se hubiera registrado aceptando el aviso vigente.
