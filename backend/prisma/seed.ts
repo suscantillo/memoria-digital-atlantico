@@ -142,6 +142,15 @@ const piezas: PiezaSemilla[] = [
     restringida: false,
     ubicacion: 2,
   },
+  {
+    codigo: 'MDA-2026-0011',
+    titulo: 'Fotografía ficticia de una comparsa de carnaval',
+    tipo: 'FOTOGRAFIA',
+    estado: 'PUBLICADA',
+    anio: 1946,
+    restringida: false,
+    ubicacion: 2,
+  },
 ];
 
 async function sembrarUsuarios(): Promise<Map<RolUsuario, string>> {
