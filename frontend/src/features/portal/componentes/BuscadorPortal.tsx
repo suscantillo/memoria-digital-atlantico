@@ -10,10 +10,17 @@ interface Props {
   valorInicial?: string;
   onBuscar: (texto: string) => void;
   compacto?: boolean;
+  /** Color de la sombra plana; en la banda turquesa de Explorar va en azul. */
+  sombra?: string;
 }
 
 /** Buscador en píldora de la portada y de Explorar. Busca en título y descripción. */
-export function BuscadorPortal({ valorInicial = '', onBuscar, compacto = false }: Props) {
+export function BuscadorPortal({
+  valorInicial = '',
+  onBuscar,
+  compacto = false,
+  sombra = '#F5D79E',
+}: Props) {
   const id = useId();
   const [texto, setTexto] = useState(valorInicial);
 
@@ -41,7 +48,7 @@ export function BuscadorPortal({ valorInicial = '', onBuscar, compacto = false }
         pl: 2.5,
         bgcolor: '#FFFFFF',
         borderRadius: 999,
-        boxShadow: '0 8px 0 #F5D79E',
+        boxShadow: `0 8px 0 ${sombra}`,
         '&:focus-within': { outline: `3px solid ${colores.azulMarino}`, outlineOffset: 3 },
       }}
     >
