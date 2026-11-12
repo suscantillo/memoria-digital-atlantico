@@ -40,26 +40,27 @@ En español, bajo `/api/v1`. Las historias usan estos nombres tal cual.
 
 ### Existentes
 
-| Ruta              | Método | Acceso                          | Qué hace                                                                |
-| ----------------- | ------ | ------------------------------- | ----------------------------------------------------------------------- |
-| `/auth/registro`  | POST   | pública                         | Crea una cuenta `PUBLICO`; exige aceptar la versión vigente del aviso.  |
-| `/auth/ingresar`  | POST   | pública                         | Correo y contraseña; devuelve token de acceso, refresh token y usuario. |
-| `/auth/refrescar` | POST   | pública, lleva el refresh token | Rota la sesión: revoca la anterior y devuelve tokens nuevos.            |
-| `/auth/salir`     | POST   | pública, lleva el refresh token | Revoca la sesión. Responde 204 aunque el token ya no sirva.             |
-| `/auth/yo`        | GET    | con token de acceso             | Usuario autenticado.                                                    |
-| `/ubicaciones`    | GET    | pública (temporal)              | Listado paginado con filtros y orden.                                   |
-| `/ubicaciones`    | POST   | `PERSONAL`, `ADMIN`             | Registra una ubicación.                                                 |
-| `/health`         | GET    | pública                         | Estado de la API y de la base de datos.                                 |
+| Ruta                     | Método | Acceso                          | Qué hace                                                                 |
+| ------------------------ | ------ | ------------------------------- | ------------------------------------------------------------------------ |
+| `/auth/registro`         | POST   | pública                         | Crea una cuenta `PUBLICO`; exige aceptar la versión vigente del aviso.   |
+| `/auth/ingresar`         | POST   | pública                         | Correo y contraseña; devuelve token de acceso, refresh token y usuario.  |
+| `/auth/refrescar`        | POST   | pública, lleva el refresh token | Rota la sesión: revoca la anterior y devuelve tokens nuevos.             |
+| `/auth/salir`            | POST   | pública, lleva el refresh token | Revoca la sesión. Responde 204 aunque el token ya no sirva.              |
+| `/auth/yo`               | GET    | con token de acceso             | Usuario autenticado.                                                     |
+| `/ubicaciones`           | GET    | `PERSONAL`, `ADMIN`             | Listado paginado con filtros y orden.                                    |
+| `/ubicaciones`           | POST   | `PERSONAL`, `ADMIN`             | Registra una ubicación.                                                  |
+| `/portal/piezas`         | GET    | pública                         | Busca piezas `PUBLICADA` por texto, tipo y década; paginado y con orden. |
+| `/portal/piezas/:codigo` | GET    | pública                         | Ficha pública de una pieza `PUBLICADA` por su código.                    |
+| `/health`                | GET    | pública                         | Estado de la API y de la base de datos.                                  |
 
 Documentación en `/docs`.
 
 ### Previstas
 
-`/auth/cuenta`, `/usuarios`, `/piezas`, `/archivos` y `/portal/piezas`.
+`/auth/cuenta`, `/usuarios`, `/piezas` y `/archivos`.
 
 Todas las rutas de panel exigen `PERSONAL` o `ADMIN`. Solo son públicas `/portal/*`, `/auth/registro`,
-`/auth/ingresar`, `/auth/refrescar` y `/health`. Excepción temporal: `GET /ubicaciones` es público
-mientras la portada no tenga `/portal/piezas`.
+`/auth/ingresar`, `/auth/refrescar` y `/health`.
 
 ## Convenciones de nombres
 
