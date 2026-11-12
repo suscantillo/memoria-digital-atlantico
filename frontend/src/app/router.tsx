@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { PaginaCargarEscaneo } from '../features/archivos/paginas/PaginaCargarEscaneo';
 import { PaginaInventario } from '../features/inventario/paginas/PaginaInventario';
 import { PaginaIngresar } from '../features/auth/paginas/PaginaIngresar';
 import { PaginaNuevaPieza } from '../features/piezas/paginas/PaginaNuevaPieza';
@@ -53,6 +54,7 @@ export const enrutador = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to={rutas.panelInventario} replace /> },
       { path: 'inventario', element: <PaginaInventario /> },
+      { path: 'escaneo/:codigo', element: <PaginaCargarEscaneo /> },
       { path: 'ubicaciones', element: <PaginaUbicacionesPanel /> },
       { path: 'piezas/nueva', element: <PaginaNuevaPieza /> },
     ],

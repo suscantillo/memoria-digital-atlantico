@@ -91,6 +91,10 @@ model Pieza {
   estado        EstadoPieza @default(REGISTRADA)
   anio          Int?
   restringida   Boolean     @default(false)
+  // metadatos que se agregan al cargar el escaneo (HU-09)
+  tema          String?
+  autor         String?
+  palabrasClave String[]    @default([]) @map("palabras_clave")
   ubicacionId   String      @map("ubicacion_id") @db.Uuid
   creadoEn      DateTime    @default(now()) @map("creado_en")
   actualizadoEn DateTime    @updatedAt @map("actualizado_en")
