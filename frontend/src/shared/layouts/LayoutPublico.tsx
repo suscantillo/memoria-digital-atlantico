@@ -1,11 +1,12 @@
 import HomeIcon from '@mui/icons-material/Home';
+import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
-import { NavLink, Outlet, Link as RouterLink } from 'react-router-dom';
+import { NavLink, Outlet, Link as RouterLink, useNavigate } from 'react-router-dom';
 import { colores } from '../../app/tema';
 import { useAuth } from '../auth/useAuth';
 import { EnlaceSaltar, ID_CONTENIDO } from '../componentes/EnlaceSaltar';
@@ -22,17 +23,41 @@ const estiloPildora = {
   '&.active, &.active:hover': { bgcolor: colores.naranja, color: '#FFFFFF' },
 } as const;
 
+const estiloItemMovil = {
+  minHeight: 54,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 0.25,
+  borderRadius: 4,
+  color: '#DDE3EE',
+  fontSize: '0.78rem',
+  fontWeight: 700,
+  textDecoration: 'none',
+  '&.active': { bgcolor: colores.naranja, color: '#FFFFFF' },
+} as const;
+
 export function LayoutPublico() {
-  const { usuario } = useAuth();
+  const { usuario, salir } = useAuth();
+  const navegar = useNavigate();
   const puedeEntrarAlPanel = usuario?.rol === 'ADMIN' || usuario?.rol === 'PERSONAL';
+  // una cuenta pública no tiene panel: en su lugar puede cerrar la sesión
+  const sesionPublica = Boolean(usuario) && !puedeEntrarAlPanel;
   const cuenta = puedeEntrarAlPanel
     ? { ruta: '/panel', etiqueta: 'Panel', corta: 'Panel' }
     : { ruta: '/ingresar', etiqueta: 'Iniciar sesión', corta: 'Ingresar' };
 
   const enlacesMovil = [
     { ruta: '/', etiqueta: 'Inicio', Icono: HomeIcon, fin: true },
-    { ruta: cuenta.ruta, etiqueta: cuenta.corta, Icono: PersonIcon },
+    ...(sesionPublica ? [] : [{ ruta: cuenta.ruta, etiqueta: cuenta.corta, Icono: PersonIcon }]),
   ];
+  const columnasMovil = enlacesMovil.length + (sesionPublica ? 1 : 0);
+
+  const cerrarSesion = async () => {
+    await salir();
+    navegar('/', { replace: true });
+  };
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'clip' }}>
@@ -101,15 +126,31 @@ export function LayoutPublico() {
             <Button component={NavLink} to="/" end sx={estiloPildora}>
               Inicio
             </Button>
-            <Button
-              component={RouterLink}
-              to={cuenta.ruta}
-              variant="contained"
-              startIcon={<PersonIcon />}
-              sx={{ ml: 0.75, borderRadius: 999, px: 2.25 }}
-            >
-              {cuenta.etiqueta}
-            </Button>
+            {sesionPublica && usuario ? (
+              <>
+                <Typography variant="body2" sx={{ px: 1.5, fontWeight: 600 }}>
+                  {usuario.nombre} ({usuario.rol})
+                </Typography>
+                <Button
+                  variant="contained"
+                  startIcon={<LogoutIcon />}
+                  onClick={cerrarSesion}
+                  sx={{ ml: 0.75, borderRadius: 999, px: 2.25 }}
+                >
+                  Salir
+                </Button>
+              </>
+            ) : (
+              <Button
+                component={RouterLink}
+                to={cuenta.ruta}
+                variant="contained"
+                startIcon={<PersonIcon />}
+                sx={{ ml: 0.75, borderRadius: 999, px: 2.25 }}
+              >
+                {cuenta.etiqueta}
+              </Button>
+            )}
           </Box>
         </Box>
       </Container>
@@ -131,7 +172,7 @@ export function LayoutPublico() {
         aria-label="Navegación del celular"
         sx={{
           display: { xs: 'grid', sm: 'none' },
-          gridTemplateColumns: `repeat(${enlacesMovil.length}, minmax(0, 1fr))`,
+          gridTemplateColumns: `repeat(${columnasMovil}, minmax(0, 1fr))`,
           gap: 0.5,
           position: 'fixed',
           zIndex: (t) => t.zIndex.appBar,
@@ -170,6 +211,25 @@ export function LayoutPublico() {
             {etiqueta}
           </Box>
         ))}
+        {sesionPublica && (
+          <Box
+            component="button"
+            type="button"
+            onClick={cerrarSesion}
+            sx={{
+              ...estiloItemMovil,
+              border: 0,
+              bgcolor: 'transparent',
+              font: 'inherit',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            <LogoutIcon aria-hidden />
+            Salir
+          </Box>
+        )}
       </Box>
     </Box>
   );

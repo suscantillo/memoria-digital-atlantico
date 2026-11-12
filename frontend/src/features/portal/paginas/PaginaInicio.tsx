@@ -1,6 +1,5 @@
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
 import { keyframes } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
@@ -8,8 +7,6 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react';
 import { useLocation } from 'react-router-dom';
 import { colores } from '../../../app/tema';
-import { MensajeError } from '../../../shared/componentes/MensajeError';
-import { useUbicaciones } from '../../ubicaciones/hooks';
 import { HeroAduana, type Mouse } from '../componentes/HeroAduana';
 import { DURACION_TELON, TelonEntrada } from '../componentes/TelonEntrada';
 
@@ -84,7 +81,6 @@ function Palabra({ texto, retraso }: { texto: string; retraso: number }) {
 
 export function PaginaInicio() {
   const { state } = useLocation() as { state?: { sinPermiso?: boolean } };
-  const consulta = useUbicaciones({ pagina: 1, limite: 20, orden: 'deposito', direccion: 'asc' });
   const [mouse, setMouse] = useState<Mouse>({ x: 0, y: 0 });
   // noSsr: hay que saberlo en el primer render, antes de decidir si se muestra el telón
   const menosMovimiento = useMediaQuery('(prefers-reduced-motion: reduce)', { noSsr: true });
@@ -315,68 +311,6 @@ export function PaginaInicio() {
             </span>
           ))}
         </Box>
-      </Box>
-
-      <Box component="section" aria-labelledby="titulo-ubicaciones">
-        <Typography id="titulo-ubicaciones" variant="h2" gutterBottom>
-          Depósitos del archivo
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Dónde se guardan las piezas. El buscador público llegará con la consulta de piezas.
-        </Typography>
-
-        {consulta.isPending && (
-          <Box role="status" aria-live="polite">
-            <CircularProgress aria-label="Cargando ubicaciones" />
-          </Box>
-        )}
-        {consulta.isError && <MensajeError error={consulta.error} titulo="No se pudo cargar" />}
-        {consulta.isSuccess && (
-          <Box
-            component="ul"
-            sx={{
-              listStyle: 'none',
-              p: 0,
-              m: 0,
-              display: 'grid',
-              gap: 3,
-              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-            }}
-          >
-            {consulta.data.datos.map((u, i) => (
-              <Box
-                component="li"
-                key={u.id}
-                sx={{
-                  p: 2.5,
-                  bgcolor: 'background.paper',
-                  borderRadius: 4,
-                  boxShadow: '0 6px 0 #F5D79E',
-                  transform: `rotate(${i % 2 ? 1 : -1}deg)`,
-                  transition: `transform .4s ${curvaSuave}`,
-                  '&:hover': { transform: 'rotate(0) translateY(-6px)' },
-                }}
-              >
-                <Typography variant="h3" component="h3" gutterBottom>
-                  {u.deposito}
-                </Typography>
-                <Typography sx={{ fontFamily: 'monospace', color: colores.naranja }}>
-                  {u.estanteria} · {u.caja}
-                </Typography>
-                {u.descripcion && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    {u.descripcion}
-                  </Typography>
-                )}
-              </Box>
-            ))}
-          </Box>
-        )}
-        {consulta.isSuccess && (
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
-            {consulta.data.meta.total} ubicaciones registradas.
-          </Typography>
-        )}
       </Box>
     </Stack>
   );

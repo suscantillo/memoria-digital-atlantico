@@ -1,6 +1,7 @@
 import { ErrorRegla } from '../comun/errores';
 import { generarId } from '../comun/identificador';
 import { textoObligatorio } from '../comun/texto';
+import { VERSION_AVISO_PRIVACIDAD } from './aviso-privacidad';
 import { RolUsuario } from './rol-usuario';
 
 export interface PropiedadesUsuario {
@@ -10,6 +11,8 @@ export interface PropiedadesUsuario {
   contrasenaHash: string;
   rol: RolUsuario;
   activo: boolean;
+  consentimientoEn: Date | null;
+  versionPrivacidad: string | null;
   creadoEn: Date;
   actualizadoEn: Date;
 }
@@ -21,12 +24,34 @@ export interface DatosNuevoUsuario {
   rol: RolUsuario;
 }
 
+export interface DatosRegistroPublico {
+  nombre: string;
+  correo: string;
+  contrasenaHash: string;
+  aceptaPrivacidad: boolean;
+  versionPrivacidad: string;
+}
+
 const CORREO_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export class Usuario {
   private constructor(private readonly props: PropiedadesUsuario) {}
 
   static crear(datos: DatosNuevoUsuario): Usuario {
+    return Usuario.nuevo(datos, null);
+  }
+
+  static registrarPublico(datos: DatosRegistroPublico): Usuario {
+    if (datos.aceptaPrivacidad !== true) {
+      throw new ErrorRegla('Debes aceptar el aviso de privacidad para crear la cuenta.');
+    }
+    if (datos.versionPrivacidad !== VERSION_AVISO_PRIVACIDAD) {
+      throw new ErrorRegla('La versión del aviso de privacidad aceptada no es la vigente.');
+    }
+    return Usuario.nuevo({ ...datos, rol: 'PUBLICO' }, datos.versionPrivacidad);
+  }
+
+  private static nuevo(datos: DatosNuevoUsuario, versionPrivacidad: string | null): Usuario {
     const correo = textoObligatorio(datos.correo, 'correo').toLowerCase();
     if (!CORREO_VALIDO.test(correo)) {
       throw new ErrorRegla('El correo no tiene un formato válido.');
@@ -39,6 +64,8 @@ export class Usuario {
       contrasenaHash: textoObligatorio(datos.contrasenaHash, 'contrasenaHash'),
       rol: datos.rol,
       activo: true,
+      consentimientoEn: versionPrivacidad ? ahora : null,
+      versionPrivacidad,
       creadoEn: ahora,
       actualizadoEn: ahora,
     });
@@ -65,6 +92,12 @@ export class Usuario {
   }
   get activo(): boolean {
     return this.props.activo;
+  }
+  get consentimientoEn(): Date | null {
+    return this.props.consentimientoEn;
+  }
+  get versionPrivacidad(): string | null {
+    return this.props.versionPrivacidad;
   }
   get creadoEn(): Date {
     return this.props.creadoEn;
