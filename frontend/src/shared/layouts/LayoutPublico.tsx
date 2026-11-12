@@ -1,6 +1,7 @@
 import HomeIcon from '@mui/icons-material/Home';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
+import SearchIcon from '@mui/icons-material/Search';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
@@ -50,6 +51,7 @@ export function LayoutPublico() {
 
   const enlacesMovil = [
     { ruta: '/', etiqueta: 'Inicio', Icono: HomeIcon, fin: true },
+    { ruta: '/explorar', etiqueta: 'Explorar', Icono: SearchIcon, fin: false },
     ...(sesionPublica ? [] : [{ ruta: cuenta.ruta, etiqueta: cuenta.corta, Icono: PersonIcon }]),
   ];
   const columnasMovil = enlacesMovil.length + (sesionPublica ? 1 : 0);
@@ -126,6 +128,9 @@ export function LayoutPublico() {
             <Button component={NavLink} to="/" end sx={estiloPildora}>
               Inicio
             </Button>
+            <Button component={NavLink} to="/explorar" sx={estiloPildora}>
+              Explorar
+            </Button>
             {sesionPublica && usuario ? (
               <>
                 <Typography variant="body2" sx={{ px: 1.5, fontWeight: 600 }}>
@@ -160,11 +165,43 @@ export function LayoutPublico() {
         maxWidth="lg"
         id={ID_CONTENIDO}
         tabIndex={-1}
-        // abajo deja libre el espacio que ocupa la barra inferior del celular
-        sx={{ pt: { xs: 2.5, sm: 4 }, pb: { xs: 13, sm: 6 }, flexGrow: 1 }}
+        sx={{ pt: { xs: 2.5, sm: 4 }, pb: { xs: 8, sm: 10 }, flexGrow: 1 }}
       >
         <Outlet />
       </Container>
+
+      <Box
+        component="footer"
+        sx={{
+          bgcolor: colores.azulMarino,
+          color: '#CFD6E4',
+          '--color-foco': colores.amarillo,
+          // abajo deja libre el espacio que ocupa la barra inferior del celular
+          pb: { xs: 11, sm: 0 },
+        }}
+      >
+        <Container
+          maxWidth="lg"
+          sx={{
+            py: 4.5,
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
+            gap: 2,
+            fontSize: 16,
+          }}
+        >
+          <span>
+            <Box component="strong" sx={{ color: '#FFFFFF' }}>
+              Memoria Digital del Atlántico
+            </Box>{' '}
+            · Proyecto académico para el CLENA · Universidad del Norte
+          </span>
+          <Link href="/docs" target="_blank" rel="noopener" sx={{ color: colores.amarillo }}>
+            Documentación de la API
+          </Link>
+        </Container>
+      </Box>
 
       {/* en el celular la navegación va abajo, al alcance del pulgar */}
       <Box
