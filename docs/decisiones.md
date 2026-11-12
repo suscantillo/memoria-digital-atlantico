@@ -74,3 +74,9 @@ Cuando exista, `GET /ubicaciones` pasa a exigir `PERSONAL` o `ADMIN` como el res
 del dominio y el registro se rechaza si la enviada no coincide: así queda constancia de qué texto aceptó
 cada persona y una pantalla desactualizada no puede registrar consentimientos sobre un aviso viejo. Las
 cuentas internas (`ADMIN`, `PERSONAL`) no pasan por el aviso y dejan esos campos vacíos.
+
+## 14. Fuentes autoalojadas
+
+Archivo (títulos) y Figtree (texto) se instalan con Fontsource y se sirven desde la propia app en lugar
+de enlazar Google Fonts. Así el navegador del visitante no consulta a un tercero (menos datos
+personales expuestos) y la interfaz se ve igual sin conexión dentro de Docker.
