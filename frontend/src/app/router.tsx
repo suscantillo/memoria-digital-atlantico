@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { PaginaIngresar } from '../features/auth/paginas/PaginaIngresar';
+import { PaginaNuevaPieza } from '../features/piezas/paginas/PaginaNuevaPieza';
 import { PaginaPrivacidad } from '../features/auth/paginas/PaginaPrivacidad';
 import { PaginaRegistro } from '../features/auth/paginas/PaginaRegistro';
 import { PaginaExplorar } from '../features/portal/paginas/PaginaExplorar';
@@ -22,6 +23,7 @@ export const rutas = {
   privacidad: '/privacidad',
   panel: '/panel',
   panelUbicaciones: '/panel/ubicaciones',
+  panelNuevaPieza: '/panel/piezas/nueva',
 } as const;
 
 export const enrutador = createBrowserRouter([
@@ -49,6 +51,7 @@ export const enrutador = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to={rutas.panelUbicaciones} replace /> },
       { path: 'ubicaciones', element: <PaginaUbicacionesPanel /> },
+      { path: 'piezas/nueva', element: <PaginaNuevaPieza /> },
     ],
   },
 ]);
