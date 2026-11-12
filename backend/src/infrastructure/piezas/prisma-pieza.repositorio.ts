@@ -1,67 +1,73 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { ErrorNoEncontrado } from '../../domain/comun/errores';
+import { construirMeta, ResultadoPaginado } from '../../domain/comun/paginacion';
 import { CodigoPieza } from '../../domain/piezas/codigo-pieza';
-import { DatosNuevaPieza, Pieza } from '../../domain/piezas/pieza.entity';
-import { PiezaRepositorio } from '../../domain/piezas/pieza.repositorio';
+import { Pieza } from '../../domain/piezas/pieza.entity';
+import {
+  ParametrosListarPublicadas,
+  PiezaRepositorio,
+} from '../../domain/piezas/pieza.repositorio';
 import { PrismaService } from '../prisma/prisma.service';
 import { PiezaMapper } from './pieza.mapper';
+
+const CON_UBICACION_Y_ARCHIVO_APROBADO = {
+  ubicacion: true,
+  archivos: {
+    where: { estado: 'APROBADO' },
+    orderBy: { revisadoEn: 'desc' },
+    take: 1,
+    select: { id: true, tipoMime: true },
+  },
+} satisfies Prisma.PiezaInclude;
 
 @Injectable()
 export class PrismaPiezaRepositorio implements PiezaRepositorio {
   constructor(private readonly prisma: PrismaService) {}
 
-  async registrar(datos: DatosNuevaPieza, usuarioId: string): Promise<Pieza> {
-    const anioRegistro = new Date().getUTCFullYear();
-
-    return this.prisma.$transaction(async (transaccion) => {
-      const ubicacion = await transaccion.ubicacion.findUnique({
-        where: { id: datos.ubicacionId },
-        select: { id: true },
-      });
-      if (!ubicacion) {
-        throw new ErrorNoEncontrado('La ubicación seleccionada no existe.');
-      }
-
-      await transaccion.$queryRaw(
-        Prisma.sql`SELECT 1 WHERE pg_advisory_xact_lock(hashtext('memoria-digital-atlantico:codigo-pieza'), CAST(${anioRegistro} AS INTEGER)) IS NULL`,
-      );
-
-      const ultimaPieza = await transaccion.pieza.findFirst({
-        where: { codigo: { startsWith: `MDA-${anioRegistro}-` } },
-        orderBy: { codigo: 'desc' },
-        select: { codigo: true },
-      });
-      const siguiente = ultimaPieza ? CodigoPieza.desde(ultimaPieza.codigo).consecutivo + 1 : 1;
-      const codigo = CodigoPieza.generar(anioRegistro, siguiente);
-
-      const pieza = Pieza.crear({
-        ...datos,
-        codigo,
-        estado: 'REGISTRADA',
-      });
-
-      const fila = await transaccion.pieza.create({
-        data: {
-          codigo: pieza.codigo.valor,
-          titulo: pieza.titulo,
-          tipo: pieza.tipo,
-          estado: pieza.estado,
-          anio: pieza.anio,
-          ubicacionId: pieza.ubicacionId,
-        },
-      });
-
-      await transaccion.eventoPieza.create({
-        data: {
-          piezaId: fila.id,
-          usuarioId,
-          accion: pieza.estado,
-          detalle: `Pieza registrada con código ${pieza.codigo.valor}.`,
-        },
-      });
-
-      return PiezaMapper.aEntidad(fila);
+  async buscarPorCodigo(codigo: CodigoPieza): Promise<Pieza | null> {
+    const fila = await this.prisma.pieza.findUnique({
+      where: { codigo: codigo.valor },
+      include: CON_UBICACION_Y_ARCHIVO_APROBADO,
     });
+    return fila ? PiezaMapper.aEntidad(fila) : null;
+  }
+
+  async listarPublicadas(params: ParametrosListarPublicadas): Promise<ResultadoPaginado<Pieza>> {
+    const { texto, tipo, decada, incluirRestringidas } = params.filtros;
+    const where: Prisma.PiezaWhereInput = { estado: 'PUBLICADA' };
+    if (!incluirRestringidas) {
+      where.restringida = false;
+    }
+    if (tipo) {
+      where.tipo = tipo;
+    }
+    if (decada !== undefined) {
+      where.anio = { gte: decada, lt: decada + 10 };
+    }
+    if (texto) {
+      const contiene = { contains: texto, mode: 'insensitive' as const };
+      where.OR = [{ titulo: contiene }, { descripcion: contiene }];
+    }
+
+    const ordenPedido: Prisma.PiezaOrderByWithRelationInput =
+      params.orden === 'anio'
+        ? { anio: { sort: params.direccion, nulls: 'last' } }
+        : { [params.orden]: params.direccion };
+
+    const [total, filas] = await this.prisma.$transaction([
+      this.prisma.pieza.count({ where }),
+      this.prisma.pieza.findMany({
+        where,
+        include: CON_UBICACION_Y_ARCHIVO_APROBADO,
+        orderBy: [{ restringida: 'asc' }, ordenPedido, { codigo: 'asc' }],
+        skip: (params.pagina - 1) * params.limite,
+        take: params.limite,
+      }),
+    ]);
+
+    return {
+      datos: filas.map((fila) => PiezaMapper.aEntidad(fila)),
+      meta: construirMeta(params, total),
+    };
   }
 }

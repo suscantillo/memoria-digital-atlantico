@@ -10,6 +10,8 @@ export const UsuarioMapper = {
       contrasenaHash: fila.contrasenaHash,
       rol: fila.rol,
       activo: fila.activo,
+      consentimientoEn: fila.consentimientoEn,
+      versionPrivacidad: fila.versionPrivacidad,
       creadoEn: fila.creadoEn,
       actualizadoEn: fila.actualizadoEn,
     });

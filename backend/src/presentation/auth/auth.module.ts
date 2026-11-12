@@ -8,6 +8,7 @@ import {
 } from '../../application/auth/ports/hasher-contrasenas';
 import { SERVICIO_TOKENS, ServicioTokens } from '../../application/auth/ports/servicio-tokens';
 import { RefrescarSesion } from '../../application/auth/refrescar-sesion.use-case';
+import { RegistrarUsuario } from '../../application/auth/registrar-usuario.use-case';
 import { SESION_REPOSITORIO, SesionRepositorio } from '../../domain/sesiones/sesion.repositorio';
 import { USUARIO_REPOSITORIO, UsuarioRepositorio } from '../../domain/usuarios/usuario.repositorio';
 import { PrismaSesionRepositorio } from '../../infrastructure/sesiones/prisma-sesion.repositorio';
@@ -19,6 +20,12 @@ import { AuthController } from './auth.controller';
   providers: [
     { provide: USUARIO_REPOSITORIO, useClass: PrismaUsuarioRepositorio },
     { provide: SESION_REPOSITORIO, useClass: PrismaSesionRepositorio },
+    {
+      provide: RegistrarUsuario,
+      useFactory: (usuarios: UsuarioRepositorio, hasher: HasherContrasenas) =>
+        new RegistrarUsuario(usuarios, hasher),
+      inject: [USUARIO_REPOSITORIO, HASHER_CONTRASENAS],
+    },
     {
       provide: IniciarSesion,
       useFactory: (

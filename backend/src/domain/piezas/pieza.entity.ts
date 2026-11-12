@@ -1,63 +1,35 @@
-import { ErrorRegla } from '../comun/errores';
-import { generarId } from '../comun/identificador';
-import { textoObligatorio } from '../comun/texto';
+import { ErrorNoEncontrado } from '../comun/errores';
+import { TernaUbicacion } from '../ubicaciones/ubicacion.entity';
 import { CodigoPieza } from './codigo-pieza';
-import { ESTADOS_PIEZA, EstadoPieza } from './estado-pieza';
-import { TIPOS_PIEZA, TipoPieza } from './tipo-pieza';
+import { EstadoPieza } from './estado-pieza';
+import { TipoPieza } from './tipo-pieza';
+
+export interface UbicacionPieza extends TernaUbicacion {
+  id: string;
+}
+
+export interface ArchivoAprobadoPieza {
+  id: string;
+  tipoMime: string;
+}
 
 export interface PropiedadesPieza {
   id: string;
   codigo: CodigoPieza;
   titulo: string;
+  descripcion: string | null;
   tipo: TipoPieza;
   estado: EstadoPieza;
-  anio: number;
-  ubicacionId: string;
+  anio: number | null;
+  restringida: boolean;
+  ubicacion: UbicacionPieza;
+  archivoAprobado: ArchivoAprobadoPieza | null;
   creadoEn: Date;
   actualizadoEn: Date;
 }
 
-export interface DatosNuevaPieza {
-  titulo: string;
-  tipo: TipoPieza;
-  anio: number;
-  ubicacionId: string;
-}
-
-export interface DatosPiezaRegistrada extends DatosNuevaPieza {
-  codigo: CodigoPieza;
-  estado?: EstadoPieza;
-}
-
 export class Pieza {
   private constructor(private readonly props: PropiedadesPieza) {}
-
-  static crear(datos: DatosPiezaRegistrada): Pieza {
-    const titulo = textoObligatorio(datos.titulo, 'titulo');
-    if (!TIPOS_PIEZA.includes(datos.tipo)) {
-      throw new ErrorRegla(`El tipo de pieza "${datos.tipo}" no es válido.`);
-    }
-    if (!Number.isInteger(datos.anio) || datos.anio < 1500 || datos.anio > 2100) {
-      throw new ErrorRegla('El año de la pieza debe estar entre 1500 y 2100.');
-    }
-    const estado = datos.estado ?? 'REGISTRADA';
-    if (!ESTADOS_PIEZA.includes(estado)) {
-      throw new ErrorRegla(`El estado de la pieza "${estado}" no es válido.`);
-    }
-
-    const ahora = new Date();
-    return new Pieza({
-      id: generarId(),
-      codigo: CodigoPieza.desde(datos.codigo.toString()),
-      titulo,
-      tipo: datos.tipo,
-      estado,
-      anio: datos.anio,
-      ubicacionId: textoObligatorio(datos.ubicacionId, 'ubicacionId'),
-      creadoEn: ahora,
-      actualizadoEn: ahora,
-    });
-  }
 
   static reconstruir(props: PropiedadesPieza): Pieza {
     return new Pieza({ ...props });
@@ -72,22 +44,41 @@ export class Pieza {
   get titulo(): string {
     return this.props.titulo;
   }
+  get descripcion(): string | null {
+    return this.props.descripcion;
+  }
   get tipo(): TipoPieza {
     return this.props.tipo;
   }
   get estado(): EstadoPieza {
     return this.props.estado;
   }
-  get anio(): number {
+  get anio(): number | null {
     return this.props.anio;
   }
-  get ubicacionId(): string {
-    return this.props.ubicacionId;
+  get restringida(): boolean {
+    return this.props.restringida;
+  }
+  get ubicacion(): UbicacionPieza {
+    return this.props.ubicacion;
+  }
+  get archivoAprobado(): ArchivoAprobadoPieza | null {
+    return this.props.archivoAprobado;
   }
   get creadoEn(): Date {
     return this.props.creadoEn;
   }
   get actualizadoEn(): Date {
     return this.props.actualizadoEn;
+  }
+
+  estaPublicada(): boolean {
+    return this.props.estado === 'PUBLICADA';
+  }
+}
+
+export class PiezaNoEncontradaError extends ErrorNoEncontrado {
+  constructor(codigo: string) {
+    super(`No encontramos la pieza con código "${codigo}".`);
   }
 }
