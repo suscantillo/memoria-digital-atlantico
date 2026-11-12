@@ -10,6 +10,7 @@ import { AuthModule } from './presentation/auth/auth.module';
 import { PiezasModule } from './presentation/piezas/piezas.module';
 import { GuardiaJwt } from './presentation/comun/guards/guardia-jwt.guard';
 import { GuardiaRoles } from './presentation/comun/guards/guardia-roles.guard';
+import { InventarioModule } from './presentation/inventario/inventario.module';
 import { PortalModule } from './presentation/portal/portal.module';
 import { QrModule } from './presentation/qr/qr.module';
 import { SaludModule } from './presentation/salud/salud.module';
@@ -53,6 +54,7 @@ const RUTAS_SIN_LOG = new Set(['/api/v1/health']);
     UbicacionesModule,
     PortalModule,
     QrModule,
+    InventarioModule,
   ],
   // el orden importa: primero se identifica al usuario y después se revisa su rol
   providers: [

@@ -51,6 +51,7 @@ En español, bajo `/api/v1`. Las historias usan estos nombres tal cual.
 | `/ubicaciones`           | POST   | `PERSONAL`, `ADMIN`             | Registra una ubicación.                                                  |
 | `/portal/piezas`         | GET    | pública                         | Busca piezas `PUBLICADA` por texto, tipo y década; paginado y con orden. |
 | `/portal/piezas/:codigo` | GET    | pública                         | Ficha pública de una pieza `PUBLICADA` por su código.                    |
+| `/piezas`                | GET    | `PERSONAL`, `ADMIN`             | Inventario: filtra por tipo, estado, caja y texto, con páginas y orden.  |
 | `/piezas/:id/qr`         | GET    | `PERSONAL`, `ADMIN`             | PNG del QR de la pieza; guarda `PUBLIC_WEB_URL/p/{codigo}?qr=1`.         |
 | `/health`                | GET    | pública                         | Estado de la API y de la base de datos.                                  |
 
