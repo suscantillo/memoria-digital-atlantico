@@ -54,6 +54,12 @@ const RESTRINGIDA: Record<TipoPieza, string> = {
   PERIODICO: 'Periódico de consulta restringida',
 };
 
+const EN_CAJA: Record<TipoPieza, string> = {
+  DOCUMENTO: 'Documento aún sin digitalizar',
+  FOTOGRAFIA: 'Fotografía aún sin digitalizar',
+  PERIODICO: 'Periódico aún sin digitalizar',
+};
+
 const TIPO_PLURAL_RUTA: Record<TipoPieza, string> = {
   DOCUMENTO: 'DOCUMENTOS',
   FOTOGRAFIA: 'FOTOGRAFÍAS',
@@ -76,7 +82,16 @@ const LINEAS = [
 ];
 
 function tituloDe(pieza: PiezaPortal) {
-  return pieza.restringida ? RESTRINGIDA[pieza.tipo] : (pieza.titulo ?? 'Sin título');
+  if (pieza.restringida) return RESTRINGIDA[pieza.tipo];
+  if (!pieza.digitalizada) return EN_CAJA[pieza.tipo];
+  return pieza.titulo ?? 'Sin título';
+}
+
+/** Sello de la ficha: qué puede ver el visitante de esta pieza. */
+function selloDe(pieza: PiezaPortal) {
+  if (pieza.restringida) return { texto: 'RESTRINGIDA', color: colores.naranja };
+  if (!pieza.digitalizada) return { texto: 'EN SU CAJA', color: colores.azulMarino };
+  return { texto: 'PUBLICADA', color: colores.turquesaOscuro };
 }
 
 /** Banda de bienvenida cuando la ficha se abre escaneando el QR de la caja. */
@@ -228,6 +243,55 @@ const estiloBotonVisor = {
   '&:hover': { transform: 'translateY(-3px) scale(1.04)' },
 } as const;
 
+/**
+ * El PDF se ve dentro de la mesa de luz con el lector del navegador. Donde el navegador no puede
+ * mostrarlo (Chrome y Safari en celulares) aparece `children`: la hoja de muestra y el botón.
+ */
+function VisorPdf({ url, titulo, children }: { url: string; titulo: string; children: ReactNode }) {
+  return (
+    <Box
+      sx={{
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        p: { xs: 2, md: 3.5 },
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+      }}
+    >
+      <Box
+        component="object"
+        data={`${url}#view=FitH`}
+        type="application/pdf"
+        aria-label={`Documento PDF: ${titulo}`}
+        sx={{
+          flex: 1,
+          width: '100%',
+          minHeight: 0,
+          border: 0,
+          // sin lector de PDF el contenido alternativo se centra en la mesa
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {children}
+      </Box>
+      <Button
+        href={url}
+        target="_blank"
+        rel="noopener"
+        variant="contained"
+        color="warning"
+        sx={{ alignSelf: 'center', flex: 'none', borderRadius: 999, px: 3, fontWeight: 800 }}
+      >
+        Abrir en otra pestaña
+      </Button>
+    </Box>
+  );
+}
+
 /** Mesa de luz: fondo cuadriculado, la copia digital al centro y controles de acercar. */
 function MesaDeLuz({ pieza }: { pieza: PiezaPortal }) {
   const [escala, setEscala] = useState(1);
@@ -358,45 +422,41 @@ function MesaDeLuz({ pieza }: { pieza: PiezaPortal }) {
           </Box>
         </>
       ) : pdf ? (
-        <Box sx={{ position: 'relative', textAlign: 'center' }}>
-          <Box
-            aria-hidden
-            sx={{
-              width: { xs: 200, md: 320 },
-              height: { xs: 260, md: 420 },
-              mx: 'auto',
-              mb: 3,
-              p: { xs: 2.5, md: 4 },
-              bgcolor: '#EADFC6',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 1.25,
-              boxShadow: '0 30px 60px rgba(0, 0, 0, .45)',
-              animation: `${flota} 6s ease-in-out infinite`,
-              ...sinMovimiento,
-            }}
-          >
-            <Box sx={{ height: 12, width: '50%', bgcolor: '#B9A57E', mb: 2 }} />
-            {LINEAS.map((ancho, i) => (
-              <Box key={i} sx={{ height: 8, width: ancho, bgcolor: '#CBBB97' }} />
-            ))}
+        <VisorPdf url={pdf.url} titulo={tituloDe(pieza)}>
+          <Box sx={{ position: 'relative', textAlign: 'center' }}>
+            <Box
+              aria-hidden
+              sx={{
+                width: { xs: 170, md: 320 },
+                height: { xs: 210, md: 420 },
+                mx: 'auto',
+                mb: { xs: 2, md: 3 },
+                p: { xs: 2.5, md: 4 },
+                bgcolor: '#EADFC6',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1.25,
+                boxShadow: '0 30px 60px rgba(0, 0, 0, .45)',
+                animation: `${flota} 6s ease-in-out infinite`,
+                ...sinMovimiento,
+              }}
+            >
+              <Box sx={{ height: 12, width: '50%', bgcolor: '#B9A57E', mb: 2 }} />
+              {LINEAS.map((ancho, i) => (
+                <Box key={i} sx={{ height: 8, width: ancho, bgcolor: '#CBBB97' }} />
+              ))}
+            </Box>
+            <Typography sx={{ maxWidth: 300, mx: 'auto', color: '#FFFFFF', fontSize: 16 }}>
+              Este navegador no muestra el PDF aquí. Ábrelo con el botón de abajo.
+            </Typography>
           </Box>
-          <Button
-            href={pdf.url}
-            target="_blank"
-            rel="noopener"
-            variant="contained"
-            color="warning"
-            sx={{ borderRadius: 999, px: 3, fontWeight: 800 }}
-          >
-            Abrir el documento (PDF)
-          </Button>
-        </Box>
+        </VisorPdf>
       ) : (
         <HojaEnLaCaja restringida={pieza.restringida} />
       )}
 
-      {pieza.archivo && !pieza.restringida && (
+      {/* en el PDF taparía los botones del lector */}
+      {imagen && (
         <Box
           aria-hidden
           sx={{
@@ -447,6 +507,7 @@ function MesaDeLuz({ pieza }: { pieza: PiezaPortal }) {
 }
 
 function FichaCatalografica({ pieza }: { pieza: PiezaPortal }) {
+  const sello = selloDe(pieza);
   const filas: [string, string][] = [
     ['Tipo', NOMBRE_TIPO[pieza.tipo].singular],
     ...(pieza.anio !== null ? ([['Año', String(pieza.anio)]] as [string, string][]) : []),
@@ -496,12 +557,12 @@ function FichaCatalografica({ pieza }: { pieza: PiezaPortal }) {
           sx={{
             px: 1,
             py: 0.25,
-            border: `2px solid ${pieza.restringida ? colores.naranja : colores.turquesaOscuro}`,
-            color: pieza.restringida ? colores.naranja : colores.turquesaOscuro,
+            border: `2px solid ${sello.color}`,
+            color: sello.color,
             transform: 'rotate(-4deg)',
           }}
         >
-          {pieza.restringida ? 'RESTRINGIDA' : 'PUBLICADA'}
+          {sello.texto}
         </Box>
       </Box>
       <Typography
