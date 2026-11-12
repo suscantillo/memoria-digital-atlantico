@@ -1,5 +1,6 @@
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import SearchIcon from '@mui/icons-material/Search';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -292,6 +293,31 @@ function FilaPieza({ pieza, indice }: { pieza: PiezaInventario; indice: number }
         {fechaCorta(pieza.actualizadoEn)}
       </Box>
       <Box component="td" sx={{ p: '8px 18px', whiteSpace: 'nowrap', textAlign: 'right' }}>
+        {pieza.estado === 'REGISTRADA' && (
+          <Tooltip title={`Cargar el escaneo de ${pieza.codigo}`}>
+            <Box
+              component={RouterLink}
+              to={`/panel/escaneo/${pieza.codigo}`}
+              aria-label={`Cargar el escaneo de ${pieza.codigo}`}
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 42,
+                height: 42,
+                mr: 0.75,
+                borderRadius: '12px',
+                bgcolor: colores.naranja,
+                color: '#FFFFFF',
+                verticalAlign: 'middle',
+                transition: 'transform .15s',
+                '&:hover': { transform: 'translateY(-2px)' },
+              }}
+            >
+              <UploadFileIcon fontSize="small" />
+            </Box>
+          </Tooltip>
+        )}
         {pieza.estado === 'PUBLICADA' && (
           <Box
             component={RouterLink}
