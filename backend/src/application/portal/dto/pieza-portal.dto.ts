@@ -17,6 +17,8 @@ export class PiezaPortalDto {
   codigo!: string;
   tipo!: TipoPieza;
   restringida!: boolean;
+  /** false: la pieza existe pero aún no está PUBLICADA; el portal solo dice dónde está el original. */
+  digitalizada!: boolean;
   titulo!: string | null;
   descripcion!: string | null;
   anio!: number | null;
@@ -28,12 +30,14 @@ export class PiezaPortalDto {
     dto.codigo = pieza.codigo.valor;
     dto.tipo = pieza.tipo;
     dto.restringida = pieza.restringida;
-    // Una pieza restringida oculta su contenido en el portal y solo expone su tipo y ubicación.
-    dto.titulo = pieza.restringida ? null : pieza.titulo;
-    dto.descripcion = pieza.restringida ? null : pieza.descripcion;
-    dto.anio = pieza.restringida ? null : pieza.anio;
+    dto.digitalizada = pieza.estaPublicada();
+    // Restringida o aún sin publicar: el portal solo expone su tipo y su ubicación.
+    const oculta = pieza.restringida || !dto.digitalizada;
+    dto.titulo = oculta ? null : pieza.titulo;
+    dto.descripcion = oculta ? null : pieza.descripcion;
+    dto.anio = oculta ? null : pieza.anio;
     dto.archivo =
-      pieza.restringida || !pieza.archivoAprobado
+      oculta || !pieza.archivoAprobado
         ? null
         : {
             url: `/api/v1/archivos/${pieza.archivoAprobado.id}/contenido`,

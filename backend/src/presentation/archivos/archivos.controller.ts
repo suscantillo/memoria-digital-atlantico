@@ -2,9 +2,13 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
+  Res,
+  StreamableFile,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -13,14 +17,20 @@ import {
   ApiConflictResponse,
   ApiConsumes,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
+  ApiProduces,
   ApiPayloadTooLargeResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { CargarEscaneo } from '../../application/archivos/cargar-escaneo.use-case';
+import { ObtenerContenidoArchivo } from '../../application/archivos/obtener-contenido-archivo.use-case';
 import { CargarEscaneoDto } from '../../application/archivos/dto/cargar-escaneo.dto';
 import { EscaneoCargadoDto } from '../../application/archivos/dto/escaneo-cargado.dto';
+import type { Response } from 'express';
 import { Autenticado } from '../comun/decoradores/autenticado.decorator';
+import { Publica } from '../comun/decoradores/publica.decorator';
 import { UsuarioActual } from '../comun/decoradores/usuario-actual.decorator';
 import { UsuarioAutenticado } from '../comun/solicitud-autenticada';
 import { InterceptorEscaneo } from './interceptor-escaneo';
@@ -33,7 +43,37 @@ interface ArchivoSubido {
 @ApiTags('archivos')
 @Controller('archivos')
 export class ArchivosController {
-  constructor(private readonly cargarEscaneo: CargarEscaneo) {}
+  constructor(
+    private readonly cargarEscaneo: CargarEscaneo,
+    private readonly obtenerContenido: ObtenerContenidoArchivo,
+  ) {}
+
+  @Publica()
+  @Get(':id/contenido')
+  @ApiOperation({
+    summary: 'Ver el escaneo aprobado de una pieza publicada (visor del portal)',
+  })
+  @ApiProduces('image/jpeg', 'image/png', 'image/webp', 'image/tiff', 'application/pdf')
+  @ApiOkResponse({ description: 'El archivo, para mostrarlo en el navegador.' })
+  @ApiNotFoundResponse({
+    description: 'No existe, no está aprobado o su pieza no está publicada o es restringida.',
+  })
+  async contenido(
+    @Param('id') id: string,
+    @Res({ passthrough: true }) respuesta: Response,
+  ): Promise<StreamableFile> {
+    const archivo = await this.obtenerContenido.ejecutar(id);
+    respuesta.set({
+      // corto: si la pieza se despublica, deja de verse pronto
+      'Cache-Control': 'public, max-age=300',
+      'X-Content-Type-Options': 'nosniff',
+    });
+    return new StreamableFile(archivo.flujo, {
+      type: archivo.tipoMime,
+      length: archivo.tamanoBytes,
+      disposition: `inline; filename*=UTF-8''${encodeURIComponent(archivo.nombreOriginal)}`,
+    });
+  }
 
   @Post()
   @Autenticado('ADMIN', 'PERSONAL')
