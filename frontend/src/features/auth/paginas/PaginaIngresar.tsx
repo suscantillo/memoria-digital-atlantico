@@ -1,10 +1,11 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState, type FormEvent } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { colores } from '../../../app/tema';
 import { useAuth } from '../../../shared/auth/useAuth';
 import { Isotipo } from '../../../shared/componentes/Isotipo';
@@ -96,7 +97,10 @@ export function PaginaIngresar() {
           Iniciar sesión
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
-          Entra con el correo y la contraseña de tu cuenta del archivo.
+          Entra con el correo y la contraseña de tu cuenta del archivo. ¿No tienes una?{' '}
+          <Link component={RouterLink} to="/registro" state={state} sx={{ fontWeight: 700 }}>
+            Crea tu cuenta
+          </Link>
         </Typography>
 
         <Box component="form" onSubmit={enviar} noValidate>
