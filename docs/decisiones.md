@@ -87,3 +87,16 @@ personales expuestos) y la interfaz se ve igual sin conexión dentro de Docker.
 o por década las alcanzara, el resultado revelaría el título o el año que el portal oculta. Por eso esos
 dos filtros las excluyen y en el listado van siempre al final, sin importar el orden pedido: ordenarlas
 por título o año también delataría el dato. El filtro por tipo sí las incluye, porque el tipo es público.
+
+## 16. Aprobar el escaneo publica la pieza
+
+En control de calidad una sola persona marca los tres criterios (legible, completa, datos correctos) y
+aprueba. Ese acto es la revisión y la publicación a la vez: `POST /archivos/:id/aprobar` deja el archivo
+`APROBADO` y la pieza `PUBLICADA`, sin detenerse en `REVISADA`. Con un solo revisor, un paso intermedio
+obligaría a pulsar dos veces para lo mismo. El estado `REVISADA` se conserva en el modelo por si el
+archivo pide después que publicar lo decida otra persona.
+
+Las reglas viven en las entidades: `ArchivoDigital` solo se revisa si está `EN_REVISION` y exige motivo
+para rechazar; `Pieza` solo cambia desde `ESCANEADA`. El repositorio guarda archivo, pieza y evento en
+una transacción y condiciona la escritura a que el archivo siga `EN_REVISION`, así dos revisiones
+simultáneas no se pisan.
