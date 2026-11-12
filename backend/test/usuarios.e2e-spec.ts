@@ -66,6 +66,30 @@ describe('Administración de usuarios (e2e)', () => {
     await app?.close();
   });
 
+  it('no permite convertir a ADMIN una cuenta PUBLICO', async () => {
+    const accesoAdministrador = await request(app.getHttpServer())
+      .post('/api/v1/auth/ingresar')
+      .send({ correo: correoAdministrador, contrasena: contrasenaAdministrador })
+      .expect(200);
+    const tokenAdministrador = (accesoAdministrador.body as SesionRespuesta).tokenAcceso;
+    const publico = await prisma.usuario.create({
+      data: {
+        nombre: 'Público HU-17',
+        correo: `publico-${randomUUID()}@test.local`,
+        contrasenaHash: 'hash-publico',
+        rol: 'PUBLICO',
+      },
+    });
+
+    await request(app.getHttpServer())
+      .patch(`/api/v1/usuarios/${publico.id}/rol`)
+      .set('Authorization', `Bearer ${tokenAdministrador}`)
+      .send({ rol: 'ADMIN' })
+      .expect(404);
+
+    await prisma.usuario.delete({ where: { id: publico.id } });
+  });
+
   it('crea PERSONAL, permite el ingreso, cambia el rol y revoca las sesiones al desactivar', async () => {
     const accesoAdministrador = await request(app.getHttpServer())
       .post('/api/v1/auth/ingresar')
