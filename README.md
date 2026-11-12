@@ -77,7 +77,14 @@ npm run dev
 ### Usuarios de prueba
 
 Las semillas crean un `ADMIN`, un `PERSONAL` y un `PUBLICO` con las contraseñas definidas
-en `.env.example` (solo para desarrollo). Todos los datos sembrados son ficticios.
+en `.env.example` (solo para desarrollo).
+
+### Piezas de la demo
+
+La semilla carga 24 piezas con material histórico de dominio público (Biblioteca Virtual del Banco de
+la República, Library of Congress, Internet Archive y Wikimedia Commons), 10 ubicaciones inventadas y
+los archivos de `backend/prisma/semilla/archivos`, que copia en `STORAGE_DIR`. Cada pieza cita su
+fuente en la descripción. Nada viene del CLENA.
 
 ## Documentación
 

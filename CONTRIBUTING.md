@@ -103,7 +103,8 @@ Una historia pasa a Done solo si cumple todo:
 
 - Un cambio a la vez; verifica con tests, lint y compose antes de seguir. Implementa solo la historia
   pedida; no toques nada fuera de su alcance.
-- Las semillas son ficticias: nunca datos reales del CLENA.
+- Las semillas nunca llevan datos reales del CLENA: usan material de dominio público con su fuente
+  citada (`backend/prisma/semilla/catalogo.ts`) y ubicaciones inventadas.
 - Las actas se escriben en la reunión, por el equipo. Las plantillas de docs/ no llevan fechas.
 - El autor del commit es quien lo hace. No se agregan trailers automáticos de herramientas ni
   enlaces externos a commits ni PRs. El hook `commit-msg` y el job `convenciones` lo verifican.
