@@ -5,6 +5,7 @@ import type { ParametrosBuscarPiezas } from './tipos';
 export const clavesPortal = {
   todas: ['portal', 'piezas'] as const,
   busqueda: (params: ParametrosBuscarPiezas) => ['portal', 'piezas', params] as const,
+  ficha: (codigo: string) => ['portal', 'pieza', codigo] as const,
 };
 
 export function usePiezasPortal(params: ParametrosBuscarPiezas) {
@@ -27,5 +28,15 @@ export function useTotalesPortal(filtros: ParametrosBuscarPiezas[]) {
         staleTime: 60_000,
       };
     }),
+  });
+}
+
+export function usePiezaPortal(codigo: string, habilitada: boolean) {
+  return useQuery({
+    queryKey: clavesPortal.ficha(codigo),
+    queryFn: () => portalApi.obtener(codigo),
+    enabled: habilitada,
+    // un 404 no se arregla reintentando
+    retry: false,
   });
 }

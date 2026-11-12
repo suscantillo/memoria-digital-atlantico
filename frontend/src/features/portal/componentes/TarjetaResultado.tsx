@@ -1,5 +1,6 @@
 import Box from '@mui/material/Box';
 import { useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import { colores } from '../../../app/tema';
 import { NOMBRE_TIPO, type PiezaPortal } from '../tipos';
 
@@ -240,9 +241,10 @@ export function TarjetaResultado(props: Props) {
   const { pieza } = props;
   return (
     <Box
-      component="article"
+      component={RouterLink}
+      to={`/p/${pieza.codigo}`}
       aria-label={`${titulo(pieza)}, ${etiqueta(pieza)}, código ${pieza.codigo}`}
-      sx={{ color: colores.azulMarino }}
+      sx={{ display: 'block', color: colores.azulMarino, textDecoration: 'none' }}
     >
       {pieza.tipo === 'FOTOGRAFIA' && <Fotografia {...props} />}
       {pieza.tipo === 'DOCUMENTO' && <Documento {...props} />}
