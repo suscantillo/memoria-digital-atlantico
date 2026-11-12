@@ -63,31 +63,47 @@ export class PrismaPiezaRepositorio implements PiezaRepositorio {
 
       const ubicacion = await tx.ubicacion.findUnique({
         where: { id: datos.ubicacionId },
-        select: { id: true },
+        select: {
+          id: true,
+          deposito: true,
+          estanteria: true,
+          caja: true,
+        },
       });
 
       if (!ubicacion) {
         throw new ErrorNoEncontrado(`No encontramos la ubicación "${datos.ubicacionId}".`);
       }
 
+      const pieza = Pieza.crear({
+        codigo,
+        titulo: datos.titulo,
+        tipo: datos.tipo,
+        anio: datos.anio,
+        ubicacion,
+      });
+
       const fila = await tx.pieza.create({
         data: {
-          codigo: codigo.valor,
-          titulo: datos.titulo,
-          tipo: datos.tipo,
-          anio: datos.anio,
-          estado: 'REGISTRADA',
-          restringida: false,
-          descripcion: null,
+          id: pieza.id,
+          codigo: pieza.codigo.valor,
+          titulo: pieza.titulo,
+          descripcion: pieza.descripcion,
+          tipo: pieza.tipo,
+          estado: pieza.estado,
+          anio: pieza.anio,
+          restringida: pieza.restringida,
+          creadoEn: pieza.creadoEn,
+          actualizadoEn: pieza.actualizadoEn,
           ubicacion: {
             connect: {
-              id: datos.ubicacionId,
+              id: pieza.ubicacion.id,
             },
           },
           eventos: {
             create: {
-              accion: 'REGISTRADA',
-              detalle: `Pieza registrada con código ${codigo.valor}.`,
+              accion: pieza.estado,
+              detalle: `Pieza registrada con código ${pieza.codigo.valor}.`,
               usuario: {
                 connect: {
                   id: usuarioId,
