@@ -6,14 +6,14 @@ glosario, el dominio, Prisma, la API y la UI a la vez.
 
 ## Entidades
 
-| Término            | Definición                                                                                                                                                                                                                               |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Usuario**        | Persona con cuenta. Roles: `ADMIN`, `PERSONAL`, `PUBLICO`. El visitante sin cuenta no tiene rol (petición sin token). Las cuentas `PUBLICO` guardan `consentimiento_en` y `version_privacidad` del aviso aceptado.                       |
-| **Ubicacion**      | Lugar físico de una pieza: depósito, estantería y caja. La terna es única.                                                                                                                                                               |
-| **Pieza**          | Elemento del archivo. Tipo `DOCUMENTO`, `FOTOGRAFIA` o `PERIODICO`. Estado `REGISTRADA`, `ESCANEADA`, `REVISADA` o `PUBLICADA`. Código único `MDA-AAAA-NNNN`. Puede ser `restringida`: en el portal solo se muestra su tipo y ubicación. |
-| **ArchivoDigital** | Escaneo de una pieza. Estado `EN_REVISION`, `APROBADO` o `RECHAZADO`; si se rechaza lleva `motivo_rechazo`.                                                                                                                              |
-| **EventoPieza**    | Entrada del historial de una pieza: quién, qué y cuándo.                                                                                                                                                                                 |
-| **Sesion**         | Refresh token (JWT con `jti`) persistido, rotado en cada uso y revocable. La tabla guarda el `jti`, nunca el token.                                                                                                                      |
+| Término            | Definición                                                                                                                                                                                                                                                                                               |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Usuario**        | Persona con cuenta. Roles: `ADMIN`, `PERSONAL`, `PUBLICO`. El visitante sin cuenta no tiene rol (petición sin token). Las cuentas `PUBLICO` guardan `consentimiento_en` y `version_privacidad` del aviso aceptado.                                                                                       |
+| **Ubicacion**      | Lugar físico de una pieza: depósito, estantería y caja. La terna es única.                                                                                                                                                                                                                               |
+| **Pieza**          | Elemento del archivo. Tipo `DOCUMENTO`, `FOTOGRAFIA` o `PERIODICO`. Estado `REGISTRADA`, `ESCANEADA`, `REVISADA` o `PUBLICADA`. Código único `MDA-AAAA-NNNN`. Puede ser `restringida`: en el portal solo se muestra su tipo y ubicación. Al cargar el escaneo recibe `tema`, `autor` y `palabras_clave`. |
+| **ArchivoDigital** | Escaneo de una pieza. Estado `EN_REVISION`, `APROBADO` o `RECHAZADO`; si se rechaza lleva `motivo_rechazo`.                                                                                                                                                                                              |
+| **EventoPieza**    | Entrada del historial de una pieza: quién, qué y cuándo.                                                                                                                                                                                                                                                 |
+| **Sesion**         | Refresh token (JWT con `jti`) persistido, rotado en cada uso y revocable. La tabla guarda el `jti`, nunca el token.                                                                                                                                                                                      |
 
 ## Roles
 
@@ -40,26 +40,27 @@ En español, bajo `/api/v1`. Las historias usan estos nombres tal cual.
 
 ### Existentes
 
-| Ruta                     | Método | Acceso                          | Qué hace                                                                 |
-| ------------------------ | ------ | ------------------------------- | ------------------------------------------------------------------------ |
-| `/auth/registro`         | POST   | pública                         | Crea una cuenta `PUBLICO`; exige aceptar la versión vigente del aviso.   |
-| `/auth/ingresar`         | POST   | pública                         | Correo y contraseña; devuelve token de acceso, refresh token y usuario.  |
-| `/auth/refrescar`        | POST   | pública, lleva el refresh token | Rota la sesión: revoca la anterior y devuelve tokens nuevos.             |
-| `/auth/salir`            | POST   | pública, lleva el refresh token | Revoca la sesión. Responde 204 aunque el token ya no sirva.              |
-| `/auth/yo`               | GET    | con token de acceso             | Usuario autenticado.                                                     |
-| `/ubicaciones`           | GET    | `PERSONAL`, `ADMIN`             | Listado paginado con filtros y orden.                                    |
-| `/ubicaciones`           | POST   | `PERSONAL`, `ADMIN`             | Registra una ubicación.                                                  |
-| `/portal/piezas`         | GET    | pública                         | Busca piezas `PUBLICADA` por texto, tipo y década; paginado y con orden. |
-| `/portal/piezas/:codigo` | GET    | pública                         | Ficha pública de una pieza `PUBLICADA` por su código.                    |
-| `/piezas`                | GET    | `PERSONAL`, `ADMIN`             | Inventario: filtra por tipo, estado, caja y texto, con páginas y orden.  |
-| `/piezas/:id/qr`         | GET    | `PERSONAL`, `ADMIN`             | PNG del QR de la pieza; guarda `PUBLIC_WEB_URL/p/{codigo}?qr=1`.         |
-| `/health`                | GET    | pública                         | Estado de la API y de la base de datos.                                  |
+| Ruta                     | Método | Acceso                          | Qué hace                                                                                |
+| ------------------------ | ------ | ------------------------------- | --------------------------------------------------------------------------------------- |
+| `/auth/registro`         | POST   | pública                         | Crea una cuenta `PUBLICO`; exige aceptar la versión vigente del aviso.                  |
+| `/auth/ingresar`         | POST   | pública                         | Correo y contraseña; devuelve token de acceso, refresh token y usuario.                 |
+| `/auth/refrescar`        | POST   | pública, lleva el refresh token | Rota la sesión: revoca la anterior y devuelve tokens nuevos.                            |
+| `/auth/salir`            | POST   | pública, lleva el refresh token | Revoca la sesión. Responde 204 aunque el token ya no sirva.                             |
+| `/auth/yo`               | GET    | con token de acceso             | Usuario autenticado.                                                                    |
+| `/ubicaciones`           | GET    | `PERSONAL`, `ADMIN`             | Listado paginado con filtros y orden.                                                   |
+| `/ubicaciones`           | POST   | `PERSONAL`, `ADMIN`             | Registra una ubicación.                                                                 |
+| `/portal/piezas`         | GET    | pública                         | Busca piezas `PUBLICADA` por texto, tipo y década; paginado y con orden.                |
+| `/portal/piezas/:codigo` | GET    | pública                         | Ficha pública de una pieza `PUBLICADA` por su código.                                   |
+| `/piezas`                | GET    | `PERSONAL`, `ADMIN`             | Inventario: filtra por tipo, estado, caja y texto, con páginas y orden.                 |
+| `/archivos`              | POST   | `PERSONAL`, `ADMIN`             | Carga el escaneo de una pieza `REGISTRADA`: queda `EN_REVISION` y la pieza `ESCANEADA`. |
+| `/piezas/:id/qr`         | GET    | `PERSONAL`, `ADMIN`             | PNG del QR de la pieza; guarda `PUBLIC_WEB_URL/p/{codigo}?qr=1`.                        |
+| `/health`                | GET    | pública                         | Estado de la API y de la base de datos.                                                 |
 
 Documentación en `/docs`.
 
 ### Previstas
 
-`/auth/cuenta`, `/usuarios`, `/piezas` y `/archivos`.
+`/auth/cuenta`, `/usuarios` y `/piezas`.
 
 Todas las rutas de panel exigen `PERSONAL` o `ADMIN`. Solo son públicas `/portal/*`, `/auth/registro`,
 `/auth/ingresar`, `/auth/refrescar` y `/health`.
