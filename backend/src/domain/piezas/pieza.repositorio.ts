@@ -1,11 +1,12 @@
 import { DireccionOrden, ParametrosPaginacion, ResultadoPaginado } from '../comun/paginacion';
 import { CodigoPieza } from './codigo-pieza';
-import { Pieza } from './pieza.entity';
+import { DatosNuevaPieza, Pieza } from './pieza.entity';
 import { TipoPieza } from './tipo-pieza';
 
 export const PIEZA_REPOSITORIO = Symbol('PIEZA_REPOSITORIO');
 
 export const CAMPOS_ORDEN_PIEZA_PORTAL = ['titulo', 'anio', 'codigo'] as const;
+
 export type CampoOrdenPiezaPortal = (typeof CAMPOS_ORDEN_PIEZA_PORTAL)[number];
 
 export interface FiltrosPiezasPublicadas {
@@ -22,7 +23,9 @@ export interface ParametrosListarPublicadas extends ParametrosPaginacion {
 }
 
 export interface PiezaRepositorio {
+  registrar(datos: DatosNuevaPieza, usuarioId: string): Promise<Pieza>;
+
   buscarPorCodigo(codigo: CodigoPieza): Promise<Pieza | null>;
-  /** Solo piezas PUBLICADA. Las restringidas van al final, sin importar el orden pedido. */
+
   listarPublicadas(params: ParametrosListarPublicadas): Promise<ResultadoPaginado<Pieza>>;
 }
