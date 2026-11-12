@@ -1,4 +1,3 @@
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import Box from '@mui/material/Box';
@@ -10,6 +9,7 @@ import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
+import { keyframes } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { AxiosError } from 'axios';
@@ -19,16 +19,23 @@ import { colores } from '../../../app/tema';
 import { useAuth } from '../../../shared/auth/useAuth';
 import { MensajeError } from '../../../shared/componentes/MensajeError';
 import { authApi } from '../api';
+import { CarneArchivo } from '../componentes/CarneArchivo';
 import { VERSION_PRIVACIDAD } from '../privacidad';
 
 const MIN_CONTRASENA = 8;
 const CORREO_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const VENTAJAS = [
-  'Es gratis y solo pide tu nombre y tu correo.',
-  'Con tu cuenta consultas lo que en el archivo requiere sesión.',
-  'Tus datos se tratan según la Ley 1581 de 2012.',
-];
+const entrar = keyframes`
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: none; }
+`;
+
+const PASOS = ['Crea tu carné', 'Abre el archivo'];
+
+const estiloCampo = {
+  '& .MuiOutlinedInput-root': { borderRadius: '14px', bgcolor: '#FFFFFF' },
+  '& .MuiOutlinedInput-notchedOutline': { borderWidth: 2, borderColor: '#D9CBA8' },
+} as const;
 
 interface Errores {
   nombre?: string;
@@ -103,57 +110,97 @@ export function PaginaRegistro() {
       sx={{
         mx: 'auto',
         width: '100%',
-        maxWidth: 940,
+        maxWidth: 1180,
         display: 'grid',
-        gridTemplateColumns: { xs: '1fr', md: '5fr 6fr' },
-        overflow: 'hidden',
-        borderRadius: 6,
-        bgcolor: 'background.paper',
-        boxShadow: '0 8px 0 #F5D79E',
+        gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) minmax(0, 1fr)' },
+        gap: { xs: 2, md: 5 },
+        alignItems: 'center',
       }}
     >
+      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+        <CarneArchivo nombre={nombre} correo={correo} acepta={acepta} />
+      </Box>
+      <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+        <CarneArchivo nombre={nombre} correo={correo} acepta={acepta} compacto />
+      </Box>
+
       <Box
         sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          gap: { xs: 2, md: 4 },
-          p: { xs: 3, md: 5 },
-          bgcolor: colores.azulMarino,
-          color: '#DDE3EE',
+          position: 'relative',
+          p: { xs: 3, sm: 5 },
+          bgcolor: '#FFFFFF',
+          borderRadius: '28px',
+          borderTop: `8px solid ${colores.naranja}`,
+          boxShadow: '0 10px 0 #F5D79E, 0 30px 60px rgba(14, 45, 107, .12)',
+          animation: `${entrar} .7s cubic-bezier(.2, .8, .2, 1) both`,
+          '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
         }}
       >
+        <Box
+          component="ol"
+          aria-label="Pasos"
+          sx={{ listStyle: 'none', m: 0, mb: 3, p: 0, display: 'flex', gap: 1.5, flexWrap: 'wrap' }}
+        >
+          {PASOS.map((paso, i) => (
+            <Box
+              component="li"
+              key={paso}
+              aria-current={i === 0 ? 'step' : undefined}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                pr: 1.5,
+                borderRadius: 999,
+                bgcolor: i === 0 ? '#FDE8E1' : colores.crema,
+                fontSize: 14,
+                fontWeight: i === 0 ? 800 : 600,
+                color: i === 0 ? colores.azulMarino : 'text.secondary',
+              }}
+            >
+              <Box
+                component="span"
+                sx={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 999,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: i === 0 ? colores.naranja : '#FFFFFF',
+                  color: i === 0 ? '#FFFFFF' : 'text.secondary',
+                  border: i === 0 ? 0 : '2px solid #EBD9B0',
+                  fontFamily: 'h1.fontFamily',
+                  fontWeight: 900,
+                }}
+              >
+                {i + 1}
+              </Box>
+              {paso}
+            </Box>
+          ))}
+        </Box>
+
         <Typography
           component="p"
           sx={{
-            fontFamily: 'h1.fontFamily',
-            fontWeight: 900,
-            fontSize: { xs: '1.9rem', md: '2.4rem' },
-            lineHeight: 0.95,
-            textTransform: 'uppercase',
-            color: '#FFFFFF',
+            fontFamily: '"Courier Prime", "Courier New", monospace',
+            fontWeight: 700,
+            letterSpacing: '.08em',
+            color: colores.naranja,
+            mb: 0.5,
           }}
         >
-          Abre las cajas
-          <Box component="span" sx={{ display: 'block', color: colores.amarillo }}>
-            del archivo
-          </Box>
+          GRATIS · SOLO NOMBRE Y CORREO
         </Typography>
-        <Stack component="ul" spacing={1.25} sx={{ listStyle: 'none', m: 0, p: 0 }}>
-          {VENTAJAS.map((ventaja) => (
-            <Box component="li" key={ventaja} sx={{ display: 'flex', gap: 1.25 }}>
-              <CheckCircleIcon aria-hidden sx={{ color: colores.amarillo, fontSize: 22 }} />
-              {ventaja}
-            </Box>
-          ))}
-        </Stack>
-      </Box>
-
-      <Box sx={{ p: { xs: 3, sm: 5 } }}>
-        <Typography id="titulo-registro" variant="h1" gutterBottom>
-          Crear cuenta
+        <Typography
+          id="titulo-registro"
+          variant="h1"
+          sx={{ fontSize: { xs: 38, sm: 50 }, letterSpacing: '-0.03em', mb: 1 }}
+        >
+          Crea tu cuenta
         </Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
+        <Typography color="text.secondary" sx={{ mb: 3, fontSize: 17 }}>
           ¿Ya tienes una?{' '}
           <Link component={RouterLink} to="/ingresar" state={state} sx={{ fontWeight: 700 }}>
             Inicia sesión
@@ -161,7 +208,7 @@ export function PaginaRegistro() {
         </Typography>
 
         <Box component="form" onSubmit={enviar} noValidate>
-          <Stack spacing={2}>
+          <Stack spacing={2.25}>
             <TextField
               id="registro-nombre"
               label="Nombre"
@@ -172,6 +219,7 @@ export function PaginaRegistro() {
               helperText={errores.nombre}
               required
               fullWidth
+              sx={estiloCampo}
             />
             <TextField
               id="registro-correo"
@@ -195,6 +243,7 @@ export function PaginaRegistro() {
               }
               required
               fullWidth
+              sx={estiloCampo}
             />
             <TextField
               id="registro-contrasena"
@@ -207,6 +256,7 @@ export function PaginaRegistro() {
               helperText={errores.contrasena ?? `Mínimo ${MIN_CONTRASENA} caracteres.`}
               required
               fullWidth
+              sx={estiloCampo}
               slotProps={{
                 input: {
                   endAdornment: (
@@ -230,9 +280,10 @@ export function PaginaRegistro() {
               sx={{
                 p: 1.5,
                 pr: 2,
-                borderRadius: 3,
-                bgcolor: colores.crema,
-                border: `2px solid ${errores.consentimiento ? '#A8320F' : 'transparent'}`,
+                borderRadius: '16px',
+                bgcolor: acepta ? '#E3F4F5' : colores.crema,
+                border: `2px ${errores.consentimiento ? 'solid #A8320F' : acepta ? `solid ${colores.turquesa}` : 'dashed #E2CFA3'}`,
+                transition: 'background-color .25s, border-color .25s',
               }}
             >
               <FormControlLabel
@@ -282,7 +333,15 @@ export function PaginaRegistro() {
               color="secondary"
               size="large"
               disabled={enviando}
-              sx={{ borderRadius: 999, py: 1.5, boxShadow: '0 5px 0 #8F2A0C' }}
+              sx={{
+                borderRadius: 999,
+                py: 1.6,
+                fontSize: 18,
+                boxShadow: '0 6px 0 #8F2A0C',
+                transition: 'transform .15s, box-shadow .15s',
+                '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 8px 0 #8F2A0C' },
+                '&:active': { transform: 'translateY(4px)', boxShadow: '0 2px 0 #8F2A0C' },
+              }}
             >
               {enviando ? 'Creando la cuenta…' : 'Crear cuenta'}
             </Button>
