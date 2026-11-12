@@ -8,21 +8,27 @@ describe('CrearPieza', () => {
     id: 'pieza-id',
     codigo: CodigoPieza.generar(2026, 11),
     titulo: 'Acta histórica',
+    descripcion: null,
     tipo: 'DOCUMENTO',
     estado: 'REGISTRADA',
     anio: 1888,
-    ubicacionId: 'ubicacion-id',
+    restringida: false,
+    ubicacion: {
+      id: 'ubicacion-id',
+      deposito: 'Depósito 1',
+      estanteria: 'Estantería A',
+      caja: 'Caja 01',
+    },
+    archivoAprobado: null,
     creadoEn: new Date('2026-11-09T12:00:00.000Z'),
     actualizadoEn: new Date('2026-11-09T12:00:00.000Z'),
   });
-  const registrar = jest.fn<
-    ReturnType<PiezaRepositorio['registrar']>,
-    Parameters<PiezaRepositorio['registrar']>
-  >();
+
+  let registrar: jest.MockedFunction<PiezaRepositorio['registrar']>;
   let casoDeUso: CrearPieza;
 
   beforeEach(() => {
-    registrar.mockReset().mockResolvedValue(piezaRegistrada);
+    registrar = jest.fn().mockResolvedValue(piezaRegistrada);
     casoDeUso = new CrearPieza({ registrar });
   });
 
@@ -37,6 +43,8 @@ describe('CrearPieza', () => {
       'personal-id',
     );
 
+    expect(registrar).toHaveBeenCalledTimes(1);
+
     expect(registrar).toHaveBeenCalledWith(
       {
         tipo: 'DOCUMENTO',
@@ -46,10 +54,13 @@ describe('CrearPieza', () => {
       },
       'personal-id',
     );
+
     expect(resultado).toMatchObject({
       codigo: 'MDA-2026-0011',
       titulo: 'Acta histórica',
       estado: 'REGISTRADA',
+      anio: 1888,
+      ubicacionId: 'ubicacion-id',
     });
   });
 });

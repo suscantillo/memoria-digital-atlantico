@@ -13,6 +13,13 @@ export interface ArchivoAprobadoPieza {
   tipoMime: string;
 }
 
+export interface DatosNuevaPieza {
+  titulo: string;
+  tipo: TipoPieza;
+  anio: number;
+  ubicacionId: string;
+}
+
 export interface PropiedadesPieza {
   id: string;
   codigo: CodigoPieza;
@@ -38,36 +45,47 @@ export class Pieza {
   get id(): string {
     return this.props.id;
   }
+
   get codigo(): CodigoPieza {
     return this.props.codigo;
   }
+
   get titulo(): string {
     return this.props.titulo;
   }
+
   get descripcion(): string | null {
     return this.props.descripcion;
   }
+
   get tipo(): TipoPieza {
     return this.props.tipo;
   }
+
   get estado(): EstadoPieza {
     return this.props.estado;
   }
+
   get anio(): number | null {
     return this.props.anio;
   }
+
   get restringida(): boolean {
     return this.props.restringida;
   }
+
   get ubicacion(): UbicacionPieza {
     return this.props.ubicacion;
   }
+
   get archivoAprobado(): ArchivoAprobadoPieza | null {
     return this.props.archivoAprobado;
   }
+
   get creadoEn(): Date {
     return this.props.creadoEn;
   }
+
   get actualizadoEn(): Date {
     return this.props.actualizadoEn;
   }
