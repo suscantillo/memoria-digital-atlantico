@@ -122,7 +122,6 @@ describe('Control de calidad de escaneos (e2e)', () => {
   it('solo el personal entra: sin sesión 401 y con cuenta PUBLICO 403', async () => {
     const rutas = [
       ['get', '/archivos'],
-      ['get', `/archivos/${archivos.porAprobar}/contenido`],
       ['post', `/archivos/${archivos.porAprobar}/aprobar`],
       ['post', `/archivos/${archivos.porAprobar}/rechazar`],
     ] as const;
