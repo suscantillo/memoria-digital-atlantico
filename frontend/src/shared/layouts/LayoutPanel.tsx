@@ -1,3 +1,4 @@
+import Inventory2Icon from '@mui/icons-material/Inventory2';
 import MenuIcon from '@mui/icons-material/Menu';
 import PlaceIcon from '@mui/icons-material/Place';
 import PublicIcon from '@mui/icons-material/Public';
@@ -35,6 +36,7 @@ interface Seccion {
 
 // solo las secciones que ya existen; cada historia agrega la suya cuando entra con su backend
 const secciones: Seccion[] = [
+  { etiqueta: 'Inventario', ruta: '/panel/inventario', Icono: Inventory2Icon },
   { etiqueta: 'Ubicaciones', ruta: '/panel/ubicaciones', Icono: PlaceIcon },
 ];
 

@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { PaginaInventario } from '../features/inventario/paginas/PaginaInventario';
 import { PaginaIngresar } from '../features/auth/paginas/PaginaIngresar';
 import { PaginaPrivacidad } from '../features/auth/paginas/PaginaPrivacidad';
 import { PaginaRegistro } from '../features/auth/paginas/PaginaRegistro';
@@ -21,6 +22,7 @@ export const rutas = {
   registro: '/registro',
   privacidad: '/privacidad',
   panel: '/panel',
+  panelInventario: '/panel/inventario',
   panelUbicaciones: '/panel/ubicaciones',
 } as const;
 
@@ -47,7 +49,8 @@ export const enrutador = createBrowserRouter([
       </RutaProtegida>
     ),
     children: [
-      { index: true, element: <Navigate to={rutas.panelUbicaciones} replace /> },
+      { index: true, element: <Navigate to={rutas.panelInventario} replace /> },
+      { path: 'inventario', element: <PaginaInventario /> },
       { path: 'ubicaciones', element: <PaginaUbicacionesPanel /> },
     ],
   },
