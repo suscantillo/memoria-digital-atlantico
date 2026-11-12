@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -64,7 +65,7 @@ export class UsuariosController {
   @ApiOperation({ summary: 'Cambiar el rol de una cuenta del personal' })
   @ApiOkResponse({ type: UsuarioAdministradoDto })
   cambiarRol(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() datos: CambiarRolUsuarioDto,
     @UsuarioActual() administrador: UsuarioAutenticado,
   ): Promise<UsuarioAdministradoDto> {
@@ -75,16 +76,16 @@ export class UsuariosController {
   @ApiOperation({ summary: 'Desactivar una cuenta y revocar sus sesiones' })
   @ApiOkResponse({ type: UsuarioAdministradoDto })
   desactivar(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @UsuarioActual() administrador: UsuarioAutenticado,
   ): Promise<UsuarioAdministradoDto> {
     return this.desactivarUsuario.ejecutar(id, administrador.id);
   }
 
-  @Patch(':id/activar')
+  @Patch(':id/reactivar')
   @ApiOperation({ summary: 'Reactivar una cuenta desactivada' })
   @ApiOkResponse({ type: UsuarioAdministradoDto })
-  reactivar(@Param('id') id: string): Promise<UsuarioAdministradoDto> {
+  reactivar(@Param('id', ParseUUIDPipe) id: string): Promise<UsuarioAdministradoDto> {
     return this.reactivarUsuario.ejecutar(id);
   }
 }

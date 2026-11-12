@@ -163,7 +163,7 @@ describe('Administración de usuarios (e2e)', () => {
       .expect(401);
 
     await request(app.getHttpServer())
-      .patch(`/api/v1/usuarios/${usuarioCreado.id}/activar`)
+      .patch(`/api/v1/usuarios/${usuarioCreado.id}/reactivar`)
       .set('Authorization', `Bearer ${tokenAdministrador}`)
       .expect(200)
       .then(({ body }) => expect((body as UsuarioRespuesta).activo).toBe(true));

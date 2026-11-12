@@ -86,7 +86,7 @@ export class PrismaUsuarioRepositorio implements UsuarioRepositorio {
     try {
       const fila = await this.prisma.$transaction(async (transaccion) => {
         const usuario = await transaccion.usuario.update({
-          where: { id },
+          where: { id, rol: { in: ['ADMIN', 'PERSONAL'] } },
           data: { rol },
         });
         await transaccion.sesion.updateMany({
@@ -108,7 +108,7 @@ export class PrismaUsuarioRepositorio implements UsuarioRepositorio {
     try {
       const fila = await this.prisma.$transaction(async (transaccion) => {
         const usuario = await transaccion.usuario.update({
-          where: { id },
+          where: { id, rol: { in: ['ADMIN', 'PERSONAL'] } },
           data: { activo: false },
         });
         await transaccion.sesion.updateMany({
@@ -129,7 +129,7 @@ export class PrismaUsuarioRepositorio implements UsuarioRepositorio {
   async reactivar(id: string): Promise<Usuario> {
     try {
       const fila = await this.prisma.usuario.update({
-        where: { id },
+        where: { id, rol: { in: ['ADMIN', 'PERSONAL'] } },
         data: { activo: true },
       });
       return UsuarioMapper.aEntidad(fila);
