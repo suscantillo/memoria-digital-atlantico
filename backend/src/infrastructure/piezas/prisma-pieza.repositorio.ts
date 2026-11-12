@@ -35,14 +35,20 @@ export class PrismaPiezaRepositorio implements PiezaRepositorio {
       const siguiente = ultimaPieza ? CodigoPieza.desde(ultimaPieza.codigo).consecutivo + 1 : 1;
       const codigo = CodigoPieza.generar(anioRegistro, siguiente);
 
+      const pieza = Pieza.crear({
+        ...datos,
+        codigo,
+        estado: 'REGISTRADA',
+      });
+
       const fila = await transaccion.pieza.create({
         data: {
-          codigo: codigo.valor,
-          titulo: datos.titulo,
-          tipo: datos.tipo,
-          estado: 'REGISTRADA',
-          anio: datos.anio,
-          ubicacionId: datos.ubicacionId,
+          codigo: pieza.codigo.valor,
+          titulo: pieza.titulo,
+          tipo: pieza.tipo,
+          estado: pieza.estado,
+          anio: pieza.anio,
+          ubicacionId: pieza.ubicacionId,
         },
       });
 
@@ -50,8 +56,8 @@ export class PrismaPiezaRepositorio implements PiezaRepositorio {
         data: {
           piezaId: fila.id,
           usuarioId,
-          accion: 'REGISTRADA',
-          detalle: `Pieza registrada con código ${codigo.valor}.`,
+          accion: pieza.estado,
+          detalle: `Pieza registrada con código ${pieza.codigo.valor}.`,
         },
       });
 
