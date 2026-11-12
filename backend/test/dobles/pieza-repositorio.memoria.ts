@@ -1,8 +1,4 @@
-
-import {
-  construirMeta,
-  ResultadoPaginado,
-} from '../../src/domain/comun/paginacion';
+import { construirMeta, ResultadoPaginado } from '../../src/domain/comun/paginacion';
 import { CodigoPieza } from '../../src/domain/piezas/codigo-pieza';
 import { Pieza } from '../../src/domain/piezas/pieza.entity';
 import {
@@ -10,8 +6,10 @@ import {
   PiezaRepositorio,
 } from '../../src/domain/piezas/pieza.repositorio';
 
-export class PiezaRepositorioMemoria
-  implements Pick<PiezaRepositorio, 'buscarPorCodigo' | 'listarPublicadas'> {
+export class PiezaRepositorioMemoria implements Pick<
+  PiezaRepositorio,
+  'buscarPorCodigo' | 'listarPublicadas'
+> {
   readonly piezas = new Map<string, Pieza>();
 
   agregar(pieza: Pieza): void {
@@ -19,14 +17,10 @@ export class PiezaRepositorioMemoria
   }
 
   buscarPorCodigo(codigo: CodigoPieza): Promise<Pieza | null> {
-    return Promise.resolve(
-      this.piezas.get(codigo.valor) ?? null,
-    );
+    return Promise.resolve(this.piezas.get(codigo.valor) ?? null);
   }
 
-  listarPublicadas(
-    params: ParametrosListarPublicadas,
-  ): Promise<ResultadoPaginado<Pieza>> {
+  listarPublicadas(params: ParametrosListarPublicadas): Promise<ResultadoPaginado<Pieza>> {
     const { texto, tipo, decada, incluirRestringidas } = params.filtros;
     const buscado = texto?.toLowerCase();
 
@@ -39,25 +33,16 @@ export class PiezaRepositorioMemoria
 
     const filtradas = [...this.piezas.values()]
       .filter((pieza) => pieza.estaPublicada())
-      .filter(
-        (pieza) => incluirRestringidas || !pieza.restringida,
-      )
-      .filter(
-        (pieza) => !tipo || pieza.tipo === tipo,
-      )
+      .filter((pieza) => incluirRestringidas || !pieza.restringida)
+      .filter((pieza) => !tipo || pieza.tipo === tipo)
       .filter(
         (pieza) =>
           decada === undefined ||
-          (pieza.anio !== null &&
-            pieza.anio >= decada &&
-            pieza.anio < decada + 10),
+          (pieza.anio !== null && pieza.anio >= decada && pieza.anio < decada + 10),
       )
       .filter(
         (pieza) =>
-          !buscado ||
-          `${pieza.titulo} ${pieza.descripcion ?? ''}`
-            .toLowerCase()
-            .includes(buscado),
+          !buscado || `${pieza.titulo} ${pieza.descripcion ?? ''}`.toLowerCase().includes(buscado),
       )
       .sort((a, b) => {
         if (a.restringida !== b.restringida) {
@@ -69,9 +54,7 @@ export class PiezaRepositorioMemoria
 
         const comparacion = va < vb ? -1 : va > vb ? 1 : 0;
 
-        return params.direccion === 'asc'
-          ? comparacion
-          : -comparacion;
+        return params.direccion === 'asc' ? comparacion : -comparacion;
       });
 
     const inicio = (params.pagina - 1) * params.limite;
