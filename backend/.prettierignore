@@ -4,3 +4,4 @@ coverage
 storage
 package-lock.json
 prisma/migrations
+pnpm-lock.yaml

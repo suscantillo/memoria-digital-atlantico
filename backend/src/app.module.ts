@@ -7,6 +7,7 @@ import { Configuracion } from './infrastructure/config/configuracion';
 import { ConfiguracionModule } from './infrastructure/config/configuracion.module';
 import { PrismaModule } from './infrastructure/prisma/prisma.module';
 import { AuthModule } from './presentation/auth/auth.module';
+import { PiezasModule } from './presentation/piezas/piezas.module';
 import { GuardiaJwt } from './presentation/comun/guards/guardia-jwt.guard';
 import { GuardiaRoles } from './presentation/comun/guards/guardia-roles.guard';
 import { ArchivosModule } from './presentation/archivos/archivos.module';
@@ -50,6 +51,7 @@ const RUTAS_SIN_LOG = new Set(['/api/v1/health']);
     SeguridadModule,
     SaludModule,
     AuthModule,
+    PiezasModule,
     UbicacionesModule,
     PortalModule,
     QrModule,

@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { PaginaCargarEscaneo } from '../features/archivos/paginas/PaginaCargarEscaneo';
 import { PaginaInventario } from '../features/inventario/paginas/PaginaInventario';
 import { PaginaIngresar } from '../features/auth/paginas/PaginaIngresar';
+import { PaginaNuevaPieza } from '../features/piezas/paginas/PaginaNuevaPieza';
 import { PaginaPrivacidad } from '../features/auth/paginas/PaginaPrivacidad';
 import { PaginaRegistro } from '../features/auth/paginas/PaginaRegistro';
 import { PaginaExplorar } from '../features/portal/paginas/PaginaExplorar';
@@ -25,6 +26,7 @@ export const rutas = {
   panel: '/panel',
   panelInventario: '/panel/inventario',
   panelUbicaciones: '/panel/ubicaciones',
+  panelNuevaPieza: '/panel/piezas/nueva',
 } as const;
 
 export const enrutador = createBrowserRouter([
@@ -54,6 +56,7 @@ export const enrutador = createBrowserRouter([
       { path: 'inventario', element: <PaginaInventario /> },
       { path: 'escaneo/:codigo', element: <PaginaCargarEscaneo /> },
       { path: 'ubicaciones', element: <PaginaUbicacionesPanel /> },
+      { path: 'piezas/nueva', element: <PaginaNuevaPieza /> },
     ],
   },
 ]);

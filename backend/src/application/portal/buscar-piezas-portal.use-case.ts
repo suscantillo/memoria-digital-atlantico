@@ -4,11 +4,13 @@ import { BuscarPiezasPortalDto } from './dto/buscar-piezas-portal.dto';
 import { PiezaPortalDto } from './dto/pieza-portal.dto';
 
 export class BuscarPiezasPortal {
-  constructor(private readonly piezas: PiezaRepositorio) {}
+  constructor(private readonly piezas: Pick<PiezaRepositorio, 'listarPublicadas'>) {}
 
   async ejecutar(consulta: BuscarPiezasPortalDto): Promise<ResultadoPaginadoDto<PiezaPortalDto>> {
     const texto = consulta.busqueda?.trim() || undefined;
-    // Buscar por texto o década sobre una pieza restringida revelaría el título o el año que el portal oculta.
+
+    // Buscar por texto o década sobre una pieza restringida revelaría
+    // el título o el año que el portal debe ocultar.
     const filtraPorDatosOcultos = texto !== undefined || consulta.decada !== undefined;
 
     const resultado = await this.piezas.listarPublicadas({
