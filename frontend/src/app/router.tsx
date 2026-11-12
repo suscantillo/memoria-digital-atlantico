@@ -4,6 +4,7 @@ import { PaginaExplorar } from '../features/portal/paginas/PaginaExplorar';
 import { PaginaInicio } from '../features/portal/paginas/PaginaInicio';
 import { PaginaNoEncontrada } from '../features/portal/paginas/PaginaNoEncontrada';
 import { PaginaPieza } from '../features/portal/paginas/PaginaPieza';
+import { PaginaEscanear } from '../features/qr/paginas/PaginaEscanear';
 import { PaginaUbicacionesPanel } from '../features/ubicaciones/paginas/PaginaUbicacionesPanel';
 import { RutaProtegida } from '../shared/componentes/RutaProtegida';
 import { LayoutPanel } from '../shared/layouts/LayoutPanel';
@@ -13,6 +14,7 @@ export const rutas = {
   inicio: '/',
   explorar: '/explorar',
   pieza: '/p/:codigo',
+  escanear: '/escanear',
   ingresar: '/ingresar',
   panel: '/panel',
   panelUbicaciones: '/panel/ubicaciones',
@@ -25,6 +27,7 @@ export const enrutador = createBrowserRouter([
       { path: rutas.inicio, element: <PaginaInicio /> },
       { path: rutas.explorar, element: <PaginaExplorar /> },
       { path: rutas.pieza, element: <PaginaPieza /> },
+      { path: rutas.escanear, element: <PaginaEscanear /> },
       { path: rutas.ingresar, element: <PaginaIngresar /> },
       // dentro del layout público, para que quien se pierda conserve el menú
       { path: '*', element: <PaginaNoEncontrada /> },

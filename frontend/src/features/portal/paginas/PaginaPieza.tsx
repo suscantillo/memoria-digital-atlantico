@@ -156,7 +156,9 @@ function BienvenidaQr({ codigo }: { codigo: string }) {
           sx={{
             position: 'absolute',
             right: { xs: 0, md: 40 },
-            bottom: { xs: -24, md: 6 },
+            // en el celular va arriba, para no tapar el texto de la bienvenida
+            top: { xs: -4, md: 'auto' },
+            bottom: { xs: 'auto', md: 6 },
             px: 1.5,
             py: 1,
             border: `4px solid ${colores.amarillo}`,
