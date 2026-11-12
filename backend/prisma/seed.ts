@@ -153,14 +153,27 @@ const piezas: PiezaSemilla[] = [
   },
 ];
 
+// La cuenta PUBLICO de la demo queda como si se hubiera registrado aceptando el aviso vigente.
+function consentimiento(u: UsuarioSemilla) {
+  return u.rol === 'PUBLICO'
+    ? { consentimientoEn: new Date('2026-11-01T15:00:00.000Z'), versionPrivacidad: '1' }
+    : {};
+}
+
 async function sembrarUsuarios(): Promise<Map<RolUsuario, string>> {
   const ids = new Map<RolUsuario, string>();
   for (const u of usuarios) {
     const contrasenaHash = await hash(u.contrasena, RONDAS_BCRYPT);
     const fila = await prisma.usuario.upsert({
       where: { correo: u.correo },
-      create: { nombre: u.nombre, correo: u.correo, rol: u.rol, contrasenaHash },
-      update: { nombre: u.nombre, rol: u.rol, contrasenaHash, activo: true },
+      create: {
+        nombre: u.nombre,
+        correo: u.correo,
+        rol: u.rol,
+        contrasenaHash,
+        ...consentimiento(u),
+      },
+      update: { nombre: u.nombre, rol: u.rol, contrasenaHash, activo: true, ...consentimiento(u) },
     });
     ids.set(u.rol, fila.id);
   }

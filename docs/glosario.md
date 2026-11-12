@@ -8,7 +8,7 @@ glosario, el dominio, Prisma, la API y la UI a la vez.
 
 | Término            | Definición                                                                                                                                                                                                                               |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Usuario**        | Persona con cuenta. Roles: `ADMIN`, `PERSONAL`, `PUBLICO`. El visitante sin cuenta no tiene rol (petición sin token).                                                                                                                    |
+| **Usuario**        | Persona con cuenta. Roles: `ADMIN`, `PERSONAL`, `PUBLICO`. El visitante sin cuenta no tiene rol (petición sin token). Las cuentas `PUBLICO` guardan `consentimiento_en` y `version_privacidad` del aviso aceptado.                       |
 | **Ubicacion**      | Lugar físico de una pieza: depósito, estantería y caja. La terna es única.                                                                                                                                                               |
 | **Pieza**          | Elemento del archivo. Tipo `DOCUMENTO`, `FOTOGRAFIA` o `PERIODICO`. Estado `REGISTRADA`, `ESCANEADA`, `REVISADA` o `PUBLICADA`. Código único `MDA-AAAA-NNNN`. Puede ser `restringida`: en el portal solo se muestra su tipo y ubicación. |
 | **ArchivoDigital** | Escaneo de una pieza. Estado `EN_REVISION`, `APROBADO` o `RECHAZADO`; si se rechaza lleva `motivo_rechazo`.                                                                                                                              |
@@ -42,6 +42,7 @@ En español, bajo `/api/v1`. Las historias usan estos nombres tal cual.
 
 | Ruta                     | Método | Acceso                          | Qué hace                                                                 |
 | ------------------------ | ------ | ------------------------------- | ------------------------------------------------------------------------ |
+| `/auth/registro`         | POST   | pública                         | Crea una cuenta `PUBLICO`; exige aceptar la versión vigente del aviso.   |
 | `/auth/ingresar`         | POST   | pública                         | Correo y contraseña; devuelve token de acceso, refresh token y usuario.  |
 | `/auth/refrescar`        | POST   | pública, lleva el refresh token | Rota la sesión: revoca la anterior y devuelve tokens nuevos.             |
 | `/auth/salir`            | POST   | pública, lleva el refresh token | Revoca la sesión. Responde 204 aunque el token ya no sirva.              |
@@ -56,7 +57,7 @@ Documentación en `/docs`.
 
 ### Previstas
 
-`/auth/registro`, `/auth/cuenta`, `/usuarios`, `/piezas` y `/archivos`.
+`/auth/cuenta`, `/usuarios`, `/piezas` y `/archivos`.
 
 Todas las rutas de panel exigen `PERSONAL` o `ADMIN`. Solo son públicas `/portal/*`, `/auth/registro`,
 `/auth/ingresar`, `/auth/refrescar` y `/health`.
