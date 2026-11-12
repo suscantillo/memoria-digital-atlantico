@@ -1,14 +1,23 @@
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import { keyframes } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { colores } from '../../../app/tema';
+import { BuscadorPortal } from '../componentes/BuscadorPortal';
 import { HeroAduana, type Mouse } from '../componentes/HeroAduana';
+import {
+  AbreUnaCaja,
+  EstasEnLaAduana,
+  RecienSalidas,
+  ViajaEnElTiempo,
+} from '../componentes/SeccionesPortada';
 import { DURACION_TELON, TelonEntrada } from '../componentes/TelonEntrada';
+import { rutaExplorar } from '../explorar';
 
 const entrar = keyframes`
   from { opacity: 0; transform: translateY(32px); }
@@ -81,6 +90,7 @@ function Palabra({ texto, retraso }: { texto: string; retraso: number }) {
 
 export function PaginaInicio() {
   const { state } = useLocation() as { state?: { sinPermiso?: boolean } };
+  const navegar = useNavigate();
   const [mouse, setMouse] = useState<Mouse>({ x: 0, y: 0 });
   // noSsr: hay que saberlo en el primer render, antes de decidir si se muestra el telón
   const menosMovimiento = useMediaQuery('(prefers-reduced-motion: reduce)', { noSsr: true });
@@ -260,6 +270,25 @@ export function PaginaInicio() {
             >
               Documentos, fotografías y periódicos de nuestra historia, sin sacarlos de su caja.
             </Typography>
+            <Box sx={{ mt: apilado ? 0.5 : 0.75, ...aparecer(0.36) }}>
+              <BuscadorPortal
+                compacto={apilado}
+                onBuscar={(busqueda) => navegar(rutaExplorar({ busqueda }))}
+              />
+            </Box>
+            <Link
+              component={RouterLink}
+              to={rutaExplorar()}
+              sx={{
+                alignSelf: 'flex-start',
+                fontSize: apilado ? 16 : 18,
+                fontWeight: 700,
+                color: colores.azulMarino,
+                ...aparecer(0.48),
+              }}
+            >
+              o recorre todo el archivo →
+            </Link>
           </Box>
 
           {/* en el celular la imagen va primero, como en el diseño móvil */}
@@ -312,6 +341,13 @@ export function PaginaInicio() {
           ))}
         </Box>
       </Box>
+
+      <Stack spacing={{ xs: 9, md: 12 }} sx={{ pt: { xs: 4, md: 6 } }}>
+        <AbreUnaCaja />
+        <RecienSalidas />
+        <ViajaEnElTiempo />
+        <EstasEnLaAduana />
+      </Stack>
     </Stack>
   );
 }
