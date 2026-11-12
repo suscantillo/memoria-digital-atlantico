@@ -21,7 +21,7 @@ export class UsuarioRepositorioMemoria implements UsuarioRepositorio {
   }
 
   crear(usuario: Usuario): Promise<Usuario> {
-    this.usuarios.set(usuario.id, usuario);
+    this.agregar(usuario);
     return Promise.resolve(usuario);
   }
 
@@ -48,7 +48,7 @@ export class UsuarioRepositorioMemoria implements UsuarioRepositorio {
     });
   }
 
-  cambiarRol(id: string, rol: RolUsuario): Promise<Usuario> {
+  cambiarRol(id: string, rol: RolUsuario, fecha?: Date): Promise<Usuario> {
     const usuario = this.usuarios.get(id);
     if (!usuario)
       return Promise.reject(new ErrorNoEncontrado(`No se encontró el usuario "${id}".`));
@@ -59,14 +59,16 @@ export class UsuarioRepositorioMemoria implements UsuarioRepositorio {
       contrasenaHash: usuario.contrasenaHash,
       rol,
       activo: usuario.activo,
+      consentimientoEn: usuario.consentimientoEn,
+      versionPrivacidad: usuario.versionPrivacidad,
       creadoEn: usuario.creadoEn,
-      actualizadoEn: new Date(),
+      actualizadoEn: fecha ?? new Date(),
     });
     this.usuarios.set(id, actualizado);
     return Promise.resolve(actualizado);
   }
 
-  desactivar(id: string): Promise<Usuario> {
+  desactivar(id: string, fecha?: Date): Promise<Usuario> {
     const usuario = this.usuarios.get(id);
     if (!usuario)
       return Promise.reject(new ErrorNoEncontrado(`No se encontró el usuario "${id}".`));
@@ -77,8 +79,10 @@ export class UsuarioRepositorioMemoria implements UsuarioRepositorio {
       contrasenaHash: usuario.contrasenaHash,
       rol: usuario.rol,
       activo: false,
+      consentimientoEn: usuario.consentimientoEn,
+      versionPrivacidad: usuario.versionPrivacidad,
       creadoEn: usuario.creadoEn,
-      actualizadoEn: new Date(),
+      actualizadoEn: fecha ?? new Date(),
     });
     this.usuarios.set(id, actualizado);
     return Promise.resolve(actualizado);
@@ -95,6 +99,8 @@ export class UsuarioRepositorioMemoria implements UsuarioRepositorio {
       contrasenaHash: usuario.contrasenaHash,
       rol: usuario.rol,
       activo: true,
+      consentimientoEn: usuario.consentimientoEn,
+      versionPrivacidad: usuario.versionPrivacidad,
       creadoEn: usuario.creadoEn,
       actualizadoEn: new Date(),
     });

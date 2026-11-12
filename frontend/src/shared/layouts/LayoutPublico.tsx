@@ -5,7 +5,7 @@ import Container from '@mui/material/Container';
 import Link from '@mui/material/Link';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import { Link as RouterLink, NavLink, Outlet } from 'react-router-dom';
+import { Link as RouterLink, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { EnlaceSaltar, ID_CONTENIDO } from '../componentes/EnlaceSaltar';
 
@@ -16,8 +16,14 @@ const estiloNav = {
 } as const;
 
 export function LayoutPublico() {
-  const { usuario } = useAuth();
+  const { usuario, salir } = useAuth();
+  const navegar = useNavigate();
   const puedeEntrarAlPanel = usuario?.rol === 'ADMIN' || usuario?.rol === 'PERSONAL';
+
+  const cerrarSesion = async () => {
+    await salir();
+    navegar('/', { replace: true });
+  };
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -39,6 +45,15 @@ export function LayoutPublico() {
             <Button component={NavLink} to="/panel" sx={estiloNav}>
               Panel
             </Button>
+          ) : usuario ? (
+            <>
+              <Typography variant="body2" sx={{ px: 1.5 }}>
+                {usuario.nombre} ({usuario.rol})
+              </Typography>
+              <Button color="inherit" onClick={cerrarSesion} sx={estiloNav}>
+                Salir
+              </Button>
+            </>
           ) : (
             <Button component={NavLink} to="/ingresar" variant="outlined" sx={estiloNav}>
               Ingresar

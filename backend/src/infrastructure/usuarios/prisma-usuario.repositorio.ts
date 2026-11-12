@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { ErrorNoEncontrado } from '../../domain/comun/errores';
 import { ResultadoPaginado, construirMeta } from '../../domain/comun/paginacion';
-import { CorreoUsuarioDuplicadoError } from '../../domain/usuarios/usuario.errores';
 import { RolUsuario } from '../../domain/usuarios/rol-usuario';
 import { Usuario } from '../../domain/usuarios/usuario.entity';
+import { CorreoUsuarioDuplicadoError } from '../../domain/usuarios/usuario.errores';
 import {
   ParametrosListadoUsuarios,
   UsuarioRepositorio,
@@ -36,6 +36,8 @@ export class PrismaUsuarioRepositorio implements UsuarioRepositorio {
           contrasenaHash: usuario.contrasenaHash,
           rol: usuario.rol,
           activo: usuario.activo,
+          consentimientoEn: usuario.consentimientoEn,
+          versionPrivacidad: usuario.versionPrivacidad,
           creadoEn: usuario.creadoEn,
           actualizadoEn: usuario.actualizadoEn,
         },
