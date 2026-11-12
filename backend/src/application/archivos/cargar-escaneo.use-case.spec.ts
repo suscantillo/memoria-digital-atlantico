@@ -41,6 +41,9 @@ class AlmacenMemoria implements AlmacenArchivos {
     this.guardados.push(ruta);
     return Promise.resolve(ruta);
   }
+  leer(): Promise<Uint8Array | null> {
+    return Promise.resolve(null);
+  }
   borrar(ruta: string): Promise<void> {
     this.borrados.push(ruta);
     return Promise.resolve();

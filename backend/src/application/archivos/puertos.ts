@@ -41,5 +41,7 @@ export interface Escaneos {
 /** Donde se guarda el archivo; la base solo guarda la ruta. */
 export interface AlmacenArchivos {
   guardar(contenido: Uint8Array, extension: string): Promise<string>;
+  /** null si el archivo ya no está en el almacén. */
+  leer(ruta: string): Promise<Uint8Array | null>;
   borrar(ruta: string): Promise<void>;
 }

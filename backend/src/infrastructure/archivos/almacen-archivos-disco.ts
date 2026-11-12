@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'node:crypto';
-import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join, resolve, sep } from 'node:path';
 import { AlmacenArchivos } from '../../application/archivos/puertos';
 import { Configuracion } from '../config/configuracion';
@@ -27,6 +27,17 @@ export class AlmacenArchivosDisco implements AlmacenArchivos {
     // wx: nunca sobrescribe un archivo existente
     await writeFile(join(this.raiz, ruta), contenido, { flag: 'wx' });
     return ruta.split(sep).join('/');
+  }
+
+  async leer(ruta: string): Promise<Uint8Array | null> {
+    const absoluta = resolve(this.raiz, ruta);
+    if (!absoluta.startsWith(this.raiz + sep)) return null;
+    try {
+      return await readFile(absoluta);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
+      throw error;
+    }
   }
 
   async borrar(ruta: string): Promise<void> {
