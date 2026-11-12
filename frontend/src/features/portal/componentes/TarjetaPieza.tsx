@@ -2,6 +2,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Box from '@mui/material/Box';
 import Skeleton from '@mui/material/Skeleton';
 import { useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import { colores } from '../../../app/tema';
 import { NOMBRE_TIPO, type PiezaPortal, type TipoPieza } from '../tipos';
 import { IconoTipo } from './IconoTipo';
@@ -71,9 +72,12 @@ export function TarjetaPieza({ pieza, giro = 0 }: Props) {
 
   return (
     <Box
-      component="article"
+      component={RouterLink}
+      to={`/p/${pieza.codigo}`}
       aria-label={`${titulo}, ${pieza.codigo}`}
       sx={{
+        display: 'block',
+        textDecoration: 'none',
         position: 'relative',
         width: '100%',
         maxWidth: 260,
