@@ -2,6 +2,7 @@ import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
 import { ServicioTokensFalso } from '../../../../test/dobles/seguridad.memoria';
+import { UsuarioRepositorioMemoria } from '../../../../test/dobles/usuario-repositorio.memoria';
 import { Autenticado } from '../decoradores/autenticado.decorator';
 import { Publica } from '../decoradores/publica.decorator';
 import { SesionOpcional } from '../decoradores/sesion-opcional.decorator';
@@ -43,7 +44,8 @@ function contexto(
 
 describe('Guardias de autenticación y roles', () => {
   const reflector = new Reflector();
-  const jwt = new GuardiaJwt(new ServicioTokensFalso(), reflector);
+  const usuarios = new UsuarioRepositorioMemoria();
+  const jwt = new GuardiaJwt(new ServicioTokensFalso(), usuarios, reflector);
   const roles = new GuardiaRoles(reflector);
 
   async function pasa(clase: new () => object, metodo: string, token?: string) {
