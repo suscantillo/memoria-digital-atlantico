@@ -7,6 +7,7 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MensajeError } from '../../../shared/componentes/MensajeError';
 import { useUbicaciones } from '../../ubicaciones/hooks';
 import { useCrearPieza } from '../hooks';
@@ -31,6 +32,7 @@ export function PaginaNuevaPieza() {
   const [anio, setAnio] = useState('');
   const [ubicacionId, setUbicacionId] = useState('');
   const [intentado, setIntentado] = useState(false);
+  const navegar = useNavigate();
   const ubicaciones = useUbicaciones(PARAMETROS_UBICACIONES);
   const crear = useCrearPieza();
 
@@ -42,6 +44,7 @@ export function PaginaNuevaPieza() {
 
   const enviar = (evento: FormEvent<HTMLFormElement>) => {
     evento.preventDefault();
+    if (crear.isPending || crear.isSuccess) return;
     setIntentado(true);
     if (tituloInvalido || anioInvalido || ubicacionInvalida || tipoInvalido) return;
 
@@ -51,7 +54,9 @@ export function PaginaNuevaPieza() {
       anio: anioNumero,
       ubicacionId,
     };
-    crear.mutate(datos);
+    crear.mutate(datos, {
+      onSuccess: () => navegar('/panel/inventario', { replace: true }),
+    });
   };
 
   return (
@@ -146,7 +151,9 @@ export function PaginaNuevaPieza() {
           <Button
             type="submit"
             variant="contained"
-            disabled={crear.isPending || ubicaciones.isPending || ubicaciones.isError}
+            disabled={
+              crear.isPending || crear.isSuccess || ubicaciones.isPending || ubicaciones.isError
+            }
           >
             {crear.isPending ? 'Registrando…' : 'Registrar pieza'}
           </Button>
