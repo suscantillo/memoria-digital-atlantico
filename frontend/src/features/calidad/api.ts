@@ -1,6 +1,11 @@
 import { clienteApi } from '../../shared/api/cliente';
 import type { ResultadoPaginado } from '../../shared/tipos/api';
-import type { ArchivoEnRevision, CriteriosCalidad } from './tipos';
+import type {
+  ArchivoEnRevision,
+  CriteriosCalidad,
+  ParametrosArchivos,
+  PersonaArchivo,
+} from './tipos';
 
 const TODOS_LOS_CRITERIOS: CriteriosCalidad = {
   legible: true,
@@ -9,10 +14,35 @@ const TODOS_LOS_CRITERIOS: CriteriosCalidad = {
 };
 
 export const calidadApi = {
-  /** La cola: lo más antiguo primero, como se revisa en la sala. */
-  async cola(): Promise<ResultadoPaginado<ArchivoEnRevision>> {
+  /**
+   * La cola: lo más antiguo primero, como se revisa en la sala. El PERSONAL pide solo lo que le
+   * asignaron (HU-23); el ADMIN la pide entera y la reparte por pestañas.
+   */
+  async cola(soloAsignados: boolean): Promise<ResultadoPaginado<ArchivoEnRevision>> {
+    return calidadApi.listar({
+      estado: 'EN_REVISION',
+      direccion: 'asc',
+      limite: 100,
+      ...(soloAsignados ? { revisor: 'yo' } : {}),
+    });
+  },
+
+  async listar(params: ParametrosArchivos): Promise<ResultadoPaginado<ArchivoEnRevision>> {
     const { data } = await clienteApi.get<ResultadoPaginado<ArchivoEnRevision>>('/archivos', {
-      params: { estado: 'EN_REVISION', orden: 'creadoEn', direccion: 'asc', limite: 100 },
+      params: { orden: 'creadoEn', ...params },
+    });
+    return data;
+  },
+
+  /** Cuentas PERSONAL activas a las que se puede asignar una revisión (HU-23). */
+  async revisores(): Promise<PersonaArchivo[]> {
+    const { data } = await clienteApi.get<PersonaArchivo[]>('/archivos/revisores');
+    return data;
+  },
+
+  async asignar(id: string, revisorId: string): Promise<ArchivoEnRevision> {
+    const { data } = await clienteApi.post<ArchivoEnRevision>(`/archivos/${id}/asignar`, {
+      revisorId,
     });
     return data;
   },

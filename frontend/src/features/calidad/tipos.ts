@@ -14,7 +14,9 @@ export interface ArchivoEnRevision {
   revisadoEn: string | null;
   /** Ruta del contenido; pide la sesión del panel. */
   url: string;
-  subidoPor: { nombre: string; correo: string };
+  subidoPor: PersonaArchivo;
+  /** HU-23: quién debe revisarlo; null mientras el administrador no lo asigne. */
+  revisor: PersonaArchivo | null;
   pieza: {
     id: string;
     codigo: string;
@@ -26,6 +28,25 @@ export interface ArchivoEnRevision {
     autor: string | null;
     palabrasClave: string[];
   };
+}
+
+export interface PersonaArchivo {
+  id: string;
+  nombre: string;
+  correo: string;
+}
+
+/**
+ * Filtros de GET /archivos. `revisor`: «yo» (lo asignado a quien pregunta), «ninguno» (sin
+ * asignar) o el id de una cuenta. `subidoPor`: «yo» para «Mis escaneos».
+ */
+export interface ParametrosArchivos {
+  estado?: EstadoArchivo;
+  revisor?: string;
+  subidoPor?: 'yo';
+  pagina?: number;
+  limite?: number;
+  direccion?: 'asc' | 'desc';
 }
 
 /** Los tres criterios de la lista de calidad; el backend solo aprueba con los tres en true. */
