@@ -41,6 +41,7 @@ function fabricarArchivo(
     subidoPorId: '55555555-5555-5555-5555-555555555555',
     revisadoPorId: null,
     revisadoEn: null,
+    revisorAsignadoId: REVISOR_ID,
     creadoEn: AHORA,
   });
 }

@@ -62,6 +62,7 @@ function aEntidad(fila: FilaArchivo): ArchivoDigital {
     subidoPorId: fila.subidoPorId,
     revisadoPorId: fila.revisadoPorId,
     revisadoEn: fila.revisadoEn,
+    revisorAsignadoId: fila.revisorAsignadoId,
     creadoEn: fila.creadoEn,
   });
 }
