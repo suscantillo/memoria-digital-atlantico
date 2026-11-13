@@ -9,10 +9,13 @@ import { AppModule } from '../src/app.module';
 import { configurarApp } from '../src/configurar-app';
 import { RolUsuario } from '../src/domain/usuarios/rol-usuario';
 import { CLAVE_PUBLICA } from '../src/presentation/comun/decoradores/publica.decorator';
+import { CLAVE_SESION_OPCIONAL } from '../src/presentation/comun/decoradores/sesion-opcional.decorator';
 
 // Las únicas rutas que se pueden usar sin token. Si una historia abre otra (por ejemplo
-// GET /portal/piezas), se agrega aquí a propósito.
+// GET /portal/piezas), se agrega aquí a propósito. GET /archivos/:id/contenido es de sesión
+// opcional: responde sin token, pero su caso de uso decide qué entrega a cada quien.
 const RUTAS_PUBLICAS = [
+  'GET /archivos/:id/contenido',
   'GET /health',
   'GET /portal/piezas',
   'GET /portal/piezas/:codigo',
@@ -54,7 +57,7 @@ describe('Autorización por roles (e2e)', () => {
   const servidor = () => app.getHttpServer();
   const con = (rol: RolUsuario) => ({ Authorization: `Bearer ${tokens[rol]}` });
 
-  it('solo las rutas marcadas con @Publica se pueden usar sin token', () => {
+  it('solo las rutas marcadas con @Publica o @SesionOpcional se pueden usar sin token', () => {
     const descubrimiento = app.get(DiscoveryService);
     const escaner = app.get(MetadataScanner);
     const reflector = app.get(Reflector);
@@ -68,11 +71,10 @@ describe('Autorización por roles (e2e)', () => {
         const manejador = prototipo[nombre];
         const metodo = Reflect.getMetadata(METHOD_METADATA, manejador) as RequestMethod | undefined;
         if (metodo === undefined) continue;
-        const esPublica = reflector.getAllAndOverride<boolean>(CLAVE_PUBLICA, [
-          manejador,
-          metatype,
-        ]);
-        if (!esPublica) continue;
+        const abierta = [CLAVE_PUBLICA, CLAVE_SESION_OPCIONAL].some((clave) =>
+          reflector.getAllAndOverride<boolean>(clave, [manejador, metatype]),
+        );
+        if (!abierta) continue;
         const subruta = String(Reflect.getMetadata(PATH_METADATA, manejador) ?? '');
         const ruta = `/${[base, subruta].filter((p) => p && p !== '/').join('/')}`;
         publicas.push(`${RequestMethod[metodo]} ${ruta}`);

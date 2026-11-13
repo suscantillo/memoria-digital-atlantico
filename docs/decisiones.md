@@ -100,3 +100,15 @@ Las reglas viven en las entidades: `ArchivoDigital` solo se revisa si está `EN_
 para rechazar; `Pieza` solo cambia desde `ESCANEADA`. El repositorio guarda archivo, pieza y evento en
 una transacción y condiciona la escritura a que el archivo siga `EN_REVISION`, así dos revisiones
 simultáneas no se pisan.
+
+## 17. Una sola ruta entrega los escaneos y decide según quién pregunta
+
+`GET /archivos/:id/contenido` sirve al revisor, al visor del portal y a quien lee un PDF con su cuenta.
+En vez de tres rutas, la ruta es de sesión opcional (`@SesionOpcional`): pasa sin token, valida el que
+llegue y la regla `evaluarAccesoArchivo` del dominio decide. El personal ve todo. El público solo ve
+archivos `APROBADO` de piezas `PUBLICADA` no restringidas: las imágenes sin cuenta y los PDF con sesión,
+que es lo que pide HU-15.
+
+Lo que el público no puede ver responde 404 y no 403, igual que un archivo que no existe: un 403
+confirmaría que la pieza restringida o el escaneo en revisión están ahí. El 401 queda solo para el PDF
+publicado, porque ahí sí conviene decirle al visitante que con una cuenta lo puede leer.
