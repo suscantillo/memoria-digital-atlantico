@@ -5,6 +5,7 @@ import { TipoPieza } from '../../../domain/piezas/tipo-pieza';
 import { MetaPaginacionDto, ResultadoPaginadoDto } from '../../comun/dto/resultado-paginado.dto';
 
 export class UsuarioDelArchivoDto {
+  id!: string;
   nombre!: string;
   correo!: string;
 }
@@ -33,6 +34,8 @@ export class ArchivoDigitalDto {
   /** Ruta para ver el escaneo; pide la misma sesión del panel */
   url!: string;
   subidoPor!: UsuarioDelArchivoDto;
+  /** HU-23: quién debe revisarlo; null mientras el administrador no lo asigne */
+  revisor!: UsuarioDelArchivoDto | null;
   pieza!: PiezaDelArchivoDto;
 
   static desde(detalle: DetalleArchivoDigital): ArchivoDigitalDto {
@@ -47,6 +50,7 @@ export class ArchivoDigitalDto {
     dto.revisadoEn = detalle.revisadoEn ? detalle.revisadoEn.toISOString() : null;
     dto.url = `/api/v1/archivos/${detalle.id}/contenido`;
     dto.subidoPor = { ...detalle.subidoPor };
+    dto.revisor = detalle.revisor ? { ...detalle.revisor } : null;
     dto.pieza = { ...detalle.pieza, palabrasClave: [...detalle.pieza.palabrasClave] };
     return dto;
   }
