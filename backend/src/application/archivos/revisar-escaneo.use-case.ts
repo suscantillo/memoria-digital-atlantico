@@ -1,6 +1,7 @@
 import {
   ArchivoNoEncontradoError,
   ArchivoYaRevisadoError,
+  QuienRevisa,
 } from '../../domain/archivos/archivo-digital.entity';
 import {
   ArchivoDigitalRepositorio,
@@ -15,12 +16,15 @@ export abstract class RevisarEscaneo {
 
   protected async revisar(
     archivoId: string,
+    quien: QuienRevisa,
     decidir: (revision: RevisionEscaneo) => EventoRevision,
   ): Promise<ArchivoDigitalDto> {
     const revision = await this.archivos.buscarRevision(archivoId);
     if (!revision) {
       throw new ArchivoNoEncontradoError(archivoId);
     }
+    // HU-23: el PERSONAL solo revisa lo que le asignaron (403)
+    revision.archivo.exigirPuedeRevisar(quien);
     const evento = decidir(revision);
 
     const guardada = await this.archivos.guardarRevision(revision, evento);

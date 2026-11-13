@@ -19,6 +19,7 @@ import {
   ApiBody,
   ApiConflictResponse,
   ApiConsumes,
+  ApiForbiddenResponse,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -142,6 +143,7 @@ export class ArchivosController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Aprobar un escaneo EN_REVISION: la pieza queda PUBLICADA' })
   @ApiOkResponse({ type: ArchivoDigitalDto })
+  @ApiForbiddenResponse({ description: 'Es PERSONAL y no es el revisor asignado.' })
   @ApiNotFoundResponse({ description: 'El archivo no existe.' })
   @ApiConflictResponse({ description: 'El escaneo ya fue revisado.' })
   aprobar(
@@ -149,7 +151,7 @@ export class ArchivosController {
     @Body() _criterios: AprobarEscaneoDto,
     @UsuarioActual() usuario: UsuarioAutenticado,
   ): Promise<ArchivoDigitalDto> {
-    return this.aprobarEscaneo.ejecutar(id, usuario.id);
+    return this.aprobarEscaneo.ejecutar(id, usuario);
   }
 
   @Post(':id/rechazar')
@@ -159,6 +161,7 @@ export class ArchivosController {
     summary: 'Rechazar un escaneo EN_REVISION con motivo: la pieza vuelve a REGISTRADA',
   })
   @ApiOkResponse({ type: ArchivoDigitalDto })
+  @ApiForbiddenResponse({ description: 'Es PERSONAL y no es el revisor asignado.' })
   @ApiNotFoundResponse({ description: 'El archivo no existe.' })
   @ApiConflictResponse({ description: 'El escaneo ya fue revisado.' })
   rechazar(
@@ -166,7 +169,7 @@ export class ArchivosController {
     @Body() datos: RechazarEscaneoDto,
     @UsuarioActual() usuario: UsuarioAutenticado,
   ): Promise<ArchivoDigitalDto> {
-    return this.rechazarEscaneo.ejecutar(id, usuario.id, datos.motivoRechazo);
+    return this.rechazarEscaneo.ejecutar(id, usuario, datos.motivoRechazo);
   }
 
   @Post()
