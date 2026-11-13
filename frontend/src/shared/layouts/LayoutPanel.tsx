@@ -1,3 +1,4 @@
+import FactCheckIcon from '@mui/icons-material/FactCheck';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
 import MenuIcon from '@mui/icons-material/Menu';
 import PlaceIcon from '@mui/icons-material/Place';
@@ -16,9 +17,10 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import { useState } from 'react';
+import { useState, type ComponentType } from 'react';
 import { NavLink, Outlet, Link as RouterLink, useNavigate } from 'react-router-dom';
 import { colores } from '../../app/tema';
+import { PendientesCalidad } from '../../features/calidad/componentes/PendientesCalidad';
 import { useAuth } from '../auth/useAuth';
 import { EnlaceSaltar, ID_CONTENIDO } from '../componentes/EnlaceSaltar';
 import { Isotipo } from '../componentes/Isotipo';
@@ -32,11 +34,19 @@ interface Seccion {
   ruta: string;
   Icono: SvgIconComponent;
   soloAdmin?: boolean;
+  /** Contador a la derecha de la etiqueta. */
+  Insignia?: ComponentType;
 }
 
 // solo las secciones que ya existen; cada historia agrega la suya cuando entra con su backend
 const secciones: Seccion[] = [
   { etiqueta: 'Inventario', ruta: '/panel/inventario', Icono: Inventory2Icon },
+  {
+    etiqueta: 'Control de calidad',
+    ruta: '/panel/calidad',
+    Icono: FactCheckIcon,
+    Insignia: PendientesCalidad,
+  },
   { etiqueta: 'Ubicaciones', ruta: '/panel/ubicaciones', Icono: PlaceIcon },
 ];
 
@@ -105,7 +115,7 @@ export function LayoutPanel() {
       <List disablePadding sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
         {secciones
           .filter((s) => !s.soloAdmin || usuario?.rol === 'ADMIN')
-          .map(({ etiqueta, ruta, Icono, soloAdmin }) => (
+          .map(({ etiqueta, ruta, Icono, soloAdmin, Insignia }) => (
             <ListItem key={etiqueta} disablePadding>
               <ListItemButton
                 component={NavLink}
@@ -135,6 +145,7 @@ export function LayoutPanel() {
                   primaryTypographyProps={{ fontWeight: 'inherit' }}
                   secondaryTypographyProps={{ sx: { color: '#B9C3D6', fontSize: 12 } }}
                 />
+                {Insignia && <Insignia />}
               </ListItemButton>
             </ListItem>
           ))}
