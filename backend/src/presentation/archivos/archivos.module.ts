@@ -8,6 +8,8 @@ import {
   AlmacenArchivos,
   ESCANEOS,
   Escaneos,
+  LECTOR_ARCHIVOS,
+  LectorArchivos,
 } from '../../application/archivos/puertos';
 import { RechazarEscaneo } from '../../application/archivos/rechazar-escaneo.use-case';
 import {
@@ -23,7 +25,9 @@ import { ArchivosController } from './archivos.controller';
   controllers: [ArchivosController],
   providers: [
     { provide: ESCANEOS, useClass: PrismaEscaneos },
-    { provide: ALMACEN_ARCHIVOS, useClass: AlmacenArchivosDisco },
+    AlmacenArchivosDisco,
+    { provide: ALMACEN_ARCHIVOS, useExisting: AlmacenArchivosDisco },
+    { provide: LECTOR_ARCHIVOS, useExisting: AlmacenArchivosDisco },
     { provide: ARCHIVO_DIGITAL_REPOSITORIO, useClass: PrismaArchivoDigitalRepositorio },
     {
       provide: CargarEscaneo,
@@ -38,9 +42,9 @@ import { ArchivosController } from './archivos.controller';
     },
     {
       provide: ObtenerContenidoArchivo,
-      useFactory: (archivos: ArchivoDigitalRepositorio, almacen: AlmacenArchivos) =>
-        new ObtenerContenidoArchivo(archivos, almacen),
-      inject: [ARCHIVO_DIGITAL_REPOSITORIO, ALMACEN_ARCHIVOS],
+      useFactory: (archivos: ArchivoDigitalRepositorio, lector: LectorArchivos) =>
+        new ObtenerContenidoArchivo(archivos, lector),
+      inject: [ARCHIVO_DIGITAL_REPOSITORIO, LECTOR_ARCHIVOS],
     },
     {
       provide: AprobarEscaneo,

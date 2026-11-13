@@ -3,12 +3,11 @@ import { ArchivoNoEncontradoError } from '../../domain/archivos/archivo-digital.
 import { ArchivoDigitalRepositorio } from '../../domain/archivos/archivo-digital.repositorio';
 import { ErrorNoAutorizado } from '../../domain/comun/errores';
 import { RolUsuario } from '../../domain/usuarios/rol-usuario';
-import { AlmacenArchivos } from './puertos';
+import { ContenidoAlmacenado, LectorArchivos } from './puertos';
 
-export interface ContenidoArchivo {
+export interface ContenidoArchivo extends ContenidoAlmacenado {
   nombreOriginal: string;
   tipoMime: string;
-  contenido: Uint8Array;
 }
 
 export class SesionRequeridaParaPdfError extends ErrorNoAutorizado {
@@ -18,13 +17,14 @@ export class SesionRequeridaParaPdfError extends ErrorNoAutorizado {
 }
 
 /**
- * HU-10 y HU-15: entrega el escaneo según quién lo pide. Lo que el público no puede ver responde
- * igual que un archivo que no existe, para no delatar piezas restringidas ni escaneos en revisión.
+ * Entrega el escaneo según quién lo pide: el revisor (HU-10), el visor del portal (HU-14) y quien
+ * lee un PDF con su cuenta (HU-15). Lo que el público no puede ver responde igual que un archivo
+ * que no existe, para no delatar piezas restringidas ni escaneos en revisión.
  */
 export class ObtenerContenidoArchivo {
   constructor(
     private readonly archivos: ArchivoDigitalRepositorio,
-    private readonly almacen: AlmacenArchivos,
+    private readonly lector: LectorArchivos,
   ) {}
 
   async ejecutar(archivoId: string, rol: RolUsuario | null): Promise<ContenidoArchivo> {
@@ -42,10 +42,10 @@ export class ObtenerContenidoArchivo {
       throw new SesionRequeridaParaPdfError();
     }
 
-    const contenido = await this.almacen.leer(archivo.rutaAlmacenamiento);
+    const contenido = await this.lector.abrir(archivo.rutaAlmacenamiento);
     if (!contenido) {
       throw new ArchivoNoEncontradoError(archivoId);
     }
-    return { nombreOriginal: archivo.nombreOriginal, tipoMime: archivo.tipoMime, contenido };
+    return { nombreOriginal: archivo.nombreOriginal, tipoMime: archivo.tipoMime, ...contenido };
   }
 }

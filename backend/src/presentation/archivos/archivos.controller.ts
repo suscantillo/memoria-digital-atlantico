@@ -76,7 +76,8 @@ export class ArchivosController {
 
   @Get(':id/contenido')
   @SesionOpcional()
-  @Header('Cache-Control', 'private, no-store')
+  // privada: lo que se entrega depende de quién pregunta; corta: si la pieza se despublica, deja de verse pronto
+  @Header('Cache-Control', 'private, max-age=300')
   @Header('X-Content-Type-Options', 'nosniff')
   @ApiOperation({
     summary: 'Ver un escaneo: el personal, cualquiera; el público, solo lo publicado',
@@ -94,10 +95,10 @@ export class ArchivosController {
     @UsuarioActual() usuario: UsuarioAutenticado | undefined,
   ): Promise<StreamableFile> {
     const archivo = await this.obtenerContenido.ejecutar(id, usuario?.rol ?? null);
-    return new StreamableFile(archivo.contenido, {
+    return new StreamableFile(archivo.flujo, {
       type: archivo.tipoMime,
       disposition: `inline; filename*=UTF-8''${encodeURIComponent(archivo.nombreOriginal)}`,
-      length: archivo.contenido.length,
+      length: archivo.tamanoBytes,
     });
   }
 

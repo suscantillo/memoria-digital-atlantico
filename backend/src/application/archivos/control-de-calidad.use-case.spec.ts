@@ -1,3 +1,4 @@
+import { Readable } from 'node:stream';
 import {
   ArchivoDigital,
   ArchivoNoEncontradoError,
@@ -15,7 +16,7 @@ import {
   ObtenerContenidoArchivo,
   SesionRequeridaParaPdfError,
 } from './obtener-contenido-archivo.use-case';
-import { AlmacenArchivos } from './puertos';
+import { LectorArchivos } from './puertos';
 import { RechazarEscaneo } from './rechazar-escaneo.use-case';
 
 const ARCHIVO_ID = '33333333-3333-3333-3333-333333333333';
@@ -171,23 +172,34 @@ describe('Control de calidad', () => {
   });
 
   describe('ObtenerContenidoArchivo', () => {
-    const bytes = Uint8Array.from([1, 2, 3]);
-    const almacenCon = (contenido: Uint8Array | null): AlmacenArchivos => ({
-      guardar: () => Promise.resolve(RUTA),
-      leer: (ruta) => Promise.resolve(ruta === RUTA ? contenido : null),
-      borrar: () => Promise.resolve(),
+    const bytes = Buffer.from([1, 2, 3]);
+    const lectorCon = (contenido: Buffer | null): LectorArchivos => ({
+      abrir: (ruta) =>
+        Promise.resolve(
+          ruta === RUTA && contenido
+            ? { flujo: Readable.from([contenido]), tamanoBytes: contenido.length }
+            : null,
+        ),
     });
-    const casoDeUso = (contenido: Uint8Array | null = bytes) =>
-      new ObtenerContenidoArchivo(repositorio, almacenCon(contenido));
+    const casoDeUso = (contenido: Buffer | null = bytes) =>
+      new ObtenerContenidoArchivo(repositorio, lectorCon(contenido));
+    const leer = async (flujo: Readable): Promise<Buffer> => {
+      const partes: Buffer[] = [];
+      for await (const parte of flujo) partes.push(parte as Buffer);
+      return Buffer.concat(partes);
+    };
 
     it('el personal abre un escaneo en revisión, con su tipo y su nombre', async () => {
       repositorio.agregar(fabricarArchivo(), fabricarPieza());
 
-      await expect(casoDeUso().ejecutar(ARCHIVO_ID, 'PERSONAL')).resolves.toEqual({
+      const resultado = await casoDeUso().ejecutar(ARCHIVO_ID, 'PERSONAL');
+
+      expect(resultado).toMatchObject({
         nombreOriginal: 'comparsa.png',
         tipoMime: 'image/png',
-        contenido: bytes,
+        tamanoBytes: bytes.length,
       });
+      expect(await leer(resultado.flujo)).toEqual(bytes);
     });
 
     it('un visitante sin sesión ve la imagen aprobada de una pieza publicada', async () => {
@@ -195,7 +207,7 @@ describe('Control de calidad', () => {
 
       const resultado = await casoDeUso().ejecutar(ARCHIVO_ID, null);
 
-      expect(resultado.contenido).toBe(bytes);
+      expect(await leer(resultado.flujo)).toEqual(bytes);
     });
 
     it('para el público un escaneo en revisión es como si no existiera', async () => {
