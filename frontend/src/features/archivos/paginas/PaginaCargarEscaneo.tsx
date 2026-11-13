@@ -1,6 +1,7 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CheckIcon from '@mui/icons-material/Check';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -10,6 +11,7 @@ import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
 import { colores } from '../../../app/tema';
+import { useAuth } from '../../../shared/auth/useAuth';
 import { FUENTE_FICHA } from '../../../shared/componentes/EncabezadoPanel';
 import { useInventario } from '../../inventario/hooks';
 import {
@@ -177,6 +179,7 @@ function Cabecera({ pieza, estado }: { pieza: PiezaInventario; estado: EstadoPie
 }
 
 function EnRevision({ escaneo }: { escaneo: EscaneoCargado | null }) {
+  const { usuario } = useAuth();
   return (
     <Box sx={{ display: 'grid', gap: 3 }}>
       <Box
@@ -268,6 +271,15 @@ function EnRevision({ escaneo }: { escaneo: EscaneoCargado | null }) {
           <Typography sx={{ m: 0, fontSize: 15, color: 'text.secondary' }}>
             No se puede mientras este espera revisión. Si lo rechazan, podrás cargar uno nuevo.
           </Typography>
+          <Button
+            component={RouterLink}
+            to="/panel/escaneos"
+            variant="contained"
+            startIcon={<UploadFileIcon />}
+            sx={{ justifySelf: 'start', borderRadius: 999, fontWeight: 800 }}
+          >
+            Ver en qué va en {usuario?.rol === 'ADMIN' ? 'Escaneos' : 'Mis escaneos'}
+          </Button>
           <Button
             component={RouterLink}
             to="/panel/inventario"
