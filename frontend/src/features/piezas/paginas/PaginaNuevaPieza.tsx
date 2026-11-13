@@ -7,7 +7,7 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState, type FormEvent } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { MensajeError } from '../../../shared/componentes/MensajeError';
 import { useUbicaciones } from '../../ubicaciones/hooks';
 import { useCrearPieza } from '../hooks';
@@ -32,6 +32,8 @@ export function PaginaNuevaPieza() {
   const [anio, setAnio] = useState('');
   const [ubicacionId, setUbicacionId] = useState('');
   const [intentado, setIntentado] = useState(false);
+  const [redirigiendo, setRedirigiendo] = useState(false);
+  const navegar = useNavigate();
   const ubicaciones = useUbicaciones(PARAMETROS_UBICACIONES);
   const crear = useCrearPieza();
 
@@ -40,9 +42,10 @@ export function PaginaNuevaPieza() {
   const anioInvalido = !Number.isInteger(anioNumero) || anioNumero < 1500 || anioNumero > 2100;
   const ubicacionInvalida = ubicacionId === '';
   const tipoInvalido = tipo === '';
+  const bloqueado = crear.isPending || redirigiendo || ubicaciones.isPending || ubicaciones.isError;
 
-  const enviar = (evento: FormEvent<HTMLFormElement>) => {
-    evento.preventDefault();
+  const registrar = (agregarOtra: boolean) => {
+    if (crear.isPending || redirigiendo) return;
     setIntentado(true);
     if (tituloInvalido || anioInvalido || ubicacionInvalida || tipoInvalido) return;
 
@@ -52,7 +55,25 @@ export function PaginaNuevaPieza() {
       anio: anioNumero,
       ubicacionId,
     };
-    crear.mutate(datos);
+    crear.mutate(datos, {
+      onSuccess: () => {
+        if (agregarOtra) {
+          setTipo('');
+          setTitulo('');
+          setAnio('');
+          setUbicacionId('');
+          setIntentado(false);
+          return;
+        }
+        setRedirigiendo(true);
+        navegar('/panel/inventario?orden=recientes', { replace: true });
+      },
+    });
+  };
+
+  const enviar = (evento: FormEvent<HTMLFormElement>) => {
+    evento.preventDefault();
+    registrar(false);
   };
 
   return (
@@ -156,13 +177,19 @@ export function PaginaNuevaPieza() {
             )}
           </Box>
 
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={crear.isPending || ubicaciones.isPending || ubicaciones.isError}
-          >
-            {crear.isPending ? 'Registrando…' : 'Registrar pieza'}
-          </Button>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Button type="submit" variant="contained" disabled={bloqueado}>
+              {crear.isPending ? 'Registrando…' : 'Registrar pieza'}
+            </Button>
+            <Button
+              type="button"
+              variant="outlined"
+              disabled={bloqueado}
+              onClick={() => registrar(true)}
+            >
+              {crear.isPending ? 'Registrando…' : 'Registrar y añadir otra'}
+            </Button>
+          </Stack>
         </Stack>
       </Paper>
     </Stack>
