@@ -8,12 +8,15 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useParams } from 'react-router-dom';
+import { useAuth } from '../../../shared/auth/useAuth';
 import { MensajeError } from '../../../shared/componentes/MensajeError';
+import { PublicacionPieza } from '../componentes/PublicacionPieza';
 import { useEditarPieza, useFichaPieza } from '../hooks';
 import type { EditarPieza } from '../tipos';
 
 export function PaginaFichaPieza() {
   const { id } = useParams();
+  const { usuario } = useAuth();
   const ficha = useFichaPieza(id);
   const editar = useEditarPieza(id ?? '');
   const [titulo, setTitulo] = useState('');
@@ -127,6 +130,8 @@ export function PaginaFichaPieza() {
           </Button>
         </Stack>
       </Paper>
+
+      {usuario?.rol === 'ADMIN' && <PublicacionPieza pieza={pieza} />}
 
       <Paper component="section" aria-labelledby="historial-pieza" sx={{ p: 3 }}>
         <Typography id="historial-pieza" variant="h2" component="h3" gutterBottom>

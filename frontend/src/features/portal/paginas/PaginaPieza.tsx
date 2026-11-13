@@ -25,17 +25,17 @@ const deriva = keyframes`
   to { transform: translateX(110vw); }
 `;
 const estampa = keyframes`
-  0% { opacity: 0; transform: scale(2.2) rotate(-20deg); }
-  55% { opacity: 1; transform: scale(.92) rotate(-8deg); }
-  100% { transform: scale(1) rotate(-8deg); }
+  0% { opacity: 0; transform: scale(2.2); }
+  55% { opacity: 1; transform: scale(.92); }
+  100% { transform: scale(1); }
 `;
 const flota = keyframes`
-  0%, 100% { transform: translateY(0) rotate(-1deg); }
-  50% { transform: translateY(-10px) rotate(-1deg); }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 `;
 const cajon = keyframes`
-  from { opacity: 0; transform: translateY(80px) rotate(6deg); }
-  to { opacity: 1; transform: rotate(-1.5deg); }
+  from { opacity: 0; transform: translateY(80px); }
+  to { opacity: 1; transform: none; }
 `;
 const entra = keyframes`
   from { opacity: 0; transform: translateY(30px); }
@@ -110,8 +110,7 @@ function BienvenidaQr({ codigo }: { codigo: string }) {
         color: '#FFFFFF',
         px: 3,
         pt: { xs: 3, md: 4 },
-        pb: { xs: 9, md: 10 },
-        clipPath: 'polygon(0 0, 100% 0, 100% 90%, 0 100%)',
+        pb: { xs: 4, md: 5 },
         overflow: 'hidden',
       }}
     >
@@ -186,7 +185,6 @@ function BienvenidaQr({ codigo }: { codigo: string }) {
             letterSpacing: '.08em',
             lineHeight: 1.1,
             textAlign: 'center',
-            transform: 'rotate(-8deg)',
             animation: `${estampa} .6s .3s ${curva} both`,
             ...sinMovimiento,
           }}
@@ -369,7 +367,6 @@ function MesaDeLuz({ pieza }: { pieza: PiezaPortal }) {
         bgcolor: colores.azulMarino,
         borderRadius: '26px',
         overflow: 'hidden',
-        clipPath: 'polygon(0 2%, 100% 0, 99% 100%, 1% 98%)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -570,7 +567,6 @@ function FichaCatalografica({ pieza }: { pieza: PiezaPortal }) {
         p: '28px 26px 40px',
         boxShadow: '10px 12px 0 #F5D79E',
         borderTop: `10px solid ${colores.naranja}`,
-        transform: 'rotate(-1.5deg)',
         animation: `${cajon} .9s .2s ${curva} both`,
         ...sinMovimiento,
       }}
@@ -608,7 +604,6 @@ function FichaCatalografica({ pieza }: { pieza: PiezaPortal }) {
             py: 0.25,
             border: `2px solid ${sello.color}`,
             color: sello.color,
-            transform: 'rotate(-4deg)',
           }}
         >
           {sello.texto}
