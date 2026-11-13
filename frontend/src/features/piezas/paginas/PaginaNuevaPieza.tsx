@@ -7,7 +7,7 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { MensajeError } from '../../../shared/componentes/MensajeError';
 import { useUbicaciones } from '../../ubicaciones/hooks';
 import { useCrearPieza } from '../hooks';
@@ -160,7 +160,19 @@ export function PaginaNuevaPieza() {
           <Box aria-live="polite">
             {crear.isError && <MensajeError error={crear.error} titulo="No se pudo registrar" />}
             {crear.isSuccess && (
-              <Alert severity="success">
+              <Alert
+                severity="success"
+                action={
+                  <Button
+                    component={RouterLink}
+                    to={`/panel/piezas/${crear.data.id}`}
+                    color="inherit"
+                    size="small"
+                  >
+                    Ver ficha
+                  </Button>
+                }
+              >
                 Pieza registrada con el código <strong>{crear.data.codigo}</strong>.
               </Alert>
             )}

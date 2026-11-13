@@ -3,6 +3,7 @@ import { PaginaCalidad } from '../features/calidad/paginas/PaginaCalidad';
 import { PaginaCargarEscaneo } from '../features/archivos/paginas/PaginaCargarEscaneo';
 import { PaginaInventario } from '../features/inventario/paginas/PaginaInventario';
 import { PaginaIngresar } from '../features/auth/paginas/PaginaIngresar';
+import { PaginaFichaPieza } from '../features/piezas/paginas/PaginaFichaPieza';
 import { PaginaNuevaPieza } from '../features/piezas/paginas/PaginaNuevaPieza';
 import { PaginaPrivacidad } from '../features/auth/paginas/PaginaPrivacidad';
 import { PaginaRegistro } from '../features/auth/paginas/PaginaRegistro';
@@ -62,6 +63,7 @@ export const enrutador = createBrowserRouter([
       { path: 'calidad', element: <PaginaCalidad /> },
       { path: 'ubicaciones', element: <PaginaUbicacionesPanel /> },
       { path: 'piezas/nueva', element: <PaginaNuevaPieza /> },
+      { path: 'piezas/:id', element: <PaginaFichaPieza /> },
       {
         path: 'usuarios',
         element: (
