@@ -29,8 +29,11 @@ export default defineConfig({
       output: {
         // separar React de MUI rompe el orden de carga
         // jsqr queda aparte: solo se descarga al abrir la cámara en un navegador sin BarcodeDetector
+        // pdfjs-dist también: solo se descarga al revisar un PDF en control de calidad
         manualChunks: (id) =>
-          id.includes('node_modules') && !id.includes('/jsqr/') ? 'vendor' : undefined,
+          id.includes('node_modules') && !id.includes('/jsqr/') && !id.includes('/pdfjs-dist/')
+            ? 'vendor'
+            : undefined,
       },
     },
   },

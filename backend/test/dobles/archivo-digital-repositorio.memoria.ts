@@ -24,6 +24,11 @@ export class ArchivoDigitalRepositorioMemoria implements ArchivoDigitalRepositor
   listar(params: ParametrosListarArchivos): Promise<ResultadoPaginado<DetalleArchivoDigital>> {
     const filas = [...this.archivos.values()]
       .filter((archivo) => !params.estado || archivo.estado === params.estado)
+      .filter(
+        (archivo) =>
+          params.revisorId === undefined || archivo.revisorAsignadoId === params.revisorId,
+      )
+      .filter((archivo) => !params.subidoPorId || archivo.subidoPorId === params.subidoPorId)
       .sort((a, b) => a.creadoEn.getTime() - b.creadoEn.getTime());
     if (params.direccion === 'desc') filas.reverse();
     const inicio = (params.pagina - 1) * params.limite;
@@ -56,6 +61,17 @@ export class ArchivoDigitalRepositorioMemoria implements ArchivoDigitalRepositor
     return Promise.resolve(true);
   }
 
+  guardarAsignacion(
+    archivo: ArchivoDigital,
+    asignadoPorId: string,
+    evento: EventoRevision,
+  ): Promise<boolean> {
+    if (this.otraRevisionGano) return Promise.resolve(false);
+    this.archivos.set(archivo.id, archivo);
+    this.eventos.push({ ...evento, piezaId: archivo.piezaId, usuarioId: asignadoPorId });
+    return Promise.resolve(true);
+  }
+
   private detalle(archivo: ArchivoDigital): DetalleArchivoDigital {
     const pieza = this.piezas.get(archivo.piezaId) as Pieza;
     return {
@@ -67,7 +83,14 @@ export class ArchivoDigitalRepositorioMemoria implements ArchivoDigitalRepositor
       motivoRechazo: archivo.motivoRechazo,
       creadoEn: archivo.creadoEn,
       revisadoEn: archivo.revisadoEn,
-      subidoPor: { nombre: 'Personal de prueba', correo: 'personal@prueba.local' },
+      subidoPor: {
+        id: archivo.subidoPorId,
+        nombre: 'Personal de prueba',
+        correo: 'personal@prueba.local',
+      },
+      revisor: archivo.revisorAsignadoId
+        ? { id: archivo.revisorAsignadoId, nombre: 'Revisora de prueba', correo: 'r@prueba.local' }
+        : null,
       pieza: {
         id: pieza.id,
         codigo: pieza.codigo.valor,
