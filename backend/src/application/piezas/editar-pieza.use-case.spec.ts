@@ -1,4 +1,4 @@
-import { ErrorRegla } from '../../domain/comun/errores';
+﻿import { ErrorRegla } from '../../domain/comun/errores';
 import { CodigoPieza } from '../../domain/piezas/codigo-pieza';
 import { FichaPieza, Pieza } from '../../domain/piezas/pieza.entity';
 import { PiezaRepositorio } from '../../domain/piezas/pieza.repositorio';
@@ -11,11 +11,18 @@ describe('EditarPieza', () => {
       id: 'pieza-id',
       codigo: CodigoPieza.generar(2026, 11),
       titulo: 'Acta corregida',
+      descripcion: 'Descripción actualizada',
       tipo: 'DOCUMENTO',
       estado: 'REGISTRADA',
       anio: 1888,
-      descripcion: 'Descripción actualizada',
-      ubicacionId: 'ubicacion-id',
+      restringida: false,
+      ubicacion: {
+        id: 'ubicacion-id',
+        deposito: 'Depósito A',
+        estanteria: 'Estantería 1',
+        caja: 'Caja 01',
+      },
+      archivoAprobado: null,
       creadoEn: fecha,
       actualizadoEn: fecha,
     }),
@@ -27,15 +34,20 @@ describe('EditarPieza', () => {
     },
     eventos: [],
   };
+
   const editar = jest.fn<
     ReturnType<PiezaRepositorio['editar']>,
     Parameters<PiezaRepositorio['editar']>
   >();
+
   const piezas: PiezaRepositorio = {
     registrar: () => Promise.reject(new Error('No se esperaba registrar una pieza.')),
+    buscarPorCodigo: () => Promise.resolve(null),
+    listarPublicadas: () => Promise.reject(new Error('No se esperaba listar piezas.')),
     buscarFicha: () => Promise.resolve(null),
     editar: (...argumentos) => editar(...argumentos),
   };
+
   const casoDeUso = new EditarPieza(piezas);
 
   beforeEach(() => {
@@ -53,6 +65,7 @@ describe('EditarPieza', () => {
       titulo: 'Acta corregida',
       descripcion: 'Descripción actualizada',
     });
+
     expect(editar).toHaveBeenCalledWith(
       'pieza-id',
       { titulo: 'Acta corregida', descripcion: 'Descripción actualizada' },

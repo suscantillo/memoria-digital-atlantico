@@ -1,4 +1,4 @@
-import { FichaPieza } from '../../../domain/piezas/pieza.entity';
+﻿import { FichaPieza } from '../../../domain/piezas/pieza.entity';
 import { EstadoPieza } from '../../../domain/piezas/estado-pieza';
 import { TipoPieza } from '../../../domain/piezas/tipo-pieza';
 
@@ -9,7 +9,7 @@ export class FichaPiezaDto {
   descripcion!: string | null;
   tipo!: TipoPieza;
   estado!: EstadoPieza;
-  anio!: number;
+  anio!: number | null;
   ubicacion!: FichaPieza['ubicacion'];
   eventos!: Array<{
     id: string;

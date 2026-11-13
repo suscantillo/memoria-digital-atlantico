@@ -28,7 +28,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // separar React de MUI rompe el orden de carga
-        manualChunks: (id) => (id.includes('node_modules') ? 'vendor' : undefined),
+        // jsqr queda aparte: solo se descarga al abrir la cámara en un navegador sin BarcodeDetector
+        manualChunks: (id) =>
+          id.includes('node_modules') && !id.includes('/jsqr/') ? 'vendor' : undefined,
       },
     },
   },

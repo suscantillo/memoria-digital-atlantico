@@ -15,4 +15,9 @@ export class UsuarioRepositorioMemoria implements UsuarioRepositorio {
   buscarPorCorreo(correo: string): Promise<Usuario | null> {
     return Promise.resolve([...this.usuarios.values()].find((u) => u.correo === correo) ?? null);
   }
+
+  crear(usuario: Usuario): Promise<Usuario> {
+    this.agregar(usuario);
+    return Promise.resolve(usuario);
+  }
 }
