@@ -76,8 +76,15 @@ npm run dev
 
 ### Usuarios de prueba
 
-Las semillas crean un `ADMIN`, un `PERSONAL` y un `PUBLICO` con las contraseñas definidas
-en `.env.example` (solo para desarrollo).
+Las semillas crean estas cuentas, con las contraseñas definidas en `.env.example` (solo para
+desarrollo):
+
+| Cuenta               | Rol        | Para qué sirve en la demo                                        |
+| -------------------- | ---------- | ---------------------------------------------------------------- |
+| `admin@mda.local`    | `ADMIN`    | Asigna revisores, administra cuentas y revisa cualquier escaneo. |
+| `personal@mda.local` | `PERSONAL` | Registra piezas y carga los escaneos.                            |
+| `revisora@mda.local` | `PERSONAL` | Revisa los escaneos que le asignan (ya tiene uno en su cola).    |
+| `publico@mda.local`  | `PUBLICO`  | Visitante registrado: lee los PDF del portal.                    |
 
 ### Piezas de la demo
 

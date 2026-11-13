@@ -43,6 +43,8 @@ export interface PiezaSemilla {
   palabrasClave: string[];
   /** Nombre del archivo en prisma/semilla/archivos. */
   archivo: string;
+  /** HU-23: si está EN_REVISION, ya tiene como revisora a revisora@mda.local. */
+  asignadoARevisora?: boolean;
 }
 
 const COMMONS = 'https://commons.wikimedia.org/wiki/File:';
@@ -390,6 +392,7 @@ export const piezas: PiezaSemilla[] = [
     tema: 'Vida cotidiana',
     palabrasClave: ['estereografía', 'maíz', 'pilón', 'oficios'],
     archivo: '1910-pilando-maiz.jpg',
+    asignadoARevisora: true,
   },
   {
     codigo: 'MDA-2026-0021',

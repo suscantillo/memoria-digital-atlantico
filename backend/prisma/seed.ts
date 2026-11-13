@@ -31,6 +31,13 @@ const usuarios: UsuarioSemilla[] = [
     rol: 'PERSONAL',
     contrasena: process.env.SEED_PERSONAL_PASSWORD ?? 'Personal.2026',
   },
+  // HU-23: nadie revisa lo que subió; la revisora recibe los escaneos que carga «personal»
+  {
+    nombre: 'Revisora de prueba',
+    correo: 'revisora@mda.local',
+    rol: 'PERSONAL',
+    contrasena: process.env.SEED_REVISORA_PASSWORD ?? 'Revisora.2026',
+  },
   {
     nombre: 'Visitante registrado de prueba',
     correo: 'publico@mda.local',
@@ -46,8 +53,9 @@ function consentimiento(u: UsuarioSemilla) {
     : {};
 }
 
-async function sembrarUsuarios(): Promise<Map<RolUsuario, string>> {
-  const ids = new Map<RolUsuario, string>();
+/** Ids de las cuentas sembradas, por correo (hay dos PERSONAL). */
+async function sembrarUsuarios(): Promise<Map<string, string>> {
+  const ids = new Map<string, string>();
   for (const u of usuarios) {
     const contrasenaHash = await hash(u.contrasena, RONDAS_BCRYPT);
     const fila = await prisma.usuario.upsert({
@@ -61,7 +69,7 @@ async function sembrarUsuarios(): Promise<Map<RolUsuario, string>> {
       },
       update: { nombre: u.nombre, rol: u.rol, contrasenaHash, activo: true, ...consentimiento(u) },
     });
-    ids.set(u.rol, fila.id);
+    ids.set(u.correo, fila.id);
   }
   return ids;
 }
@@ -96,10 +104,13 @@ function conEscaneo(p: PiezaSemilla): boolean {
   return p.estado !== 'REGISTRADA';
 }
 
-async function sembrarPiezas(
-  idsUbicaciones: string[],
-  ids: { admin: string; personal: string },
-): Promise<void> {
+interface IdsCuentas {
+  admin: string;
+  personal: string;
+  revisora: string;
+}
+
+async function sembrarPiezas(idsUbicaciones: string[], ids: IdsCuentas): Promise<void> {
   for (const p of piezas) {
     const escaneada = conEscaneo(p);
     const datos = {
@@ -142,11 +153,7 @@ async function sembrarPiezas(
 }
 
 /** Copia el archivo al almacenamiento y lo registra; aprobado si la pieza ya pasó la revisión. */
-async function sembrarArchivo(
-  p: PiezaSemilla,
-  piezaId: string,
-  ids: { admin: string; personal: string },
-): Promise<void> {
+async function sembrarArchivo(p: PiezaSemilla, piezaId: string, ids: IdsCuentas): Promise<void> {
   const origen = join(CARPETA_ARCHIVOS, p.archivo);
   const ruta = `semilla/${p.codigo}${extname(p.archivo)}`;
   await mkdir(join(STORAGE_DIR, 'semilla'), { recursive: true });
@@ -163,6 +170,8 @@ async function sembrarArchivo(
     subidoPorId: ids.personal,
     revisadoPorId: aprobado ? ids.admin : null,
     revisadoEn: aprobado ? new Date('2026-11-10T15:00:00.000Z') : null,
+    // HU-23: uno de los escaneos en revisión ya está en la cola de la revisora
+    revisorAsignadoId: !aprobado && p.asignadoARevisora ? ids.revisora : null,
   };
   const existente = await prisma.archivoDigital.findFirst({
     where: { piezaId, rutaAlmacenamiento: ruta },
@@ -172,6 +181,22 @@ async function sembrarArchivo(
   } else {
     await prisma.archivoDigital.create({ data: { piezaId, rutaAlmacenamiento: ruta, ...datos } });
   }
+
+  if (datos.revisorAsignadoId) {
+    const asignada = await prisma.eventoPieza.count({
+      where: { piezaId, accion: 'REVISOR_ASIGNADO' },
+    });
+    if (asignada === 0) {
+      await prisma.eventoPieza.create({
+        data: {
+          piezaId,
+          usuarioId: ids.admin,
+          accion: 'REVISOR_ASIGNADO',
+          detalle: `Revisión de «${p.archivo}» asignada a la revisora (semilla de la demo).`,
+        },
+      });
+    }
+  }
 }
 
 async function main(): Promise<void> {
@@ -179,8 +204,9 @@ async function main(): Promise<void> {
   const idsUsuarios = await sembrarUsuarios();
   const idsUbicaciones = await sembrarUbicaciones();
   await sembrarPiezas(idsUbicaciones, {
-    admin: idsUsuarios.get('ADMIN') as string,
-    personal: idsUsuarios.get('PERSONAL') as string,
+    admin: idsUsuarios.get('admin@mda.local') as string,
+    personal: idsUsuarios.get('personal@mda.local') as string,
+    revisora: idsUsuarios.get('revisora@mda.local') as string,
   });
   const conArchivo = piezas.filter(conEscaneo).length;
   console.log(
