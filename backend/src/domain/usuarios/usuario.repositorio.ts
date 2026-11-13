@@ -17,7 +17,10 @@ export interface UsuarioRepositorio {
   buscarPorCorreo(correo: string): Promise<Usuario | null>;
   crear(usuario: Usuario): Promise<Usuario>;
   listarPersonal(params: ParametrosListadoUsuarios): Promise<ResultadoPaginado<Usuario>>;
+  /** Cuentas PUBLICO del portal, para que el ADMIN las consulte. */
+  listarPublico(params: ParametrosListadoUsuarios): Promise<ResultadoPaginado<Usuario>>;
   cambiarRol(id: string, rol: RolUsuario, fecha: Date): Promise<Usuario>;
-  desactivar(id: string, fecha: Date): Promise<Usuario>;
-  reactivar(id: string): Promise<Usuario>;
+  /** `roles`: a qué cuentas aplica; por defecto las del personal. */
+  desactivar(id: string, fecha: Date, roles?: RolUsuario[]): Promise<Usuario>;
+  reactivar(id: string, roles?: RolUsuario[]): Promise<Usuario>;
 }
