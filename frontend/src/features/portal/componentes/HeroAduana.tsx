@@ -3,6 +3,7 @@ import { keyframes } from '@mui/material/styles';
 import { useId } from 'react';
 import { colores } from '../../../app/tema';
 import imagenAduana from '../../../assets/aduana.webp';
+import fotoCamellon from '../../../assets/camellon-abello-1903.webp';
 import { Isotipo } from '../../../shared/componentes/Isotipo';
 import { entrada } from './animaciones';
 
@@ -246,25 +247,19 @@ export function HeroAduana({ mouse, compacto, inicio, animar }: Props) {
             animation: `${flotar} 7s ease-in-out infinite`,
           }}
         >
+          {/* foto real de dominio público: Antiguo Camellón Abello, 1903 (Wikimedia Commons) */}
           <Box
+            component="img"
+            src={fotoCamellon}
+            alt="Antiguo Camellón Abello, Barranquilla, 1903"
             sx={{
+              display: 'block',
+              width: '100%',
               height: compacto ? 62 : 130,
-              bgcolor: '#8C7A5B',
-              display: 'flex',
-              alignItems: 'flex-end',
-              p: compacto ? 0.5 : 1,
+              objectFit: 'cover',
+              filter: 'sepia(0.35)',
             }}
-          >
-            <svg
-              width="100%"
-              height={compacto ? 30 : 60}
-              viewBox="0 0 190 60"
-              preserveAspectRatio="none"
-            >
-              <path d="M0 60V40h30l10-14 8 14h40l12-22 10 22h80v20z" fill="#5E4F38" />
-              <path d="M60 26V4M110 18V0" stroke="#5E4F38" strokeWidth="2" />
-            </svg>
-          </Box>
+          />
           <Box
             component="figcaption"
             sx={{
@@ -274,7 +269,7 @@ export function HeroAduana({ mouse, compacto, inicio, animar }: Props) {
               color: '#5A4A2E',
             }}
           >
-            Puerto · 1925
+            {compacto ? 'Camellón · 1903' : 'Camellón Abello · 1903'}
           </Box>
         </Box>
       </Box>
