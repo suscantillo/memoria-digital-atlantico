@@ -1,10 +1,11 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { PaginaCargarEscaneo } from '../features/archivos/paginas/PaginaCargarEscaneo';
-import { PaginaInventario } from '../features/inventario/paginas/PaginaInventario';
 import { PaginaIngresar } from '../features/auth/paginas/PaginaIngresar';
-import { PaginaNuevaPieza } from '../features/piezas/paginas/PaginaNuevaPieza';
 import { PaginaPrivacidad } from '../features/auth/paginas/PaginaPrivacidad';
 import { PaginaRegistro } from '../features/auth/paginas/PaginaRegistro';
+import { PaginaEtiquetas } from '../features/etiquetas/paginas/PaginaEtiquetas';
+import { PaginaInventario } from '../features/inventario/paginas/PaginaInventario';
+import { PaginaNuevaPieza } from '../features/piezas/paginas/PaginaNuevaPieza';
 import { PaginaExplorar } from '../features/portal/paginas/PaginaExplorar';
 import { PaginaInicio } from '../features/portal/paginas/PaginaInicio';
 import { PaginaNoEncontrada } from '../features/portal/paginas/PaginaNoEncontrada';
@@ -26,6 +27,7 @@ export const rutas = {
   panel: '/panel',
   panelInventario: '/panel/inventario',
   panelUbicaciones: '/panel/ubicaciones',
+  panelEtiquetas: '/panel/etiquetas',
   panelNuevaPieza: '/panel/piezas/nueva',
 } as const;
 
@@ -56,6 +58,7 @@ export const enrutador = createBrowserRouter([
       { path: 'inventario', element: <PaginaInventario /> },
       { path: 'escaneo/:codigo', element: <PaginaCargarEscaneo /> },
       { path: 'ubicaciones', element: <PaginaUbicacionesPanel /> },
+      { path: 'etiquetas', element: <PaginaEtiquetas /> },
       { path: 'piezas/nueva', element: <PaginaNuevaPieza /> },
     ],
   },

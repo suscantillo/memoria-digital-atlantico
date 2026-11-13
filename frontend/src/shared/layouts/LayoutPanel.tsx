@@ -2,6 +2,7 @@ import Inventory2Icon from '@mui/icons-material/Inventory2';
 import MenuIcon from '@mui/icons-material/Menu';
 import PlaceIcon from '@mui/icons-material/Place';
 import PublicIcon from '@mui/icons-material/Public';
+import QrCode2Icon from '@mui/icons-material/QrCode2';
 import type { SvgIconComponent } from '@mui/icons-material';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -38,6 +39,7 @@ interface Seccion {
 const secciones: Seccion[] = [
   { etiqueta: 'Inventario', ruta: '/panel/inventario', Icono: Inventory2Icon },
   { etiqueta: 'Ubicaciones', ruta: '/panel/ubicaciones', Icono: PlaceIcon },
+  { etiqueta: 'Etiquetas QR', ruta: '/panel/etiquetas', Icono: QrCode2Icon },
 ];
 
 const NOMBRE_ROL: Record<RolUsuario, string> = {
