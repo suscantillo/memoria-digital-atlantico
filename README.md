@@ -28,10 +28,11 @@ publicadas respetando las restricciones de acceso de cada una.
 | Portal público para buscar y consultar           | HU-13, HU-14, HU-15        | `/`, `/explorar`, `/p/{código}`                               |
 | Cuentas, sesión, roles y administración de ellas | HU-01, HU-02, HU-03, HU-17 | `/registro`, `/ingresar`, `/panel/usuarios`                   |
 | Sistema de diseño                                | HU-16                      | Toda la interfaz                                              |
+| Diseño para celular y pantallas pequeñas         | HU-22                      | Todas las pantallas del portal y del panel                    |
 
 Quedan para la siguiente entrega: ver y eliminar la cuenta propia (HU-04), contadores de avance
-(HU-18), lotes para voluntarios (HU-19), etiquetas QR por lotes (HU-20), asistente de
-recomendaciones (HU-21) y diseño para celular (HU-22).
+(HU-18), lotes para voluntarios (HU-19), etiquetas QR por lotes (HU-20) y asistente de
+recomendaciones (HU-21).
 
 ## Equipo
 
@@ -40,12 +41,12 @@ Iván Gómez, Samuel Pimienta, Juan Riaño. Repositorio: [Jrianopro20/clena-bibl
 
 **Equipo de desarrollo (roles Scrum):**
 
-| Integrante              | Usuario de GitHub                             | Rol                                               |
-| ----------------------- | --------------------------------------------- | ------------------------------------------------- |
-| Andrea De la Ossa       | [adela088](https://github.com/adela088)       | Product Owner                                     |
-| Jesús Cantillo Guerrero | [suscantillo](https://github.com/suscantillo) | Scrum Master, Development Team (backend/frontend) |
-| María Gutiérrez (Mayi)  | [Marigugo24](https://github.com/Marigugo24)   | Development Team (frontend)                       |
-| Alejandro Alonso        | [Makisuky](https://github.com/Makisuky)       | Development Team (backend)                        |
+| Integrante                      | Usuario de GitHub                             | Rol                                               |
+| ------------------------------- | --------------------------------------------- | ------------------------------------------------- |
+| Andrea Carolina De la Ossa      | [adela088](https://github.com/adela088)       | Product Owner                                     |
+| Jesús David Cantillo Guerrero   | [suscantillo](https://github.com/suscantillo) | Scrum Master, Development Team (backend/frontend) |
+| María Isabel Gutiérrez González | [Marigugo24](https://github.com/Marigugo24)   | Development Team (frontend)                       |
+| Alejandro David Alonso          | [Makisuky](https://github.com/Makisuky)       | Development Team (backend)                        |
 
 ## Stack
 
@@ -171,6 +172,9 @@ aprobación de otra persona del equipo para fusionarse.
 
 ## Documentación
 
+- Acta de Inception: [docs/inception.pdf](docs/inception.pdf)
+- Evidencias y enlaces a las grabaciones: [docs/evidencias.pdf](docs/evidencias.pdf)
+- Daily Scrum: [docs/daily-scrum.pdf](docs/daily-scrum.pdf) (y un PDF por acta en `docs/daily-scrum/`)
 - Modelo de dominio: [docs/modelo-dominio.pdf](docs/modelo-dominio.pdf)
 - Modelo de datos: [docs/modelo-datos.pdf](docs/modelo-datos.pdf)
 - Arquitectura: [docs/arquitectura.pdf](docs/arquitectura.pdf)
@@ -185,7 +189,6 @@ aprobación de otra persona del equipo para fusionarse.
   ingreso. Antes de publicarlo en un servidor hay que resolver esas tres cosas.
 - Las personas todavía no pueden ver ni eliminar su propia cuenta (HU-04).
 - Un PDF en control de calidad se revisa página por página; con documentos muy largos es lento.
-- La interfaz está hecha para escritorio; el ajuste para celular es HU-22.
 
 ## Problemas frecuentes
 
