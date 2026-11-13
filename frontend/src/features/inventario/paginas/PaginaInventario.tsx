@@ -390,7 +390,13 @@ export function PaginaInventario() {
         <Box>
           <Typography
             component="p"
-            sx={{ m: 0, fontFamily: MAQUINA, fontWeight: 700, fontSize: 15, color: colores.naranja }}
+            sx={{
+              m: 0,
+              fontFamily: MAQUINA,
+              fontWeight: 700,
+              fontSize: 15,
+              color: colores.naranja,
+            }}
           >
             PANEL DEL PERSONAL
           </Typography>

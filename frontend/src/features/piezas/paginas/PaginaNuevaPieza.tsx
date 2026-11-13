@@ -42,8 +42,7 @@ export function PaginaNuevaPieza() {
   const anioInvalido = !Number.isInteger(anioNumero) || anioNumero < 1500 || anioNumero > 2100;
   const ubicacionInvalida = ubicacionId === '';
   const tipoInvalido = tipo === '';
-  const bloqueado =
-    crear.isPending || redirigiendo || ubicaciones.isPending || ubicaciones.isError;
+  const bloqueado = crear.isPending || redirigiendo || ubicaciones.isPending || ubicaciones.isError;
 
   const registrar = (agregarOtra: boolean) => {
     if (crear.isPending || redirigiendo) return;
