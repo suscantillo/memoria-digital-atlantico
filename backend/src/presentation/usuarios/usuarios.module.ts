@@ -1,5 +1,10 @@
 import { Module } from '@nestjs/common';
 import { CambiarRolUsuario } from '../../application/usuarios/cambiar-rol-usuario.use-case';
+import {
+  DesactivarCuentaPublica,
+  ListarCuentasPublicas,
+  ReactivarCuentaPublica,
+} from '../../application/usuarios/cuentas-publicas.use-case';
 import { CrearCuentaPersonal } from '../../application/usuarios/crear-cuenta-personal.use-case';
 import { DesactivarUsuario } from '../../application/usuarios/desactivar-usuario.use-case';
 import { ListarUsuarios } from '../../application/usuarios/listar-usuarios.use-case';
@@ -14,6 +19,13 @@ import { UsuariosController } from './usuarios.controller';
 @Module({
   controllers: [UsuariosController],
   providers: [
+    ...[ListarCuentasPublicas, DesactivarCuentaPublica, ReactivarCuentaPublica].map(
+      (CasoDeUso) => ({
+        provide: CasoDeUso,
+        useFactory: (usuarios: UsuarioRepositorio) => new CasoDeUso(usuarios),
+        inject: [USUARIO_REPOSITORIO],
+      }),
+    ),
     {
       provide: CrearCuentaPersonal,
       useFactory: (usuarios: UsuarioRepositorio, hasher: HasherContrasenas) =>

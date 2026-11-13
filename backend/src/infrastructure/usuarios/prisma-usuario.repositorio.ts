@@ -12,6 +12,8 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { UsuarioMapper } from './usuario.mapper';
 
+const ROLES_PERSONAL: RolUsuario[] = ['ADMIN', 'PERSONAL'];
+
 @Injectable()
 export class PrismaUsuarioRepositorio implements UsuarioRepositorio {
   constructor(private readonly prisma: PrismaService) {}
@@ -56,10 +58,21 @@ export class PrismaUsuarioRepositorio implements UsuarioRepositorio {
     }
   }
 
-  async listarPersonal(params: ParametrosListadoUsuarios): Promise<ResultadoPaginado<Usuario>> {
+  listarPersonal(params: ParametrosListadoUsuarios): Promise<ResultadoPaginado<Usuario>> {
+    return this.listarPorRoles(ROLES_PERSONAL, params);
+  }
+
+  listarPublico(params: ParametrosListadoUsuarios): Promise<ResultadoPaginado<Usuario>> {
+    return this.listarPorRoles(['PUBLICO'], params);
+  }
+
+  private async listarPorRoles(
+    roles: RolUsuario[],
+    params: ParametrosListadoUsuarios,
+  ): Promise<ResultadoPaginado<Usuario>> {
     const termino = params.busqueda?.trim() ?? '';
     const where: Prisma.UsuarioWhereInput = {
-      rol: { in: ['ADMIN', 'PERSONAL'] },
+      rol: { in: roles },
       ...(termino
         ? {
             OR: [
@@ -106,11 +119,15 @@ export class PrismaUsuarioRepositorio implements UsuarioRepositorio {
     }
   }
 
-  async desactivar(id: string, fecha: Date): Promise<Usuario> {
+  async desactivar(
+    id: string,
+    fecha: Date,
+    roles: RolUsuario[] = ROLES_PERSONAL,
+  ): Promise<Usuario> {
     try {
       const fila = await this.prisma.$transaction(async (transaccion) => {
         const usuario = await transaccion.usuario.update({
-          where: { id, rol: { in: ['ADMIN', 'PERSONAL'] } },
+          where: { id, rol: { in: roles } },
           data: { activo: false },
         });
         await transaccion.sesion.updateMany({
@@ -128,10 +145,10 @@ export class PrismaUsuarioRepositorio implements UsuarioRepositorio {
     }
   }
 
-  async reactivar(id: string): Promise<Usuario> {
+  async reactivar(id: string, roles: RolUsuario[] = ROLES_PERSONAL): Promise<Usuario> {
     try {
       const fila = await this.prisma.usuario.update({
-        where: { id, rol: { in: ['ADMIN', 'PERSONAL'] } },
+        where: { id, rol: { in: roles } },
         data: { activo: true },
       });
       return UsuarioMapper.aEntidad(fila);

@@ -10,6 +10,7 @@ import {
   PiezaRepositorio,
 } from '../../domain/piezas/pieza.repositorio';
 
+import { CambioPublicacion, PublicacionPiezas } from '../../domain/piezas/publicacion-piezas';
 import { PrismaService } from '../prisma/prisma.service';
 import { PiezaMapper } from './pieza.mapper';
 
@@ -26,7 +27,7 @@ const CON_UBICACION_Y_ARCHIVO_APROBADO = {
 const NAMESPACE_BLOQUEO_CODIGO = 'memoria-digital-atlantico:codigo-pieza';
 
 @Injectable()
-export class PrismaPiezaRepositorio implements PiezaRepositorio {
+export class PrismaPiezaRepositorio implements PiezaRepositorio, PublicacionPiezas {
   constructor(private readonly prisma: PrismaService) {}
 
   private readonly incluirFicha = {
@@ -203,6 +204,26 @@ export class PrismaPiezaRepositorio implements PiezaRepositorio {
     });
 
     return fila ? this.aFicha(fila) : null;
+  }
+
+  async cambiarPublicacion(cambio: CambioPublicacion): Promise<boolean> {
+    return this.prisma.$transaction(async (tx) => {
+      // la condición de estado hace de candado entre dos cambios simultáneos
+      const actualizada = await tx.pieza.updateMany({
+        where: { id: cambio.piezaId, estado: cambio.desde },
+        data: { estado: cambio.hacia },
+      });
+      if (actualizada.count === 0) return false;
+      await tx.eventoPieza.create({
+        data: {
+          piezaId: cambio.piezaId,
+          usuarioId: cambio.usuarioId,
+          accion: cambio.accion,
+          detalle: cambio.detalle,
+        },
+      });
+      return true;
+    });
   }
 
   async editar(id: string, cambios: CambiosPieza, usuarioId: string): Promise<FichaPieza> {
