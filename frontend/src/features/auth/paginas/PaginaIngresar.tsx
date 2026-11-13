@@ -10,6 +10,15 @@ import { colores } from '../../../app/tema';
 import { useAuth } from '../../../shared/auth/useAuth';
 import { Isotipo } from '../../../shared/componentes/Isotipo';
 import { MensajeError } from '../../../shared/componentes/MensajeError';
+import type { RolUsuario } from '../../../shared/tipos/usuario';
+
+/** Vuelve a donde estaba la persona; una cuenta PUBLICO nunca termina en el panel. */
+function destinoTrasIngresar(rol: RolUsuario, desde?: string): string {
+  if (rol === 'PUBLICO') {
+    return desde && !desde.startsWith('/panel') ? desde : '/';
+  }
+  return desde ?? '/panel';
+}
 
 export function PaginaIngresar() {
   const { usuario, ingresar } = useAuth();
@@ -21,8 +30,7 @@ export function PaginaIngresar() {
   const [error, setError] = useState<unknown>(null);
 
   if (usuario) {
-    const destino = usuario.rol === 'PUBLICO' ? '/' : (state?.desde ?? '/panel');
-    return <Navigate to={destino} replace />;
+    return <Navigate to={destinoTrasIngresar(usuario.rol, state?.desde)} replace />;
   }
 
   const enviar = async (evento: FormEvent<HTMLFormElement>) => {
@@ -31,7 +39,7 @@ export function PaginaIngresar() {
     setError(null);
     try {
       const ingresado = await ingresar({ correo: correo.trim(), contrasena });
-      navegar(ingresado.rol === 'PUBLICO' ? '/' : (state?.desde ?? '/panel'), { replace: true });
+      navegar(destinoTrasIngresar(ingresado.rol, state?.desde), { replace: true });
     } catch (e) {
       setError(e);
     } finally {

@@ -7,12 +7,13 @@ import { keyframes } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { AxiosError } from 'axios';
 import { useState, type ReactNode } from 'react';
-import { Link as RouterLink, useParams, useSearchParams } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { colores } from '../../../app/tema';
+import { useAuth } from '../../../shared/auth/useAuth';
 import { MensajeError } from '../../../shared/componentes/MensajeError';
 import { FUENTE_MAQUINA } from '../componentes/TarjetaResultado';
 import { RUTA_EXPLORAR, rutaExplorar } from '../explorar';
-import { usePiezaPortal } from '../hooks';
+import { usePdfConSesion, usePiezaPortal } from '../hooks';
 import { NOMBRE_TIPO, type PiezaPortal, type TipoPieza } from '../tipos';
 
 const CODIGO_VALIDO = /^MDA-\d{4}-\d{4}$/;
@@ -244,10 +245,32 @@ const estiloBotonVisor = {
 } as const;
 
 /**
- * El PDF se ve dentro de la mesa de luz con el lector del navegador. Donde el navegador no puede
- * mostrarlo (Chrome y Safari en celulares) aparece `children`: la hoja de muestra y el botón.
+ * El PDF se lee con cuenta (HU-15). Sin sesión se ofrece iniciarla y volver a esta misma pieza; con
+ * sesión se trae con el token y se muestra con el lector del navegador. `children` es la hoja de
+ * muestra: se ve mientras no hay documento y donde el navegador no puede mostrarlo (Chrome y
+ * Safari en celulares).
  */
 function VisorPdf({ url, titulo, children }: { url: string; titulo: string; children: ReactNode }) {
+  const { usuario } = useAuth();
+  const { pathname, search } = useLocation();
+  const { enlace, cargando, fallo } = usePdfConSesion(url, Boolean(usuario));
+  const aviso = !usuario
+    ? 'Este documento se lee con una cuenta. Inicia sesión y vuelves a esta misma pieza.'
+    : fallo
+      ? 'No pudimos abrir el documento. Recarga la página e intenta otra vez.'
+      : cargando || !enlace
+        ? 'Abriendo el documento…'
+        : 'Este navegador no muestra el PDF aquí. Ábrelo con el botón de abajo.';
+  const hoja = (
+    <Box sx={{ position: 'relative', textAlign: 'center' }}>
+      {children}
+      <Typography role="status" sx={{ maxWidth: 300, mx: 'auto', color: '#FFFFFF', fontSize: 16 }}>
+        {aviso}
+      </Typography>
+    </Box>
+  );
+  const estiloBoton = { flex: 'none', borderRadius: 999, px: 3, fontWeight: 800 } as const;
+
   return (
     <Box
       sx={{
@@ -261,33 +284,64 @@ function VisorPdf({ url, titulo, children }: { url: string; titulo: string; chil
       }}
     >
       <Box
-        component="object"
-        data={`${url}#view=FitH`}
-        type="application/pdf"
-        aria-label={`Documento PDF: ${titulo}`}
+        // sin documento solo se ve la hoja de muestra con el aviso
+        {...(enlace
+          ? {
+              component: 'object',
+              data: `${enlace}#view=FitH`,
+              type: 'application/pdf',
+              'aria-label': `Documento PDF: ${titulo}`,
+            }
+          : {})}
         sx={{
           flex: 1,
           width: '100%',
           minHeight: 0,
           border: 0,
-          // sin lector de PDF el contenido alternativo se centra en la mesa
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}
       >
-        {children}
+        {hoja}
       </Box>
-      <Button
-        href={url}
-        target="_blank"
-        rel="noopener"
-        variant="contained"
-        color="warning"
-        sx={{ alignSelf: 'center', flex: 'none', borderRadius: 999, px: 3, fontWeight: 800 }}
-      >
-        Abrir en otra pestaña
-      </Button>
+      <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 1.5 }}>
+        {!usuario ? (
+          <>
+            <Button
+              component={RouterLink}
+              to="/ingresar"
+              state={{ desde: `${pathname}${search}` }}
+              variant="contained"
+              color="warning"
+              sx={estiloBoton}
+            >
+              Iniciar sesión para leerlo
+            </Button>
+            <Button
+              component={RouterLink}
+              to="/registro"
+              variant="outlined"
+              sx={{ ...estiloBoton, color: '#FFFFFF', borderColor: '#FFFFFF' }}
+            >
+              Crear cuenta
+            </Button>
+          </>
+        ) : (
+          enlace && (
+            <Button
+              href={enlace}
+              target="_blank"
+              rel="noopener"
+              variant="contained"
+              color="warning"
+              sx={estiloBoton}
+            >
+              Abrir en otra pestaña
+            </Button>
+          )
+        )}
+      </Box>
     </Box>
   );
 }
@@ -423,32 +477,27 @@ function MesaDeLuz({ pieza }: { pieza: PiezaPortal }) {
         </>
       ) : pdf ? (
         <VisorPdf url={pdf.url} titulo={tituloDe(pieza)}>
-          <Box sx={{ position: 'relative', textAlign: 'center' }}>
-            <Box
-              aria-hidden
-              sx={{
-                width: { xs: 170, md: 320 },
-                height: { xs: 210, md: 420 },
-                mx: 'auto',
-                mb: { xs: 2, md: 3 },
-                p: { xs: 2.5, md: 4 },
-                bgcolor: '#EADFC6',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 1.25,
-                boxShadow: '0 30px 60px rgba(0, 0, 0, .45)',
-                animation: `${flota} 6s ease-in-out infinite`,
-                ...sinMovimiento,
-              }}
-            >
-              <Box sx={{ height: 12, width: '50%', bgcolor: '#B9A57E', mb: 2 }} />
-              {LINEAS.map((ancho, i) => (
-                <Box key={i} sx={{ height: 8, width: ancho, bgcolor: '#CBBB97' }} />
-              ))}
-            </Box>
-            <Typography sx={{ maxWidth: 300, mx: 'auto', color: '#FFFFFF', fontSize: 16 }}>
-              Este navegador no muestra el PDF aquí. Ábrelo con el botón de abajo.
-            </Typography>
+          <Box
+            aria-hidden
+            sx={{
+              width: { xs: 170, md: 320 },
+              height: { xs: 210, md: 420 },
+              mx: 'auto',
+              mb: { xs: 2, md: 3 },
+              p: { xs: 2.5, md: 4 },
+              bgcolor: '#EADFC6',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1.25,
+              boxShadow: '0 30px 60px rgba(0, 0, 0, .45)',
+              animation: `${flota} 6s ease-in-out infinite`,
+              ...sinMovimiento,
+            }}
+          >
+            <Box sx={{ height: 12, width: '50%', bgcolor: '#B9A57E', mb: 2 }} />
+            {LINEAS.map((ancho, i) => (
+              <Box key={i} sx={{ height: 8, width: ancho, bgcolor: '#CBBB97' }} />
+            ))}
           </Box>
         </VisorPdf>
       ) : (

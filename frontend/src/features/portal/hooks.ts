@@ -1,4 +1,5 @@
 import { keepPreviousData, useQueries, useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { portalApi } from './api';
 import type { ParametrosBuscarPiezas } from './tipos';
 
@@ -39,4 +40,28 @@ export function usePiezaPortal(codigo: string, habilitada: boolean) {
     // un 404 no se arregla reintentando
     retry: false,
   });
+}
+
+/** El PDF de la ficha, traído con la sesión y listo para ponerlo en la página. */
+export function usePdfConSesion(url: string, conSesion: boolean) {
+  const consulta = useQuery({
+    queryKey: ['portal', 'contenido', url],
+    queryFn: () => portalApi.contenido(url),
+    enabled: conSesion,
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+  const [enlace, setEnlace] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!consulta.data) return;
+    const creado = URL.createObjectURL(consulta.data);
+    setEnlace(creado);
+    return () => {
+      URL.revokeObjectURL(creado);
+      setEnlace(null);
+    };
+  }, [consulta.data]);
+
+  return { enlace, cargando: conSesion && consulta.isPending, fallo: consulta.isError };
 }
