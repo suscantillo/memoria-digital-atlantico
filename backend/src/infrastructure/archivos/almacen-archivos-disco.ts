@@ -1,14 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { createReadStream } from 'node:fs';
+import { mkdir, rm, stat, writeFile } from 'node:fs/promises';
 import { join, resolve, sep } from 'node:path';
-import { AlmacenArchivos } from '../../application/archivos/puertos';
+import {
+  AlmacenArchivos,
+  ContenidoAlmacenado,
+  LectorArchivos,
+} from '../../application/archivos/puertos';
 import { Configuracion } from '../config/configuracion';
 
 /** Guarda los escaneos en STORAGE_DIR (un volumen de Docker) con un nombre que no se adivina. */
 @Injectable()
-export class AlmacenArchivosDisco implements AlmacenArchivos {
+export class AlmacenArchivosDisco implements AlmacenArchivos, LectorArchivos {
   private readonly raiz: string;
 
   constructor(config: ConfigService<Configuracion, true>) {
@@ -29,21 +34,28 @@ export class AlmacenArchivosDisco implements AlmacenArchivos {
     return ruta.split(sep).join('/');
   }
 
-  async leer(ruta: string): Promise<Uint8Array | null> {
-    const absoluta = resolve(this.raiz, ruta);
-    if (!absoluta.startsWith(this.raiz + sep)) return null;
+  async borrar(ruta: string): Promise<void> {
+    const absoluta = this.dentroDeLaRaiz(ruta);
+    if (!absoluta) return;
+    await rm(absoluta, { force: true });
+  }
+
+  async abrir(ruta: string): Promise<ContenidoAlmacenado | null> {
+    const absoluta = this.dentroDeLaRaiz(ruta);
+    if (!absoluta) return null;
     try {
-      return await readFile(absoluta);
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
-      throw error;
+      const info = await stat(absoluta);
+      if (!info.isFile()) return null;
+      return { flujo: createReadStream(absoluta), tamanoBytes: info.size };
+    } catch {
+      // la fila existe pero el volumen se borró o se movió
+      return null;
     }
   }
 
-  async borrar(ruta: string): Promise<void> {
+  /** Nunca lee ni borra fuera de la carpeta de almacenamiento. */
+  private dentroDeLaRaiz(ruta: string): string | null {
     const absoluta = resolve(this.raiz, ruta);
-    // nunca borra fuera de la carpeta de almacenamiento
-    if (!absoluta.startsWith(this.raiz + sep)) return;
-    await rm(absoluta, { force: true });
+    return absoluta.startsWith(this.raiz + sep) ? absoluta : null;
   }
 }

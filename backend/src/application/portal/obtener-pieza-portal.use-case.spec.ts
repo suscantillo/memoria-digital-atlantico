@@ -48,6 +48,7 @@ describe('ObtenerPiezaPortal', () => {
       codigo: 'MDA-2026-0004',
       tipo: 'FOTOGRAFIA',
       restringida: false,
+      digitalizada: true,
       titulo: 'Fotografía ficticia de una fábrica textil',
       descripcion: 'Descripción de prueba de la pieza',
       anio: 1948,
@@ -91,6 +92,7 @@ describe('ObtenerPiezaPortal', () => {
       codigo: 'MDA-2026-0007',
       tipo: 'FOTOGRAFIA',
       restringida: true,
+      digitalizada: true,
       titulo: null,
       descripcion: null,
       anio: null,
@@ -105,13 +107,21 @@ describe('ObtenerPiezaPortal', () => {
   });
 
   it.each(['REGISTRADA', 'ESCANEADA', 'REVISADA'] as const)(
-    'lanza PiezaNoEncontradaError cuando la pieza está en estado %s (no publicada)',
+    'cuando la pieza está %s devuelve solo su tipo y ubicación, marcada como no digitalizada',
     async (estado) => {
       repositorio.agregar(fabricarPieza({ codigo: CodigoPieza.desde('MDA-2026-0001'), estado }));
 
-      await expect(casoDeUso.ejecutar('MDA-2026-0001')).rejects.toBeInstanceOf(
-        PiezaNoEncontradaError,
-      );
+      const resultado = await casoDeUso.ejecutar('MDA-2026-0001');
+
+      expect(resultado).toMatchObject({
+        codigo: 'MDA-2026-0001',
+        digitalizada: false,
+        titulo: null,
+        descripcion: null,
+        anio: null,
+        archivo: null,
+        ubicacion: { deposito: 'Depósito A' },
+      });
     },
   );
 

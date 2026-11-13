@@ -1,3 +1,4 @@
+import type { Readable } from 'node:stream';
 import { EstadoPieza } from '../../domain/piezas/estado-pieza';
 
 export const ESCANEOS = Symbol('ESCANEOS');
@@ -41,7 +42,17 @@ export interface Escaneos {
 /** Donde se guarda el archivo; la base solo guarda la ruta. */
 export interface AlmacenArchivos {
   guardar(contenido: Uint8Array, extension: string): Promise<string>;
-  /** null si el archivo ya no está en el almacén. */
-  leer(ruta: string): Promise<Uint8Array | null>;
   borrar(ruta: string): Promise<void>;
+}
+
+export const LECTOR_ARCHIVOS = Symbol('LECTOR_ARCHIVOS');
+
+export interface ContenidoAlmacenado {
+  flujo: Readable;
+  tamanoBytes: number;
+}
+
+/** Lee del almacenamiento; null si el archivo ya no está. */
+export interface LectorArchivos {
+  abrir(ruta: string): Promise<ContenidoAlmacenado | null>;
 }

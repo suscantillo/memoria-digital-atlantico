@@ -15,6 +15,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiConflictResponse,
   ApiConsumes,
@@ -25,6 +26,7 @@ import {
   ApiPayloadTooLargeResponse,
   ApiProduces,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { AprobarEscaneo } from '../../application/archivos/aprobar-escaneo.use-case';
 import { CargarEscaneo } from '../../application/archivos/cargar-escaneo.use-case';
@@ -41,6 +43,7 @@ import { ListarArchivos } from '../../application/archivos/listar-archivos.use-c
 import { ObtenerContenidoArchivo } from '../../application/archivos/obtener-contenido-archivo.use-case';
 import { RechazarEscaneo } from '../../application/archivos/rechazar-escaneo.use-case';
 import { Autenticado } from '../comun/decoradores/autenticado.decorator';
+import { SesionOpcional } from '../comun/decoradores/sesion-opcional.decorator';
 import { UsuarioActual } from '../comun/decoradores/usuario-actual.decorator';
 import { UsuarioAutenticado } from '../comun/solicitud-autenticada';
 import { InterceptorEscaneo } from './interceptor-escaneo';
@@ -72,19 +75,30 @@ export class ArchivosController {
   }
 
   @Get(':id/contenido')
-  @Autenticado('ADMIN', 'PERSONAL')
-  @Header('Cache-Control', 'private, no-store')
+  @SesionOpcional()
+  // privada: lo que se entrega depende de quién pregunta; corta: si la pieza se despublica, deja de verse pronto
+  @Header('Cache-Control', 'private, max-age=300')
   @Header('X-Content-Type-Options', 'nosniff')
-  @ApiOperation({ summary: 'Ver el escaneo para revisarlo' })
+  @ApiOperation({
+    summary: 'Ver un escaneo: el personal, cualquiera; el público, solo lo publicado',
+  })
+  @ApiBearerAuth()
   @ApiProduces('image/jpeg', 'image/png', 'image/webp', 'image/tiff', 'application/pdf')
   @ApiOkResponse({ description: 'El archivo, con el tipo que se reconoció al cargarlo.' })
-  @ApiNotFoundResponse({ description: 'El archivo no existe.' })
-  async contenido(@Param('id', ParseUUIDPipe) id: string): Promise<StreamableFile> {
-    const archivo = await this.obtenerContenido.ejecutar(id);
-    return new StreamableFile(archivo.contenido, {
+  @ApiUnauthorizedResponse({ description: 'Es un PDF y no hay sesión, o el token no es válido.' })
+  @ApiNotFoundResponse({
+    description:
+      'No existe, o es de una pieza restringida o sin publicar y no lo pide el personal.',
+  })
+  async contenido(
+    @Param('id', ParseUUIDPipe) id: string,
+    @UsuarioActual() usuario: UsuarioAutenticado | undefined,
+  ): Promise<StreamableFile> {
+    const archivo = await this.obtenerContenido.ejecutar(id, usuario?.rol ?? null);
+    return new StreamableFile(archivo.flujo, {
       type: archivo.tipoMime,
       disposition: `inline; filename*=UTF-8''${encodeURIComponent(archivo.nombreOriginal)}`,
-      length: archivo.contenido.length,
+      length: archivo.tamanoBytes,
     });
   }
 

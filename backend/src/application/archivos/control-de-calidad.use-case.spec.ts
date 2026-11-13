@@ -1,3 +1,4 @@
+import { Readable } from 'node:stream';
 import {
   ArchivoDigital,
   ArchivoNoEncontradoError,
@@ -11,8 +12,11 @@ import { Pieza, PiezaSinEscaneoPorRevisarError } from '../../domain/piezas/pieza
 import { ArchivoDigitalRepositorioMemoria } from '../../../test/dobles/archivo-digital-repositorio.memoria';
 import { AprobarEscaneo } from './aprobar-escaneo.use-case';
 import { ListarArchivos } from './listar-archivos.use-case';
-import { ObtenerContenidoArchivo } from './obtener-contenido-archivo.use-case';
-import { AlmacenArchivos } from './puertos';
+import {
+  ObtenerContenidoArchivo,
+  SesionRequeridaParaPdfError,
+} from './obtener-contenido-archivo.use-case';
+import { LectorArchivos } from './puertos';
 import { RechazarEscaneo } from './rechazar-escaneo.use-case';
 
 const ARCHIVO_ID = '33333333-3333-3333-3333-333333333333';
@@ -21,13 +25,16 @@ const REVISOR_ID = '44444444-4444-4444-4444-444444444444';
 const RUTA = 'escaneos/2026/11/prueba.png';
 const AHORA = new Date('2026-11-12T18:00:00.000Z');
 
-function fabricarArchivo(estado: EstadoArchivoDigital = 'EN_REVISION'): ArchivoDigital {
+function fabricarArchivo(
+  estado: EstadoArchivoDigital = 'EN_REVISION',
+  tipoMime = 'image/png',
+): ArchivoDigital {
   return ArchivoDigital.reconstruir({
     id: ARCHIVO_ID,
     piezaId: PIEZA_ID,
     nombreOriginal: 'comparsa.png',
     rutaAlmacenamiento: RUTA,
-    tipoMime: 'image/png',
+    tipoMime,
     tamanoBytes: 2048,
     estado,
     motivoRechazo: null,
@@ -165,33 +172,78 @@ describe('Control de calidad', () => {
   });
 
   describe('ObtenerContenidoArchivo', () => {
-    const almacenCon = (contenido: Uint8Array | null): AlmacenArchivos => ({
-      guardar: () => Promise.resolve(RUTA),
-      leer: (ruta) => Promise.resolve(ruta === RUTA ? contenido : null),
-      borrar: () => Promise.resolve(),
+    const bytes = Buffer.from([1, 2, 3]);
+    const lectorCon = (contenido: Buffer | null): LectorArchivos => ({
+      abrir: (ruta) =>
+        Promise.resolve(
+          ruta === RUTA && contenido
+            ? { flujo: Readable.from([contenido]), tamanoBytes: contenido.length }
+            : null,
+        ),
     });
+    const casoDeUso = (contenido: Buffer | null = bytes) =>
+      new ObtenerContenidoArchivo(repositorio, lectorCon(contenido));
+    const leer = async (flujo: Readable): Promise<Buffer> => {
+      const partes: Buffer[] = [];
+      for await (const parte of flujo) partes.push(parte as Buffer);
+      return Buffer.concat(partes);
+    };
 
-    it('devuelve el contenido con su tipo y su nombre', async () => {
+    it('el personal abre un escaneo en revisión, con su tipo y su nombre', async () => {
       repositorio.agregar(fabricarArchivo(), fabricarPieza());
-      const bytes = Uint8Array.from([1, 2, 3]);
 
-      const resultado = await new ObtenerContenidoArchivo(repositorio, almacenCon(bytes)).ejecutar(
-        ARCHIVO_ID,
-      );
+      const resultado = await casoDeUso().ejecutar(ARCHIVO_ID, 'PERSONAL');
 
-      expect(resultado).toEqual({
+      expect(resultado).toMatchObject({
         nombreOriginal: 'comparsa.png',
         tipoMime: 'image/png',
-        contenido: bytes,
+        tamanoBytes: bytes.length,
+      });
+      expect(await leer(resultado.flujo)).toEqual(bytes);
+    });
+
+    it('un visitante sin sesión ve la imagen aprobada de una pieza publicada', async () => {
+      repositorio.agregar(fabricarArchivo('APROBADO'), fabricarPieza('PUBLICADA'));
+
+      const resultado = await casoDeUso().ejecutar(ARCHIVO_ID, null);
+
+      expect(await leer(resultado.flujo)).toEqual(bytes);
+    });
+
+    it('para el público un escaneo en revisión es como si no existiera', async () => {
+      repositorio.agregar(fabricarArchivo(), fabricarPieza());
+
+      await expect(casoDeUso().ejecutar(ARCHIVO_ID, null)).rejects.toBeInstanceOf(
+        ArchivoNoEncontradoError,
+      );
+      await expect(casoDeUso().ejecutar(ARCHIVO_ID, 'PUBLICO')).rejects.toBeInstanceOf(
+        ArchivoNoEncontradoError,
+      );
+    });
+
+    it('un PDF aprobado pide sesión al visitante y se abre con una cuenta', async () => {
+      repositorio.agregar(
+        fabricarArchivo('APROBADO', 'application/pdf'),
+        fabricarPieza('PUBLICADA'),
+      );
+
+      await expect(casoDeUso().ejecutar(ARCHIVO_ID, null)).rejects.toBeInstanceOf(
+        SesionRequeridaParaPdfError,
+      );
+      await expect(casoDeUso().ejecutar(ARCHIVO_ID, 'PUBLICO')).resolves.toMatchObject({
+        tipoMime: 'application/pdf',
       });
     });
 
     it('responde que no existe si falta la fila o falta el archivo en el almacén', async () => {
-      const casoDeUso = new ObtenerContenidoArchivo(repositorio, almacenCon(null));
-      await expect(casoDeUso.ejecutar(ARCHIVO_ID)).rejects.toBeInstanceOf(ArchivoNoEncontradoError);
+      await expect(casoDeUso().ejecutar(ARCHIVO_ID, 'PERSONAL')).rejects.toBeInstanceOf(
+        ArchivoNoEncontradoError,
+      );
 
       repositorio.agregar(fabricarArchivo(), fabricarPieza());
-      await expect(casoDeUso.ejecutar(ARCHIVO_ID)).rejects.toBeInstanceOf(ArchivoNoEncontradoError);
+      await expect(casoDeUso(null).ejecutar(ARCHIVO_ID, 'PERSONAL')).rejects.toBeInstanceOf(
+        ArchivoNoEncontradoError,
+      );
     });
   });
 });
