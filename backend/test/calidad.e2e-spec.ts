@@ -33,6 +33,8 @@ describe('Control de calidad de escaneos (e2e)', () => {
   const contrasena = 'Secreta.123';
   const correos = {
     PERSONAL: `cal-personal-${marca}@prueba.local`,
+    // HU-23: nadie revisa lo que subió; aquí revisa un ADMIN, que puede revisar sin asignación
+    ADMIN: `cal-admin-${marca}@prueba.local`,
     PUBLICO: `cal-publico-${marca}@prueba.local`,
   };
   const prefijo = 'MDA-9994-';
@@ -80,7 +82,7 @@ describe('Control de calidad de escaneos (e2e)', () => {
           nombre: `Calidad ${rol}`,
           correo,
           contrasenaHash: hash,
-          rol: rol as 'PERSONAL' | 'PUBLICO',
+          rol: rol as 'PERSONAL' | 'PUBLICO' | 'ADMIN',
         },
       });
     }
@@ -103,6 +105,7 @@ describe('Control de calidad de escaneos (e2e)', () => {
       piezas[clave] = pieza.id;
       archivos[clave] = await cargar(pieza.id);
     }
+    token = await ingresar(correos.ADMIN);
   }, 30_000);
 
   afterAll(async () => {

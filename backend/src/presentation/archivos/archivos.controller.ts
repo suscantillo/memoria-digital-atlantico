@@ -19,6 +19,7 @@ import {
   ApiBody,
   ApiConflictResponse,
   ApiConsumes,
+  ApiForbiddenResponse,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -27,8 +28,13 @@ import {
   ApiProduces,
   ApiTags,
   ApiUnauthorizedResponse,
+  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { AprobarEscaneo } from '../../application/archivos/aprobar-escaneo.use-case';
+import { AsignarRevisor } from '../../application/archivos/asignar-revisor.use-case';
+import { AsignarRevisorDto } from '../../application/archivos/dto/asignar-revisor.dto';
+import { RevisorDto } from '../../application/archivos/dto/revisor.dto';
+import { ListarRevisores } from '../../application/archivos/listar-revisores.use-case';
 import { CargarEscaneo } from '../../application/archivos/cargar-escaneo.use-case';
 import { AprobarEscaneoDto } from '../../application/archivos/dto/aprobar-escaneo.dto';
 import {
@@ -62,16 +68,50 @@ export class ArchivosController {
     private readonly obtenerContenido: ObtenerContenidoArchivo,
     private readonly aprobarEscaneo: AprobarEscaneo,
     private readonly rechazarEscaneo: RechazarEscaneo,
+    private readonly asignarRevisor: AsignarRevisor,
+    private readonly listarRevisores: ListarRevisores,
   ) {}
 
   @Get()
   @Autenticado('ADMIN', 'PERSONAL')
   @ApiOperation({
-    summary: 'Listar escaneos; con estado=EN_REVISION es la cola de control de calidad',
+    summary:
+      'Listar escaneos; con estado=EN_REVISION es la cola. Un PERSONAL solo ve lo asignado a él o, con subidoPor=yo, lo que subió',
   })
   @ApiOkResponse({ type: ArchivosPaginadosDto })
-  listar(@Query() consulta: ListarArchivosDto): Promise<ArchivosPaginadosDto> {
-    return this.listarArchivos.ejecutar(consulta);
+  listar(
+    @Query() consulta: ListarArchivosDto,
+    @UsuarioActual() usuario: UsuarioAutenticado,
+  ): Promise<ArchivosPaginadosDto> {
+    return this.listarArchivos.ejecutar(consulta, usuario);
+  }
+
+  @Get('revisores')
+  @Autenticado('ADMIN')
+  @ApiOperation({ summary: 'Cuentas PERSONAL activas a las que se puede asignar una revisión' })
+  @ApiOkResponse({ type: RevisorDto, isArray: true })
+  revisores(): Promise<RevisorDto[]> {
+    return this.listarRevisores.ejecutar();
+  }
+
+  @Post(':id/asignar')
+  @Autenticado('ADMIN')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Asignar o cambiar el revisor de un escaneo EN_REVISION; queda en el historial',
+  })
+  @ApiOkResponse({ type: ArchivoDigitalDto })
+  @ApiNotFoundResponse({ description: 'El archivo no existe.' })
+  @ApiConflictResponse({ description: 'El escaneo ya fue revisado.' })
+  @ApiUnprocessableEntityResponse({
+    description: 'El revisor es quien subió el escaneo o no es una cuenta PERSONAL activa.',
+  })
+  asignar(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() datos: AsignarRevisorDto,
+    @UsuarioActual() usuario: UsuarioAutenticado,
+  ): Promise<ArchivoDigitalDto> {
+    return this.asignarRevisor.ejecutar(id, datos.revisorId, usuario.id);
   }
 
   @Get(':id/contenido')
@@ -107,6 +147,7 @@ export class ArchivosController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Aprobar un escaneo EN_REVISION: la pieza queda PUBLICADA' })
   @ApiOkResponse({ type: ArchivoDigitalDto })
+  @ApiForbiddenResponse({ description: 'Es PERSONAL y no es el revisor asignado.' })
   @ApiNotFoundResponse({ description: 'El archivo no existe.' })
   @ApiConflictResponse({ description: 'El escaneo ya fue revisado.' })
   aprobar(
@@ -114,7 +155,7 @@ export class ArchivosController {
     @Body() _criterios: AprobarEscaneoDto,
     @UsuarioActual() usuario: UsuarioAutenticado,
   ): Promise<ArchivoDigitalDto> {
-    return this.aprobarEscaneo.ejecutar(id, usuario.id);
+    return this.aprobarEscaneo.ejecutar(id, usuario);
   }
 
   @Post(':id/rechazar')
@@ -124,6 +165,7 @@ export class ArchivosController {
     summary: 'Rechazar un escaneo EN_REVISION con motivo: la pieza vuelve a REGISTRADA',
   })
   @ApiOkResponse({ type: ArchivoDigitalDto })
+  @ApiForbiddenResponse({ description: 'Es PERSONAL y no es el revisor asignado.' })
   @ApiNotFoundResponse({ description: 'El archivo no existe.' })
   @ApiConflictResponse({ description: 'El escaneo ya fue revisado.' })
   rechazar(
@@ -131,7 +173,7 @@ export class ArchivosController {
     @Body() datos: RechazarEscaneoDto,
     @UsuarioActual() usuario: UsuarioAutenticado,
   ): Promise<ArchivoDigitalDto> {
-    return this.rechazarEscaneo.ejecutar(id, usuario.id, datos.motivoRechazo);
+    return this.rechazarEscaneo.ejecutar(id, usuario, datos.motivoRechazo);
   }
 
   @Post()

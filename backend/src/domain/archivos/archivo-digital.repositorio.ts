@@ -12,8 +12,18 @@ export type CampoOrdenArchivo = (typeof CAMPOS_ORDEN_ARCHIVO)[number];
 
 export interface ParametrosListarArchivos extends ParametrosPaginacion {
   estado?: EstadoArchivoDigital;
+  /** HU-23: el id del revisor asignado; null trae solo los que no tienen revisor. */
+  revisorId?: string | null;
+  /** «Mis escaneos»: solo los que subió esta cuenta. */
+  subidoPorId?: string;
   orden: CampoOrdenArchivo;
   direccion: DireccionOrden;
+}
+
+export interface PersonaDelArchivo {
+  id: string;
+  nombre: string;
+  correo: string;
 }
 
 /** Lo que el revisor compara contra el escaneo: el archivo, quién lo subió y los datos de su pieza. */
@@ -26,7 +36,9 @@ export interface DetalleArchivoDigital {
   motivoRechazo: string | null;
   creadoEn: Date;
   revisadoEn: Date | null;
-  subidoPor: { nombre: string; correo: string };
+  subidoPor: PersonaDelArchivo;
+  /** HU-23: null mientras el administrador no lo asigne. */
+  revisor: PersonaDelArchivo | null;
   pieza: {
     id: string;
     codigo: string;
@@ -60,4 +72,13 @@ export interface ArchivoDigitalRepositorio {
    * Devuelve false si otra revisión llegó primero y el archivo ya no estaba EN_REVISION.
    */
   guardarRevision(revision: RevisionEscaneo, evento: EventoRevision): Promise<boolean>;
+  /**
+   * HU-23: guarda el revisor asignado y deja el evento en el historial de la pieza, con quien
+   * asignó. Devuelve false si el archivo ya no estaba EN_REVISION.
+   */
+  guardarAsignacion(
+    archivo: ArchivoDigital,
+    asignadoPorId: string,
+    evento: EventoRevision,
+  ): Promise<boolean>;
 }

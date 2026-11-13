@@ -23,6 +23,8 @@ const ARCHIVO_ID = '33333333-3333-3333-3333-333333333333';
 const PIEZA_ID = '11111111-1111-1111-1111-111111111111';
 const REVISOR_ID = '44444444-4444-4444-4444-444444444444';
 const RUTA = 'escaneos/2026/11/prueba.png';
+const REVISOR = { id: REVISOR_ID, rol: 'PERSONAL' } as const;
+const ADMIN = { id: '66666666-6666-6666-6666-666666666666', rol: 'ADMIN' } as const;
 const AHORA = new Date('2026-11-12T18:00:00.000Z');
 
 function fabricarArchivo(
@@ -41,6 +43,7 @@ function fabricarArchivo(
     subidoPorId: '55555555-5555-5555-5555-555555555555',
     revisadoPorId: null,
     revisadoEn: null,
+    revisorAsignadoId: REVISOR_ID,
     creadoEn: AHORA,
   });
 }
@@ -78,7 +81,7 @@ describe('Control de calidad', () => {
     it('deja el archivo APROBADO, la pieza PUBLICADA y el evento con quien revisó', async () => {
       repositorio.agregar(fabricarArchivo(), fabricarPieza());
 
-      const resultado = await new AprobarEscaneo(repositorio).ejecutar(ARCHIVO_ID, REVISOR_ID);
+      const resultado = await new AprobarEscaneo(repositorio).ejecutar(ARCHIVO_ID, REVISOR);
 
       expect(resultado.estado).toBe('APROBADO');
       expect(resultado.revisadoEn).not.toBeNull();
@@ -93,7 +96,7 @@ describe('Control de calidad', () => {
       repositorio.agregar(fabricarArchivo('APROBADO'), fabricarPieza('PUBLICADA'));
 
       await expect(
-        new AprobarEscaneo(repositorio).ejecutar(ARCHIVO_ID, REVISOR_ID),
+        new AprobarEscaneo(repositorio).ejecutar(ARCHIVO_ID, REVISOR),
       ).rejects.toBeInstanceOf(ArchivoYaRevisadoError);
       expect(repositorio.eventos).toHaveLength(0);
     });
@@ -103,7 +106,7 @@ describe('Control de calidad', () => {
       repositorio.otraRevisionGano = true;
 
       await expect(
-        new AprobarEscaneo(repositorio).ejecutar(ARCHIVO_ID, REVISOR_ID),
+        new AprobarEscaneo(repositorio).ejecutar(ARCHIVO_ID, REVISOR),
       ).rejects.toBeInstanceOf(ArchivoYaRevisadoError);
     });
 
@@ -111,13 +114,13 @@ describe('Control de calidad', () => {
       repositorio.agregar(fabricarArchivo(), fabricarPieza('REGISTRADA'));
 
       await expect(
-        new AprobarEscaneo(repositorio).ejecutar(ARCHIVO_ID, REVISOR_ID),
+        new AprobarEscaneo(repositorio).ejecutar(ARCHIVO_ID, REVISOR),
       ).rejects.toBeInstanceOf(PiezaSinEscaneoPorRevisarError);
     });
 
     it('responde que el archivo no existe', async () => {
       await expect(
-        new AprobarEscaneo(repositorio).ejecutar(ARCHIVO_ID, REVISOR_ID),
+        new AprobarEscaneo(repositorio).ejecutar(ARCHIVO_ID, REVISOR),
       ).rejects.toBeInstanceOf(ArchivoNoEncontradoError);
     });
   });
@@ -128,7 +131,7 @@ describe('Control de calidad', () => {
 
       const resultado = await new RechazarEscaneo(repositorio).ejecutar(
         ARCHIVO_ID,
-        REVISOR_ID,
+        REVISOR,
         '  La imagen está cortada ',
       );
 
@@ -143,7 +146,7 @@ describe('Control de calidad', () => {
       repositorio.agregar(fabricarArchivo(), fabricarPieza());
 
       await expect(
-        new RechazarEscaneo(repositorio).ejecutar(ARCHIVO_ID, REVISOR_ID, '   '),
+        new RechazarEscaneo(repositorio).ejecutar(ARCHIVO_ID, REVISOR, '   '),
       ).rejects.toBeInstanceOf(MotivoRechazoObligatorioError);
       expect(repositorio.archivos.get(ARCHIVO_ID)?.estado).toBe('EN_REVISION');
       expect(repositorio.eventos).toHaveLength(0);
@@ -155,14 +158,14 @@ describe('Control de calidad', () => {
       repositorio.agregar(fabricarArchivo(), fabricarPieza());
 
       const consulta = { pagina: 1, limite: 20, orden: 'creadoEn', direccion: 'asc' } as const;
-      const cola = await new ListarArchivos(repositorio).ejecutar({
-        ...consulta,
-        estado: 'EN_REVISION',
-      });
-      const aprobados = await new ListarArchivos(repositorio).ejecutar({
-        ...consulta,
-        estado: 'APROBADO',
-      });
+      const cola = await new ListarArchivos(repositorio).ejecutar(
+        { ...consulta, estado: 'EN_REVISION' },
+        ADMIN,
+      );
+      const aprobados = await new ListarArchivos(repositorio).ejecutar(
+        { ...consulta, estado: 'APROBADO' },
+        ADMIN,
+      );
 
       expect(cola.meta.total).toBe(1);
       expect(cola.datos[0].url).toBe(`/api/v1/archivos/${ARCHIVO_ID}/contenido`);
