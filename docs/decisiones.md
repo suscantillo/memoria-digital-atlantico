@@ -112,3 +112,19 @@ que es lo que pide HU-15.
 Lo que el público no puede ver responde 404 y no 403, igual que un archivo que no existe: un 403
 confirmaría que la pieza restringida o el escaneo en revisión están ahí. El 401 queda solo para el PDF
 publicado, porque ahí sí conviene decirle al visitante que con una cuenta lo puede leer.
+
+## 18. Quien sube un escaneo no lo revisa
+
+HU-09 y HU-10 nombraban al mismo rol para subir y para revisar, así que un `PERSONAL` podía aprobar lo
+que él mismo cargó. Con HU-23 el `ADMIN` asigna el revisor de cada escaneo (`POST /archivos/:id/asignar`)
+entre las cuentas `PERSONAL` activas, nunca a quien lo subió, y la asignación queda en el historial de la
+pieza como `REVISOR_ASIGNADO`. La aprobación es por documento, no un permiso de la cuenta.
+
+La regla vive en `ArchivoDigital`: `asignarRevisor` rechaza a quien lo subió y solo vale `EN_REVISION`;
+`exigirPuedeRevisar` deja pasar al `ADMIN` y al revisor asignado, y a cualquier otro `PERSONAL` le
+responde 403 (`ErrorProhibido`). El `ADMIN` puede revisar cualquier escaneo, también uno que subió, para
+que el archivo no se detenga si hay una sola persona.
+
+`GET /archivos` se recorta según quién pregunta: un `PERSONAL` recibe solo lo asignado a él o, con
+`subidoPor=yo`, lo que subió («Mis escaneos»), aunque pida otros filtros. Ver un escaneo
+(`/archivos/:id/contenido`) no cambia: el personal sigue viendo todos.
