@@ -12,6 +12,7 @@ import { PaginaNoEncontrada } from '../features/portal/paginas/PaginaNoEncontrad
 import { PaginaPieza } from '../features/portal/paginas/PaginaPieza';
 import { PaginaEscanear } from '../features/qr/paginas/PaginaEscanear';
 import { PaginaUbicacionesPanel } from '../features/ubicaciones/paginas/PaginaUbicacionesPanel';
+import { PaginaUsuariosPanel } from '../features/usuarios/paginas/PaginaUsuariosPanel';
 import { RutaProtegida } from '../shared/componentes/RutaProtegida';
 import { LayoutPanel } from '../shared/layouts/LayoutPanel';
 import { LayoutPublico } from '../shared/layouts/LayoutPublico';
@@ -27,6 +28,7 @@ export const rutas = {
   panel: '/panel',
   panelInventario: '/panel/inventario',
   panelUbicaciones: '/panel/ubicaciones',
+  panelUsuarios: '/panel/usuarios',
   panelCalidad: '/panel/calidad',
   panelNuevaPieza: '/panel/piezas/nueva',
 } as const;
@@ -42,7 +44,7 @@ export const enrutador = createBrowserRouter([
       { path: rutas.ingresar, element: <PaginaIngresar /> },
       { path: rutas.registro, element: <PaginaRegistro /> },
       { path: rutas.privacidad, element: <PaginaPrivacidad /> },
-      // dentro del layout público, para que quien se pierda conserve el menú
+      // Dentro del layout público, para que quien se pierda conserve el menú.
       { path: '*', element: <PaginaNoEncontrada /> },
     ],
   },
@@ -60,6 +62,14 @@ export const enrutador = createBrowserRouter([
       { path: 'calidad', element: <PaginaCalidad /> },
       { path: 'ubicaciones', element: <PaginaUbicacionesPanel /> },
       { path: 'piezas/nueva', element: <PaginaNuevaPieza /> },
+      {
+        path: 'usuarios',
+        element: (
+          <RutaProtegida roles={['ADMIN']}>
+            <PaginaUsuariosPanel />
+          </RutaProtegida>
+        ),
+      },
     ],
   },
 ]);
