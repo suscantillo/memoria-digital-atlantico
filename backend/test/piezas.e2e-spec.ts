@@ -58,6 +58,7 @@ describe('Piezas (e2e)', () => {
   });
 
   afterEach(async () => {
+    if (!prisma) return;
     await prisma.pieza.deleteMany({ where: { ubicacionId } });
     await prisma.ubicacion.deleteMany({ where: { id: ubicacionId } });
     await prisma.usuario.deleteMany({ where: { id: usuarioId } });
@@ -126,5 +127,122 @@ describe('Piezas (e2e)', () => {
 
     const cuerpo = respuesta.body as { errors: string[] };
     expect(cuerpo.errors.some((error) => error.includes(campo))).toBe(true);
+  });
+
+  it('consulta la ficha con ubicación e historial en orden cronológico', async () => {
+    const creada = await request(app.getHttpServer())
+      .post('/api/v1/piezas')
+      .set('Authorization', `Bearer ${tokenAcceso}`)
+      .send({
+        tipo: 'DOCUMENTO',
+        titulo: 'Ficha para consulta',
+        anio: 1901,
+        ubicacionId,
+      })
+      .expect(201);
+    const pieza = creada.body as { id: string };
+    await prisma.eventoPieza.createMany({
+      data: [
+        {
+          piezaId: pieza.id,
+          usuarioId,
+          accion: 'EVENTO_POSTERIOR',
+          creadoEn: new Date('2025-01-03T00:00:00.000Z'),
+        },
+        {
+          piezaId: pieza.id,
+          usuarioId,
+          accion: 'EVENTO_ANTERIOR',
+          creadoEn: new Date('2025-01-02T00:00:00.000Z'),
+        },
+      ],
+    });
+
+    const respuesta = await request(app.getHttpServer())
+      .get(`/api/v1/piezas/${pieza.id}`)
+      .set('Authorization', `Bearer ${tokenAcceso}`)
+      .expect(200);
+    const ficha = respuesta.body as {
+      titulo: string;
+      estado: string;
+      ubicacion: { id: string; deposito: string; estanteria: string; caja: string };
+      eventos: Array<{ accion: string; creadoEn: string }>;
+    };
+
+    expect(ficha).toMatchObject({
+      titulo: 'Ficha para consulta',
+      estado: 'REGISTRADA',
+      ubicacion: {
+        id: ubicacionId,
+        estanteria: 'Estantería de prueba',
+        caja: 'Caja de prueba',
+      },
+    });
+    expect(ficha.ubicacion.deposito).toContain('Depósito pieza');
+    expect(ficha.eventos.map((evento) => evento.accion)).toEqual([
+      'EVENTO_ANTERIOR',
+      'EVENTO_POSTERIOR',
+      'REGISTRADA',
+    ]);
+    expect(new Date(ficha.eventos[0].creadoEn).getTime()).toBeLessThan(
+      new Date(ficha.eventos[1].creadoEn).getTime(),
+    );
+  });
+
+  it('edita los datos y registra el evento de edición con su autor', async () => {
+    const creada = await request(app.getHttpServer())
+      .post('/api/v1/piezas')
+      .set('Authorization', `Bearer ${tokenAcceso}`)
+      .send({
+        tipo: 'PERIODICO',
+        titulo: 'Título original',
+        anio: 1942,
+        ubicacionId,
+      })
+      .expect(201);
+    const pieza = creada.body as { id: string };
+
+    const respuestaTitulo = await request(app.getHttpServer())
+      .patch(`/api/v1/piezas/${pieza.id}`)
+      .set('Authorization', `Bearer ${tokenAcceso}`)
+      .send({ titulo: 'Título corregido' })
+      .expect(200);
+
+    expect(respuestaTitulo.body).toMatchObject({
+      id: pieza.id,
+      titulo: 'Título corregido',
+    });
+
+    const respuestaDescripcion = await request(app.getHttpServer())
+      .patch(`/api/v1/piezas/${pieza.id}`)
+      .set('Authorization', `Bearer ${tokenAcceso}`)
+      .send({ descripcion: 'Descripción nueva' })
+      .expect(200);
+
+    expect(respuestaDescripcion.body).toMatchObject({
+      id: pieza.id,
+      titulo: 'Título corregido',
+      descripcion: 'Descripción nueva',
+    });
+    await expect(prisma.pieza.findUnique({ where: { id: pieza.id } })).resolves.toMatchObject({
+      titulo: 'Título corregido',
+      descripcion: 'Descripción nueva',
+    });
+    const eventos = await prisma.eventoPieza.findMany({
+      where: { piezaId: pieza.id, accion: 'EDITADA' },
+      orderBy: [{ creadoEn: 'asc' }, { id: 'asc' }],
+    });
+    expect(eventos).toMatchObject([
+      {
+        usuarioId,
+        accion: 'EDITADA',
+        detalle: 'Se actualizó título.',
+      },
+      {
+        usuarioId,
+        accion: 'EDITADA',
+        detalle: 'Se actualizó descripción.',
+      },
+    ]);
   });
 });

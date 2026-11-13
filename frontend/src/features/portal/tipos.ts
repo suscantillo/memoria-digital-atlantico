@@ -18,11 +18,16 @@ export interface UbicacionPortal {
   caja: string;
 }
 
-/** Ficha pública. Si la pieza es restringida, título, descripción, año y archivo llegan en null. */
+/**
+ * Ficha pública. Si la pieza es restringida o aún no está digitalizada, título, descripción, año y
+ * archivo llegan en null: solo se sabe su tipo y dónde está el original.
+ */
 export interface PiezaPortal {
   codigo: string;
   tipo: TipoPieza;
   restringida: boolean;
+  /** false: está registrada pero todavía no publicada; se consulta en sala. */
+  digitalizada: boolean;
   titulo: string | null;
   descripcion: string | null;
   anio: number | null;

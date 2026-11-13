@@ -1,4 +1,4 @@
-import {
+﻿import {
   ArchivoDigital as ArchivoDigitalFila,
   Pieza as PiezaFila,
   Ubicacion as UbicacionFila,
@@ -14,6 +14,7 @@ export type PiezaConRelaciones = PiezaFila & {
 export const PiezaMapper = {
   aEntidad(fila: PiezaConRelaciones): Pieza {
     const archivo = fila.archivos[0] ?? null;
+
     return Pieza.reconstruir({
       id: fila.id,
       codigo: CodigoPieza.desde(fila.codigo),

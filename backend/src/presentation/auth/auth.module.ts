@@ -12,13 +12,11 @@ import { RegistrarUsuario } from '../../application/auth/registrar-usuario.use-c
 import { SESION_REPOSITORIO, SesionRepositorio } from '../../domain/sesiones/sesion.repositorio';
 import { USUARIO_REPOSITORIO, UsuarioRepositorio } from '../../domain/usuarios/usuario.repositorio';
 import { PrismaSesionRepositorio } from '../../infrastructure/sesiones/prisma-sesion.repositorio';
-import { PrismaUsuarioRepositorio } from '../../infrastructure/usuarios/prisma-usuario.repositorio';
 import { AuthController } from './auth.controller';
 
 @Module({
   controllers: [AuthController],
   providers: [
-    { provide: USUARIO_REPOSITORIO, useClass: PrismaUsuarioRepositorio },
     { provide: SESION_REPOSITORIO, useClass: PrismaSesionRepositorio },
     {
       provide: RegistrarUsuario,

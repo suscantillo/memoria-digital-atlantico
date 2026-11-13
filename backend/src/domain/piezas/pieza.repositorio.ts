@@ -1,6 +1,6 @@
-import { DireccionOrden, ParametrosPaginacion, ResultadoPaginado } from '../comun/paginacion';
+﻿import { DireccionOrden, ParametrosPaginacion, ResultadoPaginado } from '../comun/paginacion';
 import { CodigoPieza } from './codigo-pieza';
-import { DatosNuevaPieza, Pieza } from './pieza.entity';
+import { CambiosPieza, DatosNuevaPieza, FichaPieza, Pieza } from './pieza.entity';
 import { TipoPieza } from './tipo-pieza';
 
 export const PIEZA_REPOSITORIO = Symbol('PIEZA_REPOSITORIO');
@@ -28,4 +28,8 @@ export interface PiezaRepositorio {
   buscarPorCodigo(codigo: CodigoPieza): Promise<Pieza | null>;
 
   listarPublicadas(params: ParametrosListarPublicadas): Promise<ResultadoPaginado<Pieza>>;
+
+  buscarFicha(id: string): Promise<FichaPieza | null>;
+
+  editar(id: string, cambios: CambiosPieza, usuarioId: string): Promise<FichaPieza>;
 }

@@ -1,7 +1,11 @@
+import FactCheckIcon from '@mui/icons-material/FactCheck';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
+import LogoutIcon from '@mui/icons-material/Logout';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import MenuIcon from '@mui/icons-material/Menu';
 import PlaceIcon from '@mui/icons-material/Place';
 import PublicIcon from '@mui/icons-material/Public';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import type { SvgIconComponent } from '@mui/icons-material';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -16,9 +20,10 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import { useState } from 'react';
+import { useState, type ComponentType } from 'react';
 import { NavLink, Outlet, Link as RouterLink, useNavigate } from 'react-router-dom';
 import { colores } from '../../app/tema';
+import { PendientesCalidad } from '../../features/calidad/componentes/PendientesCalidad';
 import { useAuth } from '../auth/useAuth';
 import { EnlaceSaltar, ID_CONTENIDO } from '../componentes/EnlaceSaltar';
 import { Isotipo } from '../componentes/Isotipo';
@@ -32,13 +37,11 @@ interface Seccion {
   ruta: string;
   Icono: SvgIconComponent;
   soloAdmin?: boolean;
+  /** Otro nombre para el PERSONAL: «Mis escaneos» en vez de «Escaneos». */
+  etiquetaPersonal?: string;
+  /** Contador a la derecha de la etiqueta. */
+  Insignia?: ComponentType;
 }
-
-// solo las secciones que ya existen; cada historia agrega la suya cuando entra con su backend
-const secciones: Seccion[] = [
-  { etiqueta: 'Inventario', ruta: '/panel/inventario', Icono: Inventory2Icon },
-  { etiqueta: 'Ubicaciones', ruta: '/panel/ubicaciones', Icono: PlaceIcon },
-];
 
 const NOMBRE_ROL: Record<RolUsuario, string> = {
   ADMIN: 'Administrador',
@@ -66,6 +69,33 @@ export function LayoutPanel() {
   const { usuario, salir } = useAuth();
   const navegar = useNavigate();
   const [menuAbierto, setMenuAbierto] = useState(false);
+
+  const secciones: Seccion[] = [
+    { etiqueta: 'Inventario', ruta: '/panel/inventario', Icono: Inventory2Icon },
+    {
+      etiqueta: 'Control de calidad',
+      ruta: '/panel/calidad',
+      Icono: FactCheckIcon,
+      Insignia: PendientesCalidad,
+    },
+    {
+      etiqueta: 'Escaneos',
+      etiquetaPersonal: 'Mis escaneos',
+      ruta: '/panel/escaneos',
+      Icono: UploadFileIcon,
+    },
+    { etiqueta: 'Ubicaciones', ruta: '/panel/ubicaciones', Icono: PlaceIcon },
+    ...(usuario?.rol === 'ADMIN'
+      ? [
+          {
+            etiqueta: 'Usuarios',
+            ruta: '/panel/usuarios',
+            Icono: ManageAccountsIcon,
+            soloAdmin: true,
+          },
+        ]
+      : []),
+  ];
 
   const cerrarSesion = async () => {
     await salir();
@@ -105,8 +135,8 @@ export function LayoutPanel() {
       <List disablePadding sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
         {secciones
           .filter((s) => !s.soloAdmin || usuario?.rol === 'ADMIN')
-          .map(({ etiqueta, ruta, Icono, soloAdmin }) => (
-            <ListItem key={etiqueta} disablePadding>
+          .map(({ etiqueta, etiquetaPersonal, ruta, Icono, soloAdmin, Insignia }) => (
+            <ListItem key={ruta} disablePadding>
               <ListItemButton
                 component={NavLink}
                 to={ruta}
@@ -130,11 +160,14 @@ export function LayoutPanel() {
                   <Icono aria-hidden />
                 </ListItemIcon>
                 <ListItemText
-                  primary={etiqueta}
+                  primary={
+                    usuario?.rol === 'PERSONAL' && etiquetaPersonal ? etiquetaPersonal : etiqueta
+                  }
                   secondary={soloAdmin ? 'Solo administrador' : undefined}
                   primaryTypographyProps={{ fontWeight: 'inherit' }}
                   secondaryTypographyProps={{ sx: { color: '#B9C3D6', fontSize: 12 } }}
                 />
+                {Insignia && <Insignia />}
               </ListItemButton>
             </ListItem>
           ))}
@@ -205,6 +238,7 @@ export function LayoutPanel() {
             </Typography>
             <Button
               onClick={cerrarSesion}
+              startIcon={<LogoutIcon />}
               sx={{
                 p: 0,
                 minWidth: 0,
@@ -230,7 +264,6 @@ export function LayoutPanel() {
       color: '#DDE3EE',
       border: 0,
     },
-    // sobre el azul, el contorno de foco naranja casi no se ve; en amarillo sí cumple el contraste
     '--color-foco': colores.amarillo,
   } as const;
 
@@ -270,7 +303,6 @@ export function LayoutPanel() {
         </Toolbar>
       </AppBar>
 
-      {/* en el celular el menú se abre encima: uno fijo no cabe en 360 px */}
       <Box
         component="nav"
         aria-label="Secciones del panel"

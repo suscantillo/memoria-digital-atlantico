@@ -1,6 +1,21 @@
+import type { Readable } from 'node:stream';
 import { EstadoPieza } from '../../domain/piezas/estado-pieza';
 
 export const ESCANEOS = Symbol('ESCANEOS');
+export const REVISORES = Symbol('REVISORES');
+
+/** HU-23: una cuenta PERSONAL activa a la que se le puede asignar una revisión. */
+export interface RevisorDisponible {
+  id: string;
+  nombre: string;
+  correo: string;
+}
+
+export interface Revisores {
+  listarDisponibles(): Promise<RevisorDisponible[]>;
+  /** null si no existe, no es PERSONAL o está desactivada. */
+  buscarDisponible(id: string): Promise<RevisorDisponible | null>;
+}
 export const ALMACEN_ARCHIVOS = Symbol('ALMACEN_ARCHIVOS');
 
 export interface PiezaParaEscaneo {
@@ -42,4 +57,16 @@ export interface Escaneos {
 export interface AlmacenArchivos {
   guardar(contenido: Uint8Array, extension: string): Promise<string>;
   borrar(ruta: string): Promise<void>;
+}
+
+export const LECTOR_ARCHIVOS = Symbol('LECTOR_ARCHIVOS');
+
+export interface ContenidoAlmacenado {
+  flujo: Readable;
+  tamanoBytes: number;
+}
+
+/** Lee del almacenamiento; null si el archivo ya no está. */
+export interface LectorArchivos {
+  abrir(ruta: string): Promise<ContenidoAlmacenado | null>;
 }

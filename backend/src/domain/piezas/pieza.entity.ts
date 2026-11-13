@@ -1,4 +1,4 @@
-import { ErrorNoEncontrado, ErrorRegla } from '../comun/errores';
+﻿import { ErrorConflicto, ErrorNoEncontrado, ErrorRegla } from '../comun/errores';
 import { generarId } from '../comun/identificador';
 import { TernaUbicacion } from '../ubicaciones/ubicacion.entity';
 import { CodigoPieza } from './codigo-pieza';
@@ -8,6 +8,8 @@ import { TIPOS_PIEZA, TipoPieza } from './tipo-pieza';
 export interface UbicacionPieza extends TernaUbicacion {
   id: string;
 }
+
+export type UbicacionDePieza = UbicacionPieza;
 
 export interface ArchivoAprobadoPieza {
   id: string;
@@ -42,6 +44,26 @@ export interface PropiedadesPieza {
   archivoAprobado: ArchivoAprobadoPieza | null;
   creadoEn: Date;
   actualizadoEn: Date;
+}
+
+export interface EventoDePieza {
+  id: string;
+  usuarioId: string | null;
+  usuarioNombre: string | null;
+  accion: string;
+  detalle: string | null;
+  creadoEn: Date;
+}
+
+export interface FichaPieza {
+  pieza: Pieza;
+  ubicacion: UbicacionDePieza;
+  eventos: EventoDePieza[];
+}
+
+export interface CambiosPieza {
+  titulo?: string;
+  descripcion?: string | null;
 }
 
 export class Pieza {
@@ -135,10 +157,39 @@ export class Pieza {
   estaPublicada(): boolean {
     return this.props.estado === 'PUBLICADA';
   }
+
+  /** Control de calidad: con el escaneo aprobado la pieza queda visible en el portal. */
+  publicarPorEscaneoAprobado(): void {
+    this.exigirEscaneada();
+    this.cambiarEstado('PUBLICADA');
+  }
+
+  /** Control de calidad: con el escaneo rechazado la pieza vuelve a esperar una carga. */
+  devolverPorEscaneoRechazado(): void {
+    this.exigirEscaneada();
+    this.cambiarEstado('REGISTRADA');
+  }
+
+  private exigirEscaneada(): void {
+    if (this.props.estado !== 'ESCANEADA') {
+      throw new PiezaSinEscaneoPorRevisarError(this.props.codigo.valor, this.props.estado);
+    }
+  }
+
+  private cambiarEstado(estado: EstadoPieza): void {
+    this.props.estado = estado;
+    this.props.actualizadoEn = new Date();
+  }
 }
 
 export class PiezaNoEncontradaError extends ErrorNoEncontrado {
   constructor(codigo: string) {
     super(`No encontramos la pieza con código "${codigo}".`);
+  }
+}
+
+export class PiezaSinEscaneoPorRevisarError extends ErrorConflicto {
+  constructor(codigo: string, estado: EstadoPieza) {
+    super(`${codigo} está ${estado}: solo se revisa el escaneo de una pieza ESCANEADA.`);
   }
 }

@@ -87,3 +87,44 @@ personales expuestos) y la interfaz se ve igual sin conexión dentro de Docker.
 o por década las alcanzara, el resultado revelaría el título o el año que el portal oculta. Por eso esos
 dos filtros las excluyen y en el listado van siempre al final, sin importar el orden pedido: ordenarlas
 por título o año también delataría el dato. El filtro por tipo sí las incluye, porque el tipo es público.
+
+## 16. Aprobar el escaneo publica la pieza
+
+En control de calidad una sola persona marca los tres criterios (legible, completa, datos correctos) y
+aprueba. Ese acto es la revisión y la publicación a la vez: `POST /archivos/:id/aprobar` deja el archivo
+`APROBADO` y la pieza `PUBLICADA`, sin detenerse en `REVISADA`. Con un solo revisor, un paso intermedio
+obligaría a pulsar dos veces para lo mismo. El estado `REVISADA` se conserva en el modelo por si el
+archivo pide después que publicar lo decida otra persona.
+
+Las reglas viven en las entidades: `ArchivoDigital` solo se revisa si está `EN_REVISION` y exige motivo
+para rechazar; `Pieza` solo cambia desde `ESCANEADA`. El repositorio guarda archivo, pieza y evento en
+una transacción y condiciona la escritura a que el archivo siga `EN_REVISION`, así dos revisiones
+simultáneas no se pisan.
+
+## 17. Una sola ruta entrega los escaneos y decide según quién pregunta
+
+`GET /archivos/:id/contenido` sirve al revisor, al visor del portal y a quien lee un PDF con su cuenta.
+En vez de tres rutas, la ruta es de sesión opcional (`@SesionOpcional`): pasa sin token, valida el que
+llegue y la regla `evaluarAccesoArchivo` del dominio decide. El personal ve todo. El público solo ve
+archivos `APROBADO` de piezas `PUBLICADA` no restringidas: las imágenes sin cuenta y los PDF con sesión,
+que es lo que pide HU-15.
+
+Lo que el público no puede ver responde 404 y no 403, igual que un archivo que no existe: un 403
+confirmaría que la pieza restringida o el escaneo en revisión están ahí. El 401 queda solo para el PDF
+publicado, porque ahí sí conviene decirle al visitante que con una cuenta lo puede leer.
+
+## 18. Quien sube un escaneo no lo revisa
+
+HU-09 y HU-10 nombraban al mismo rol para subir y para revisar, así que un `PERSONAL` podía aprobar lo
+que él mismo cargó. Con HU-23 el `ADMIN` asigna el revisor de cada escaneo (`POST /archivos/:id/asignar`)
+entre las cuentas `PERSONAL` activas, nunca a quien lo subió, y la asignación queda en el historial de la
+pieza como `REVISOR_ASIGNADO`. La aprobación es por documento, no un permiso de la cuenta.
+
+La regla vive en `ArchivoDigital`: `asignarRevisor` rechaza a quien lo subió y solo vale `EN_REVISION`;
+`exigirPuedeRevisar` deja pasar al `ADMIN` y al revisor asignado, y a cualquier otro `PERSONAL` le
+responde 403 (`ErrorProhibido`). El `ADMIN` puede revisar cualquier escaneo, también uno que subió, para
+que el archivo no se detenga si hay una sola persona.
+
+`GET /archivos` se recorta según quién pregunta: un `PERSONAL` recibe solo lo asignado a él o, con
+`subidoPor=yo`, lo que subió («Mis escaneos»), aunque pida otros filtros. Ver un escaneo
+(`/archivos/:id/contenido`) no cambia: el personal sigue viendo todos.

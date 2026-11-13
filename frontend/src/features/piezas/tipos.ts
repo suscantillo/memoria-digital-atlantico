@@ -18,3 +18,29 @@ export interface Pieza {
   ubicacionId: string;
   creadoEn: string;
 }
+
+export interface EventoPieza {
+  id: string;
+  usuarioId: string | null;
+  usuarioNombre: string | null;
+  accion: string;
+  detalle: string | null;
+  creadoEn: string;
+}
+
+export interface FichaPieza extends Pieza {
+  descripcion: string | null;
+  actualizadoEn: string;
+  ubicacion: {
+    id: string;
+    deposito: string;
+    estanteria: string;
+    caja: string;
+  };
+  eventos: EventoPieza[];
+}
+
+export interface EditarPieza {
+  titulo?: string;
+  descripcion?: string;
+}
