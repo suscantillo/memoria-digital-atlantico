@@ -32,6 +32,7 @@ export function PaginaNuevaPieza() {
   const [anio, setAnio] = useState('');
   const [ubicacionId, setUbicacionId] = useState('');
   const [intentado, setIntentado] = useState(false);
+  const [redirigiendo, setRedirigiendo] = useState(false);
   const navegar = useNavigate();
   const ubicaciones = useUbicaciones(PARAMETROS_UBICACIONES);
   const crear = useCrearPieza();
@@ -41,10 +42,11 @@ export function PaginaNuevaPieza() {
   const anioInvalido = !Number.isInteger(anioNumero) || anioNumero < 1500 || anioNumero > 2100;
   const ubicacionInvalida = ubicacionId === '';
   const tipoInvalido = tipo === '';
+  const bloqueado =
+    crear.isPending || redirigiendo || ubicaciones.isPending || ubicaciones.isError;
 
-  const enviar = (evento: FormEvent<HTMLFormElement>) => {
-    evento.preventDefault();
-    if (crear.isPending || crear.isSuccess) return;
+  const registrar = (agregarOtra: boolean) => {
+    if (crear.isPending || redirigiendo) return;
     setIntentado(true);
     if (tituloInvalido || anioInvalido || ubicacionInvalida || tipoInvalido) return;
 
@@ -55,8 +57,24 @@ export function PaginaNuevaPieza() {
       ubicacionId,
     };
     crear.mutate(datos, {
-      onSuccess: () => navegar('/panel/inventario?orden=recientes', { replace: true }),
+      onSuccess: () => {
+        if (agregarOtra) {
+          setTipo('');
+          setTitulo('');
+          setAnio('');
+          setUbicacionId('');
+          setIntentado(false);
+          return;
+        }
+        setRedirigiendo(true);
+        navegar('/panel/inventario?orden=recientes', { replace: true });
+      },
     });
+  };
+
+  const enviar = (evento: FormEvent<HTMLFormElement>) => {
+    evento.preventDefault();
+    registrar(false);
   };
 
   return (
@@ -148,15 +166,19 @@ export function PaginaNuevaPieza() {
             )}
           </Box>
 
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={
-              crear.isPending || crear.isSuccess || ubicaciones.isPending || ubicaciones.isError
-            }
-          >
-            {crear.isPending ? 'Registrando…' : 'Registrar pieza'}
-          </Button>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Button type="submit" variant="contained" disabled={bloqueado}>
+              {crear.isPending ? 'Registrando…' : 'Registrar pieza'}
+            </Button>
+            <Button
+              type="button"
+              variant="outlined"
+              disabled={bloqueado}
+              onClick={() => registrar(true)}
+            >
+              {crear.isPending ? 'Registrando…' : 'Registrar y añadir otra'}
+            </Button>
+          </Stack>
         </Stack>
       </Paper>
     </Stack>
