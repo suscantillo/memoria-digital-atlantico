@@ -170,6 +170,28 @@ export class Pieza {
     this.cambiarEstado('REGISTRADA');
   }
 
+  /**
+   * El ADMIN la saca del portal sin borrar nada: conserva su escaneo aprobado y vuelve a REVISADA,
+   * desde donde se puede publicar otra vez.
+   */
+  retirarDelPortal(): void {
+    if (this.props.estado !== 'PUBLICADA') {
+      throw new PiezaNoPublicadaError(this.props.codigo.valor, this.props.estado);
+    }
+    this.cambiarEstado('REVISADA');
+  }
+
+  /** Publica de nuevo una pieza REVISADA, siempre que tenga un escaneo aprobado que mostrar. */
+  volverAPublicar(): void {
+    if (this.props.estado !== 'REVISADA') {
+      throw new PiezaNoRetiradaError(this.props.codigo.valor, this.props.estado);
+    }
+    if (!this.props.archivoAprobado) {
+      throw new PiezaSinEscaneoAprobadoError(this.props.codigo.valor);
+    }
+    this.cambiarEstado('PUBLICADA');
+  }
+
   private exigirEscaneada(): void {
     if (this.props.estado !== 'ESCANEADA') {
       throw new PiezaSinEscaneoPorRevisarError(this.props.codigo.valor, this.props.estado);
@@ -191,5 +213,23 @@ export class PiezaNoEncontradaError extends ErrorNoEncontrado {
 export class PiezaSinEscaneoPorRevisarError extends ErrorConflicto {
   constructor(codigo: string, estado: EstadoPieza) {
     super(`${codigo} está ${estado}: solo se revisa el escaneo de una pieza ESCANEADA.`);
+  }
+}
+
+export class PiezaNoPublicadaError extends ErrorConflicto {
+  constructor(codigo: string, estado: EstadoPieza) {
+    super(`${codigo} está ${estado}: solo se retira del portal una pieza PUBLICADA.`);
+  }
+}
+
+export class PiezaNoRetiradaError extends ErrorConflicto {
+  constructor(codigo: string, estado: EstadoPieza) {
+    super(`${codigo} está ${estado}: solo se vuelve a publicar una pieza REVISADA.`);
+  }
+}
+
+export class PiezaSinEscaneoAprobadoError extends ErrorRegla {
+  constructor(codigo: string) {
+    super(`${codigo} no tiene un escaneo aprobado: no hay nada que mostrar en el portal.`);
   }
 }

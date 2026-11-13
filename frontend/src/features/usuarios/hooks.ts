@@ -5,7 +5,26 @@ import type { CrearCuentaPersonal, ParametrosListarUsuarios, RolAdministrable } 
 export const clavesUsuarios = {
   todas: ['usuarios'] as const,
   lista: (params: ParametrosListarUsuarios) => ['usuarios', 'lista', params] as const,
+  publico: (params: ParametrosListarUsuarios) => ['usuarios', 'publico', params] as const,
 };
+
+export function useCuentasPublicas(params: ParametrosListarUsuarios) {
+  return useQuery({
+    queryKey: clavesUsuarios.publico(params),
+    queryFn: () => usuariosApi.listarPublico(params),
+    placeholderData: keepPreviousData,
+  });
+}
+
+/** Desactivar (true) o reactivar (false) una cuenta del portal. */
+export function useCambiarEstadoCuentaPublica() {
+  const clienteConsultas = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, desactivar }: { id: string; desactivar: boolean }) =>
+      desactivar ? usuariosApi.desactivarPublico(id) : usuariosApi.reactivarPublico(id),
+    onSuccess: () => clienteConsultas.invalidateQueries({ queryKey: clavesUsuarios.todas }),
+  });
+}
 
 export function useUsuarios(params: ParametrosListarUsuarios) {
   return useQuery({
