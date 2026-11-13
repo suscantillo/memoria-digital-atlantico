@@ -4,6 +4,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
@@ -15,13 +16,17 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { colores } from '../../../app/tema';
 import { EncabezadoPanel, FUENTE_FICHA } from '../../../shared/componentes/EncabezadoPanel';
 import { MensajeError } from '../../../shared/componentes/MensajeError';
 import { NOMBRE_TIPO } from '../../inventario/tipos';
+import { AsignarRevisor } from '../componentes/AsignarRevisor';
 import { ColaRevision } from '../componentes/ColaRevision';
+import { PestanasCola, type OpcionPestana, type Pestana } from '../componentes/PestanasCola';
+import { VistaRevisados } from '../componentes/VistaRevisados';
 import { VisorEscaneo } from '../componentes/VisorEscaneo';
-import { useColaRevision, useDecidirEscaneo } from '../hooks';
+import { useColaRevision, useDecidirEscaneo, useEsAdmin, useRevisados } from '../hooks';
 import type { ArchivoEnRevision } from '../tipos';
 
 const CRITERIOS = [
@@ -52,15 +57,43 @@ function formato(tipoMime: string) {
     : (tipoMime.split('/')[1] ?? tipoMime).toUpperCase();
 }
 
+const EN_PESTANA: Record<Pestana, (a: ArchivoEnRevision) => boolean> = {
+  'sin-asignar': (a) => !a.revisor,
+  asignados: (a) => Boolean(a.revisor),
+  todos: () => true,
+  revisados: () => false,
+};
+
+/** «3», «3 y 5», «2, 4 y 7» */
+function listaPaginas(paginas: number[]) {
+  if (paginas.length <= 1) return paginas.join('');
+  return `${paginas.slice(0, -1).join(', ')} y ${paginas[paginas.length - 1]}`;
+}
+
 interface Resultado {
   archivo: ArchivoEnRevision;
   aprobado: boolean;
 }
 
 export function PaginaCalidad() {
+  const esAdmin = useEsAdmin();
   const consulta = useColaRevision();
   const resolver = useDecidirEscaneo();
-  const [seleccionId, setSeleccionId] = useState<string | null>(null);
+  const [parametros] = useSearchParams();
+  // desde «Escaneos» se llega con ?archivo=<id> para abrir ese escaneo
+  const [seleccionId, setSeleccionId] = useState<string | null>(parametros.get('archivo'));
+  // desde «Escaneos», «Ver revisión» llega con ?vista=revisados
+  const [pestanaElegida, setPestanaElegida] = useState<Pestana | null>(
+    parametros.get('vista') === 'revisados' ? 'revisados' : null,
+  );
+  const revisadosConsulta = useRevisados();
+  // PDF: qué páginas ya se marcaron como legibles y cuántas tiene
+  const [paginasRevisadas, setPaginasRevisadas] = useState<number[]>([]);
+  const [totalPaginas, setTotalPaginas] = useState<number | null>(null);
+  // la asignación se ve al instante, sin esperar a que la cola vuelva del servidor
+  const [asignados, setAsignados] = useState<Record<string, ArchivoEnRevision>>({});
+  // en «Sin asignar» el escaneo asignado se va de la pestaña: el aviso confirma a dónde pasó
+  const [aviso, setAviso] = useState<string | null>(null);
   const [resultados, setResultados] = useState<Record<string, Resultado>>({});
   const [marcados, setMarcados] = useState<Record<string, boolean>>({});
   const [rechazando, setRechazando] = useState(false);
@@ -69,12 +102,36 @@ export function PaginaCalidad() {
   const [colaAbierta, setColaAbierta] = useState(false);
 
   // al resolver un escaneo la API lo saca de EN_REVISION; se conserva aquí para ver el avance
-  const cola = useMemo(() => {
+  const colaCompleta = useMemo(() => {
     const porId = new Map<string, ArchivoEnRevision>();
     Object.values(resultados).forEach((r) => porId.set(r.archivo.id, r.archivo));
-    (consulta.data?.datos ?? []).forEach((a) => porId.set(a.id, a));
+    (consulta.data?.datos ?? []).forEach((a) => porId.set(a.id, asignados[a.id] ?? a));
     return [...porId.values()].sort((a, b) => a.creadoEn.localeCompare(b.creadoEn));
-  }, [consulta.data, resultados]);
+  }, [consulta.data, resultados, asignados]);
+
+  const pendientesDe = (pestana: Pestana) =>
+    colaCompleta.filter((a) => !resultados[a.id] && EN_PESTANA[pestana](a)).length;
+  const conteoRevisados = revisadosConsulta.data?.length ?? null;
+  const opciones: OpcionPestana[] = esAdmin
+    ? [
+        { valor: 'sin-asignar', texto: 'Sin asignar', conteo: pendientesDe('sin-asignar') },
+        { valor: 'asignados', texto: 'Asignados', conteo: pendientesDe('asignados') },
+        { valor: 'todos', texto: 'Todos', conteo: pendientesDe('todos') },
+        { valor: 'revisados', texto: 'Revisados', conteo: conteoRevisados },
+      ]
+    : [
+        { valor: 'todos', texto: 'Por revisar', conteo: pendientesDe('todos') },
+        { valor: 'revisados', texto: 'Revisados', conteo: conteoRevisados },
+      ];
+  // el ADMIN empieza por lo que falta repartir; si no hay nada, ve todo
+  const pestana: Pestana =
+    pestanaElegida ?? (esAdmin && pendientesDe('sin-asignar') > 0 ? 'sin-asignar' : 'todos');
+  const vistaRevisados = pestana === 'revisados';
+  const cola = vistaRevisados
+    ? []
+    : esAdmin
+      ? colaCompleta.filter(EN_PESTANA[pestana])
+      : colaCompleta;
 
   const pendientes = cola.filter((a) => !resultados[a.id]);
   const actual = cola.find((a) => a.id === seleccionId) ?? pendientes[0] ?? cola[0] ?? null;
@@ -82,7 +139,9 @@ export function PaginaCalidad() {
   const indice = actual ? pendientes.findIndex((a) => a.id === actual.id) : -1;
   const posicion = indice + 1;
   // la API cuenta lo que sigue EN_REVISION; los revisados en esta sesión ya no están ahí
-  const totalPendientes = consulta.data?.meta.total ?? pendientes.length;
+  const totalPendientes = esAdmin
+    ? pendientes.length
+    : (consulta.data?.meta.total ?? pendientes.length);
   const anterior = indice > 0 ? pendientes[indice - 1] : null;
   const siguiente =
     indice >= 0
@@ -90,6 +149,16 @@ export function PaginaCalidad() {
       : (pendientes.find((a) => a.id !== actual?.id) ?? null);
   const revisados = Object.keys(resultados).length;
   const marcadosCount = CRITERIOS.filter((c) => marcados[c.clave]).length;
+  const esPdf = actual?.tipoMime === 'application/pdf';
+  const paginasSinMarcar =
+    esPdf && totalPaginas !== null
+      ? Array.from({ length: totalPaginas }, (_, i) => i + 1).filter(
+          (n) => !paginasRevisadas.includes(n),
+        )
+      : [];
+  // en un PDF cada página se marca en el visor antes de poder aprobar
+  const paginasListas = !esPdf || (totalPaginas !== null && paginasSinMarcar.length === 0);
+  const puedeAprobar = marcadosCount === CRITERIOS.length && paginasListas;
 
   const irA = (id: string) => {
     setSeleccionId(id);
@@ -97,6 +166,8 @@ export function PaginaCalidad() {
     setRechazando(false);
     setMotivo('');
     setMotivoVacio(false);
+    setPaginasRevisadas([]);
+    setTotalPaginas(null);
     resolver.reset();
   };
 
@@ -125,8 +196,41 @@ export function PaginaCalidad() {
     <Stack spacing={3}>
       <EncabezadoPanel
         titulo="Control de calidad"
-        descripcion="Revisa cada escaneo antes de que llegue al portal."
+        descripcion={
+          esAdmin
+            ? 'Asigna quién revisa cada escaneo y apruébalo o recházalo antes de que llegue al portal.'
+            : 'Revisa los escaneos que te asignaron antes de que lleguen al portal.'
+        }
       />
+
+      {aviso && (
+        <Alert severity="success" role="status" onClose={() => setAviso(null)}>
+          {aviso}
+        </Alert>
+      )}
+
+      {consulta.isSuccess && (
+        <PestanasCola
+          pestanas={opciones}
+          actual={pestana}
+          onCambiar={(nueva) => {
+            setPestanaElegida(nueva);
+            setSeleccionId(null);
+            setMarcados({});
+            setRechazando(false);
+            setPaginasRevisadas([]);
+            setTotalPaginas(null);
+            resolver.reset();
+          }}
+        />
+      )}
+
+      {vistaRevisados && (
+        <VistaRevisados
+          consulta={revisadosConsulta}
+          inicial={parametros.get('vista') === 'revisados' ? parametros.get('archivo') : null}
+        />
+      )}
 
       {consulta.isPending && (
         <Box role="status" sx={{ display: 'grid', placeItems: 'center', py: 8 }}>
@@ -137,7 +241,7 @@ export function PaginaCalidad() {
         <MensajeError error={consulta.error} titulo="No se pudieron cargar los escaneos" />
       )}
 
-      {consulta.isSuccess && cola.length === 0 && (
+      {consulta.isSuccess && !vistaRevisados && cola.length === 0 && (
         <Box
           sx={{
             p: 5,
@@ -150,7 +254,15 @@ export function PaginaCalidad() {
           <Typography sx={{ fontFamily: 'h1.fontFamily', fontWeight: 900, fontSize: 28 }}>
             Mesa limpia
           </Typography>
-          <Typography sx={{ mt: 1 }}>No hay escaneos esperando revisión.</Typography>
+          <Typography sx={{ mt: 1 }}>
+            {!esAdmin
+              ? 'No tienes escaneos asignados. Cuando el administrador te asigne uno, aparece aquí.'
+              : colaCompleta.length === 0
+                ? 'No hay escaneos esperando revisión.'
+                : pestana === 'sin-asignar'
+                  ? 'Todos los escaneos en revisión ya tienen revisor.'
+                  : 'Ningún escaneo en revisión tiene revisor todavía.'}
+          </Typography>
         </Box>
       )}
 
@@ -245,7 +357,19 @@ export function PaginaCalidad() {
               alignItems: 'start',
             }}
           >
-            <VisorEscaneo key={actual.id} archivo={actual} />
+            <VisorEscaneo
+              key={actual.id}
+              archivo={actual}
+              paginas={
+                resultado
+                  ? undefined
+                  : {
+                      revisadas: paginasRevisadas,
+                      onCambiar: setPaginasRevisadas,
+                      onTotal: setTotalPaginas,
+                    }
+              }
+            />
 
             <Box
               component="section"
@@ -303,6 +427,24 @@ export function PaginaCalidad() {
                 </Typography>
               </Box>
 
+              {!resultado && esAdmin && (
+                <AsignarRevisor
+                  key={`${actual.id}-${actual.revisor?.id ?? 'nadie'}`}
+                  archivo={actual}
+                  onAsignado={(actualizado) => {
+                    setAsignados((previos) => ({ ...previos, [actualizado.id]: actualizado }));
+                    setAviso(
+                      `${actualizado.pieza.codigo} quedó asignado a ${actualizado.revisor?.nombre ?? 'su revisor'}. Ahora está en «Asignados» y en su cola.`,
+                    );
+                  }}
+                />
+              )}
+              {!resultado && !esAdmin && (
+                <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#005F6B' }}>
+                  Te lo asignaron para revisar.
+                </Typography>
+              )}
+
               {!resultado && !rechazando && (
                 <>
                   <Box sx={{ borderTop: '2px dashed #EBD9B0' }} aria-hidden />
@@ -316,6 +458,25 @@ export function PaginaCalidad() {
                         {marcadosCount}/3
                       </Box>
                     </Typography>
+                    {esPdf && (
+                      <Box
+                        role="status"
+                        sx={{
+                          mb: 1,
+                          p: 1.25,
+                          borderRadius: 2,
+                          bgcolor: paginasListas ? '#CFF4F7' : '#FFF1C9',
+                          fontSize: 14,
+                          fontWeight: 700,
+                        }}
+                      >
+                        {totalPaginas === null
+                          ? 'Contando las páginas del PDF…'
+                          : paginasListas
+                            ? `Revisaste las ${totalPaginas} páginas.`
+                            : `Páginas revisadas: ${paginasRevisadas.length} de ${totalPaginas}. Marca cada una en el visor.`}
+                      </Box>
+                    )}
                     <Stack spacing={0.5}>
                       {CRITERIOS.map(({ clave, texto }) => (
                         <FormControlLabel
@@ -345,7 +506,7 @@ export function PaginaCalidad() {
                       color="success"
                       size="large"
                       startIcon={<CheckIcon />}
-                      disabled={marcadosCount < CRITERIOS.length || resolver.isPending}
+                      disabled={!puedeAprobar || resolver.isPending}
                       onClick={() => decidir(true)}
                       sx={{
                         borderRadius: 999,
@@ -368,11 +529,15 @@ export function PaginaCalidad() {
                     >
                       Aprobar y publicar
                     </Button>
-                    {marcadosCount < CRITERIOS.length && (
+                    {!puedeAprobar && (
                       <Typography
                         sx={{ fontSize: 14, color: 'text.secondary', textAlign: 'center' }}
                       >
-                        Marca los tres criterios para aprobar.
+                        {marcadosCount < CRITERIOS.length && !paginasListas
+                          ? 'Marca cada página y los tres criterios para aprobar.'
+                          : marcadosCount < CRITERIOS.length
+                            ? 'Marca los tres criterios para aprobar.'
+                            : 'Marca cada página del PDF en el visor para aprobar.'}
                       </Typography>
                     )}
                     <Button
@@ -399,6 +564,22 @@ export function PaginaCalidad() {
                 <Stack spacing={1.5} sx={{ borderTop: '2px dashed #EBD9B0', pt: 2 }}>
                   <Typography sx={{ fontWeight: 800 }}>¿Qué le pasa al escaneo?</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                    {paginasSinMarcar.length > 0 &&
+                      paginasSinMarcar.length < (totalPaginas ?? 0) && (
+                        <Chip
+                          label={`${paginasSinMarcar.length === 1 ? 'Página' : 'Páginas'} ${listaPaginas(paginasSinMarcar)}`}
+                          clickable
+                          color="secondary"
+                          variant="outlined"
+                          onClick={() => {
+                            setMotivo(
+                              `${paginasSinMarcar.length === 1 ? 'Página' : 'Páginas'} ${listaPaginas(paginasSinMarcar)}: `,
+                            );
+                            setMotivoVacio(false);
+                          }}
+                          sx={{ fontWeight: 800 }}
+                        />
+                      )}
                     {MOTIVOS_RAPIDOS.map((m) => (
                       <Chip
                         key={m}
