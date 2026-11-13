@@ -1,6 +1,8 @@
 import { clienteApi } from '../../shared/api/cliente';
 import type {
   CrearCuentaPersonal,
+  CuentaPublica,
+  CuentasPublicasPaginadas,
   ParametrosListarUsuarios,
   RolAdministrable,
   UsuarioAdministrado,
@@ -36,6 +38,24 @@ export const usuariosApi = {
 
   async reactivar(id: string): Promise<UsuarioAdministrado> {
     const { data } = await clienteApi.patch<UsuarioAdministrado>(`/usuarios/${id}/reactivar`);
+    return data;
+  },
+
+  /** Cuentas PUBLICO del portal: solo se consultan, se desactivan y se reactivan. */
+  async listarPublico(params: ParametrosListarUsuarios): Promise<CuentasPublicasPaginadas> {
+    const { data } = await clienteApi.get<CuentasPublicasPaginadas>('/usuarios/publico', {
+      params: { ...params, busqueda: params.busqueda || undefined },
+    });
+    return data;
+  },
+
+  async desactivarPublico(id: string): Promise<CuentaPublica> {
+    const { data } = await clienteApi.patch<CuentaPublica>(`/usuarios/publico/${id}/desactivar`);
+    return data;
+  },
+
+  async reactivarPublico(id: string): Promise<CuentaPublica> {
+    const { data } = await clienteApi.patch<CuentaPublica>(`/usuarios/publico/${id}/reactivar`);
     return data;
   },
 };

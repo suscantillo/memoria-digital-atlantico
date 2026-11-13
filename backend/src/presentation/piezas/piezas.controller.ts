@@ -12,6 +12,7 @@ import {
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -19,7 +20,12 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import {
+  RetirarPieza,
+  VolverAPublicarPieza,
+} from '../../application/piezas/cambiar-publicacion.use-case';
 import { CrearPieza } from '../../application/piezas/crear-pieza.use-case';
+import { RetirarPiezaDto } from '../../application/piezas/dto/retirar-pieza.dto';
 import { CrearPiezaDto } from '../../application/piezas/dto/crear-pieza.dto';
 import { EditarPiezaDto } from '../../application/piezas/dto/editar-pieza.dto';
 import { FichaPiezaDto } from '../../application/piezas/dto/ficha-pieza.dto';
@@ -75,6 +81,8 @@ export class PiezasController {
     private readonly crearPieza: CrearPieza,
     private readonly obtenerFichaPieza: ObtenerFichaPieza,
     private readonly editarPieza: EditarPieza,
+    private readonly retirarPieza: RetirarPieza,
+    private readonly volverAPublicarPieza: VolverAPublicarPieza,
   ) {}
 
   @Post()
@@ -153,5 +161,38 @@ export class PiezasController {
     @UsuarioActual() usuario: UsuarioAutenticado,
   ): Promise<FichaPiezaDto> {
     return this.editarPieza.ejecutar(id, datos, usuario.id);
+  }
+
+  @Post(':id/retirar')
+  @Autenticado('ADMIN')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Retirar una pieza PUBLICADA del portal con motivo: vuelve a REVISADA y no se borra',
+  })
+  @ApiParam({ name: 'id', format: 'uuid' })
+  @ApiOkResponse({ schema: ESQUEMA_FICHA_PIEZA })
+  @ApiNotFoundResponse({ description: 'La pieza no existe.' })
+  @ApiConflictResponse({ description: 'La pieza no está PUBLICADA.' })
+  retirar(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() datos: RetirarPiezaDto,
+    @UsuarioActual() usuario: UsuarioAutenticado,
+  ): Promise<FichaPiezaDto> {
+    return this.retirarPieza.ejecutar(id, datos.motivo, usuario.id);
+  }
+
+  @Post(':id/publicar')
+  @Autenticado('ADMIN')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Volver a publicar una pieza REVISADA que tiene escaneo aprobado' })
+  @ApiParam({ name: 'id', format: 'uuid' })
+  @ApiOkResponse({ schema: ESQUEMA_FICHA_PIEZA })
+  @ApiNotFoundResponse({ description: 'La pieza no existe.' })
+  @ApiConflictResponse({ description: 'La pieza no está REVISADA.' })
+  publicar(
+    @Param('id', ParseUUIDPipe) id: string,
+    @UsuarioActual() usuario: UsuarioAutenticado,
+  ): Promise<FichaPiezaDto> {
+    return this.volverAPublicarPieza.ejecutar(id, usuario.id);
   }
 }

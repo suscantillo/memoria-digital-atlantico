@@ -18,6 +18,15 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CambiarRolUsuario } from '../../application/usuarios/cambiar-rol-usuario.use-case';
+import {
+  DesactivarCuentaPublica,
+  ListarCuentasPublicas,
+  ReactivarCuentaPublica,
+} from '../../application/usuarios/cuentas-publicas.use-case';
+import {
+  CuentaPublicaDto,
+  CuentasPublicasPaginadasDto,
+} from '../../application/usuarios/dto/cuenta-publica.dto';
 import { CrearCuentaPersonal } from '../../application/usuarios/crear-cuenta-personal.use-case';
 import { CambiarRolUsuarioDto } from '../../application/usuarios/dto/cambiar-rol-usuario.dto';
 import { CrearCuentaPersonalDto } from '../../application/usuarios/dto/crear-cuenta-personal.dto';
@@ -43,7 +52,31 @@ export class UsuariosController {
     private readonly cambiarRolUsuario: CambiarRolUsuario,
     private readonly desactivarUsuario: DesactivarUsuario,
     private readonly reactivarUsuario: ReactivarUsuario,
+    private readonly listarCuentasPublicas: ListarCuentasPublicas,
+    private readonly desactivarCuentaPublica: DesactivarCuentaPublica,
+    private readonly reactivarCuentaPublica: ReactivarCuentaPublica,
   ) {}
+
+  @Get('publico')
+  @ApiOperation({ summary: 'Listar las cuentas PUBLICO del portal con paginación y búsqueda' })
+  @ApiOkResponse({ type: CuentasPublicasPaginadasDto })
+  listarPublico(@Query() consulta: ListarUsuariosDto): Promise<CuentasPublicasPaginadasDto> {
+    return this.listarCuentasPublicas.ejecutar(consulta);
+  }
+
+  @Patch('publico/:id/desactivar')
+  @ApiOperation({ summary: 'Desactivar una cuenta del portal y revocar sus sesiones' })
+  @ApiOkResponse({ type: CuentaPublicaDto })
+  desactivarPublico(@Param('id', ParseUUIDPipe) id: string): Promise<CuentaPublicaDto> {
+    return this.desactivarCuentaPublica.ejecutar(id);
+  }
+
+  @Patch('publico/:id/reactivar')
+  @ApiOperation({ summary: 'Reactivar una cuenta del portal' })
+  @ApiOkResponse({ type: CuentaPublicaDto })
+  reactivarPublico(@Param('id', ParseUUIDPipe) id: string): Promise<CuentaPublicaDto> {
+    return this.reactivarCuentaPublica.ejecutar(id);
+  }
 
   @Get()
   @ApiOperation({ summary: 'Listar cuentas del personal con paginación y búsqueda' })

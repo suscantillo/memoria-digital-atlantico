@@ -26,9 +26,17 @@ export class UsuarioRepositorioMemoria implements UsuarioRepositorio {
   }
 
   listarPersonal(params: ParametrosListadoUsuarios) {
+    return this.listarPorRoles(['ADMIN', 'PERSONAL'], params);
+  }
+
+  listarPublico(params: ParametrosListadoUsuarios) {
+    return this.listarPorRoles(['PUBLICO'], params);
+  }
+
+  private listarPorRoles(roles: RolUsuario[], params: ParametrosListadoUsuarios) {
     const termino = params.busqueda?.toLowerCase() ?? '';
     const filtrados = [...this.usuarios.values()]
-      .filter((usuario) => usuario.rol !== 'PUBLICO')
+      .filter((usuario) => roles.includes(usuario.rol))
       .filter(
         (usuario) =>
           !termino ||
@@ -68,9 +76,13 @@ export class UsuarioRepositorioMemoria implements UsuarioRepositorio {
     return Promise.resolve(actualizado);
   }
 
-  desactivar(id: string, fecha?: Date): Promise<Usuario> {
+  desactivar(
+    id: string,
+    fecha?: Date,
+    roles: RolUsuario[] = ['ADMIN', 'PERSONAL'],
+  ): Promise<Usuario> {
     const usuario = this.usuarios.get(id);
-    if (!usuario)
+    if (!usuario || !roles.includes(usuario.rol))
       return Promise.reject(new ErrorNoEncontrado(`No se encontró el usuario "${id}".`));
     const actualizado = Usuario.reconstruir({
       id: usuario.id,
@@ -88,9 +100,9 @@ export class UsuarioRepositorioMemoria implements UsuarioRepositorio {
     return Promise.resolve(actualizado);
   }
 
-  reactivar(id: string): Promise<Usuario> {
+  reactivar(id: string, roles: RolUsuario[] = ['ADMIN', 'PERSONAL']): Promise<Usuario> {
     const usuario = this.usuarios.get(id);
-    if (!usuario)
+    if (!usuario || !roles.includes(usuario.rol))
       return Promise.reject(new ErrorNoEncontrado(`No se encontró el usuario "${id}".`));
     const actualizado = Usuario.reconstruir({
       id: usuario.id,

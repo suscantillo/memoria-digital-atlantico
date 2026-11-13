@@ -26,6 +26,19 @@ export function useFichaPieza(id: string | undefined) {
   });
 }
 
+/** Retirar del portal o volver a publicar: cambia el estado de la pieza y el inventario. */
+export function useCambiarPublicacion(id: string) {
+  const clienteConsultas = useQueryClient();
+  return useMutation({
+    mutationFn: (accion: { tipo: 'retirar'; motivo: string } | { tipo: 'publicar' }) =>
+      accion.tipo === 'retirar' ? piezasApi.retirar(id, accion.motivo) : piezasApi.publicar(id),
+    onSuccess: async (ficha) => {
+      clienteConsultas.setQueryData(clavesPiezas.ficha(id), ficha);
+      await clienteConsultas.invalidateQueries({ queryKey: clavesInventario.todas });
+    },
+  });
+}
+
 export function useEditarPieza(id: string) {
   const clienteConsultas = useQueryClient();
   return useMutation({
