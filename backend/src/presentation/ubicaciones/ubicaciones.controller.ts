@@ -23,6 +23,7 @@ export class UbicacionesController {
   ) {}
 
   @Get()
+  @Autenticado('ADMIN', 'PERSONAL')
   @ApiOperation({ summary: 'Listar ubicaciones con paginación, filtros y orden' })
   @ApiOkResponse({ type: UbicacionesPaginadasDto })
   listar(@Query() consulta: ListarUbicacionesDto): Promise<UbicacionesPaginadasDto> {

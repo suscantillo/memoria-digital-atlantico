@@ -1,6 +1,5 @@
 import Box from '@mui/material/Box';
 import LinearProgress from '@mui/material/LinearProgress';
-import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -10,6 +9,8 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import Typography from '@mui/material/Typography';
+import { colores } from '../../../app/tema';
+import { FUENTE_FICHA } from '../../../shared/componentes/EncabezadoPanel';
 import { MensajeError } from '../../../shared/componentes/MensajeError';
 import type { DireccionOrden } from '../../../shared/tipos/api';
 import { useUbicaciones } from '../hooks';
@@ -20,6 +21,26 @@ const columnas: { campo: CampoOrdenUbicacion; etiqueta: string }[] = [
   { campo: 'estanteria', etiqueta: 'Estantería' },
   { campo: 'caja', etiqueta: 'Caja' },
 ];
+
+const LINEA = '1px dashed #EBD9B0';
+
+const estiloTabla = {
+  '& th': {
+    fontFamily: FUENTE_FICHA,
+    fontWeight: 700,
+    fontSize: 13,
+    letterSpacing: '0.06em',
+    textTransform: 'uppercase',
+    color: colores.azulMarino,
+    borderBottom: `2px dashed #EBD9B0`,
+    py: 1.75,
+  },
+  '& td': { borderBottom: LINEA, py: 1.5, fontSize: 15 },
+  '& tbody tr:last-of-type td': { borderBottom: 0 },
+  '& tbody tr:hover': { bgcolor: '#FFF8EA' },
+  '& .MuiTableSortLabel-root.Mui-active, & .MuiTableSortLabel-root.Mui-active .MuiTableSortLabel-icon':
+    { color: colores.naranja },
+} as const;
 
 interface Props {
   params: ParametrosListarUbicaciones;
@@ -43,12 +64,19 @@ export function TablaUbicaciones({ params, onCambiar }: Props) {
   const total = consulta.data?.meta.total ?? 0;
 
   return (
-    <Paper variant="outlined">
+    <Box
+      sx={{
+        bgcolor: '#FFFFFF',
+        borderRadius: 4,
+        overflow: 'hidden',
+        boxShadow: '0 6px 0 #F5D79E',
+      }}
+    >
       <Box sx={{ height: 4 }} aria-hidden>
-        {consulta.isFetching && <LinearProgress />}
+        {consulta.isFetching && <LinearProgress color="secondary" />}
       </Box>
       <TableContainer>
-        <Table aria-label="Ubicaciones registradas" size="small">
+        <Table aria-label="Ubicaciones registradas" sx={estiloTabla}>
           <caption style={{ captionSide: 'top', textAlign: 'left', padding: '8px 16px' }}>
             <Typography component="span" variant="body2" color="text.secondary" role="status">
               {consulta.isPending ? 'Cargando…' : `${total} ubicaciones`}
@@ -82,10 +110,12 @@ export function TablaUbicaciones({ params, onCambiar }: Props) {
           <TableBody>
             {filas.map((u) => (
               <TableRow key={u.id} hover>
-                <TableCell>{u.deposito}</TableCell>
-                <TableCell>{u.estanteria}</TableCell>
-                <TableCell>{u.caja}</TableCell>
-                <TableCell>{u.descripcion ?? '—'}</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{u.deposito}</TableCell>
+                <TableCell sx={{ fontFamily: FUENTE_FICHA, fontWeight: 700 }}>
+                  {u.estanteria}
+                </TableCell>
+                <TableCell sx={{ fontFamily: FUENTE_FICHA, fontWeight: 700 }}>{u.caja}</TableCell>
+                <TableCell sx={{ color: 'text.secondary' }}>{u.descripcion ?? '—'}</TableCell>
               </TableRow>
             ))}
             {consulta.isSuccess && filas.length === 0 && (
@@ -109,7 +139,8 @@ export function TablaUbicaciones({ params, onCambiar }: Props) {
         labelRowsPerPage="Filas por página"
         labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count}`}
         getItemAriaLabel={(tipo) => (tipo === 'next' ? 'Página siguiente' : 'Página anterior')}
+        sx={{ borderTop: LINEA }}
       />
-    </Paper>
+    </Box>
   );
 }

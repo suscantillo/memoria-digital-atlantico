@@ -33,19 +33,24 @@ enum EstadoArchivoDigital {
 }
 
 model Usuario {
-  id             String     @id @default(uuid()) @db.Uuid
-  nombre         String
-  correo         String     @unique
-  contrasenaHash String     @map("contrasena_hash")
-  rol            RolUsuario
-  activo         Boolean    @default(true)
-  creadoEn       DateTime   @default(now()) @map("creado_en")
-  actualizadoEn  DateTime   @updatedAt @map("actualizado_en")
+  id                String     @id @default(uuid()) @db.Uuid
+  nombre            String
+  correo            String     @unique
+  contrasenaHash    String     @map("contrasena_hash")
+  rol               RolUsuario
+  activo            Boolean    @default(true)
+  // Solo en cuentas PUBLICO creadas por registro; las internas no pasan por el aviso.
+  consentimientoEn  DateTime?  @map("consentimiento_en")
+  versionPrivacidad String?    @map("version_privacidad")
+  creadoEn          DateTime   @default(now()) @map("creado_en")
+  actualizadoEn     DateTime   @updatedAt @map("actualizado_en")
 
   sesiones          Sesion[]
   eventos           EventoPieza[]
   archivosSubidos   ArchivoDigital[] @relation("ArchivoSubidoPor")
   archivosRevisados ArchivoDigital[] @relation("ArchivoRevisadoPor")
+  // HU-23: escaneos que el administrador le asignó para revisar
+  archivosPorRevisar ArchivoDigital[] @relation("ArchivoRevisorAsignado")
 
   @@map("usuarios")
 }
@@ -88,6 +93,10 @@ model Pieza {
   estado        EstadoPieza @default(REGISTRADA)
   anio          Int?
   restringida   Boolean     @default(false)
+  // metadatos que se agregan al cargar el escaneo (HU-09)
+  tema          String?
+  autor         String?
+  palabrasClave String[]    @default([]) @map("palabras_clave")
   ubicacionId   String      @map("ubicacion_id") @db.Uuid
   creadoEn      DateTime    @default(now()) @map("creado_en")
   actualizadoEn DateTime    @updatedAt @map("actualizado_en")
@@ -115,16 +124,20 @@ model ArchivoDigital {
   motivoRechazo      String?              @map("motivo_rechazo")
   subidoPorId        String               @map("subido_por_id") @db.Uuid
   revisadoPorId      String?              @map("revisado_por_id") @db.Uuid
+  // HU-23: quién debe revisarlo; null mientras el administrador no lo asigne
+  revisorAsignadoId  String?              @map("revisor_asignado_id") @db.Uuid
   revisadoEn         DateTime?            @map("revisado_en")
   creadoEn           DateTime             @default(now()) @map("creado_en")
   actualizadoEn      DateTime             @updatedAt @map("actualizado_en")
 
-  pieza      Pieza    @relation(fields: [piezaId], references: [id], onDelete: Cascade)
-  subidoPor  Usuario  @relation("ArchivoSubidoPor", fields: [subidoPorId], references: [id], onDelete: Restrict)
+  pieza       Pieza    @relation(fields: [piezaId], references: [id], onDelete: Cascade)
+  subidoPor   Usuario  @relation("ArchivoSubidoPor", fields: [subidoPorId], references: [id], onDelete: Restrict)
   revisadoPor Usuario? @relation("ArchivoRevisadoPor", fields: [revisadoPorId], references: [id], onDelete: SetNull)
+  revisorAsignado Usuario? @relation("ArchivoRevisorAsignado", fields: [revisorAsignadoId], references: [id], onDelete: SetNull)
 
   @@index([estado])
   @@index([piezaId])
+  @@index([revisorAsignadoId])
   @@map("archivos_digitales")
 }
 

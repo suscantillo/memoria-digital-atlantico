@@ -1,13 +1,23 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
 import { SeguridadModule } from './infrastructure/auth/seguridad.module';
 import { Configuracion } from './infrastructure/config/configuracion';
 import { ConfiguracionModule } from './infrastructure/config/configuracion.module';
 import { PrismaModule } from './infrastructure/prisma/prisma.module';
+import { UsuariosRepositorioModule } from './infrastructure/usuarios/usuarios-repositorio.module';
 import { AuthModule } from './presentation/auth/auth.module';
+import { PiezasModule } from './presentation/piezas/piezas.module';
+import { GuardiaJwt } from './presentation/comun/guards/guardia-jwt.guard';
+import { GuardiaRoles } from './presentation/comun/guards/guardia-roles.guard';
+import { ArchivosModule } from './presentation/archivos/archivos.module';
+import { InventarioModule } from './presentation/inventario/inventario.module';
+import { PortalModule } from './presentation/portal/portal.module';
+import { QrModule } from './presentation/qr/qr.module';
 import { SaludModule } from './presentation/salud/salud.module';
 import { UbicacionesModule } from './presentation/ubicaciones/ubicaciones.module';
+import { UsuariosModule } from './presentation/usuarios/usuarios.module';
 
 const RUTAS_SIN_LOG = new Set(['/api/v1/health']);
 
@@ -40,10 +50,22 @@ const RUTAS_SIN_LOG = new Set(['/api/v1/health']);
       }),
     }),
     PrismaModule,
+    UsuariosRepositorioModule,
     SeguridadModule,
     SaludModule,
     AuthModule,
+
+    PiezasModule,
     UbicacionesModule,
+    PortalModule,
+    QrModule,
+    InventarioModule,
+    ArchivosModule,
+    UsuariosModule,
+  ],
+  providers: [
+    { provide: APP_GUARD, useClass: GuardiaJwt },
+    { provide: APP_GUARD, useClass: GuardiaRoles },
   ],
 })
 export class AppModule {}

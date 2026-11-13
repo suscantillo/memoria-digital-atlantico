@@ -1,0 +1,233 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1250 676" width="1250" height="676" font-family="Liberation Sans, Arial, sans-serif">
+<rect width="1250" height="676" fill="#fff"/>
+<path d="M40,63.0 H14 V493.0 H40" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<path d="M32,57.0 V69.0" stroke="#3f5871" stroke-width="1.4" fill="none"/><path d="M28,57.0 V69.0" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<path d="M27,493.0 L40,487.0 M27,493.0 L40,499.0" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<path d="M370,60.0 H440 V239.0 H460" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<path d="M378,54.0 V66.0" stroke="#3f5871" stroke-width="1.4" fill="none"/><path d="M382,54.0 V66.0" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<path d="M447,239.0 L460,233.0 M447,239.0 L460,245.0" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<path d="M370,76.0 H426 V261.0 H460" stroke="#3f5871" stroke-width="1.4" fill="none" stroke-dasharray="6 4"/>
+<path d="M378,70.0 V82.0" stroke="#3f5871" stroke-width="1.4" fill="none"/><circle cx="386" cy="76.0" r="4" stroke="#3f5871" stroke-width="1.4" fill="#fff"/>
+<path d="M447,261.0 L460,255.0 M447,261.0 L460,267.0" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<path d="M370,92.0 H412 V283.0 H460" stroke="#3f5871" stroke-width="1.4" fill="none" stroke-dasharray="6 4"/>
+<path d="M378,86.0 V98.0" stroke="#3f5871" stroke-width="1.4" fill="none"/><circle cx="386" cy="92.0" r="4" stroke="#3f5871" stroke-width="1.4" fill="#fff"/>
+<path d="M447,283.0 L460,277.0 M447,283.0 L460,289.0" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<path d="M370,108.0 H398 V515.0 H460" stroke="#3f5871" stroke-width="1.4" fill="none" stroke-dasharray="6 4"/>
+<path d="M378,102.0 V114.0" stroke="#3f5871" stroke-width="1.4" fill="none"/><circle cx="386" cy="108.0" r="4" stroke="#3f5871" stroke-width="1.4" fill="#fff"/>
+<path d="M447,515.0 L460,509.0 M447,515.0 L460,521.0" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<path d="M880,60.0 H822 V85.0 H790" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<path d="M872,54.0 V66.0" stroke="#3f5871" stroke-width="1.4" fill="none"/><path d="M868,54.0 V66.0" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<path d="M803,85.0 L790,79.0 M803,85.0 L790,91.0" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<path d="M880,76.0 H846 V493.0 H790" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<path d="M872,70.0 V82.0" stroke="#3f5871" stroke-width="1.4" fill="none"/><path d="M868,70.0 V82.0" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<path d="M803,493.0 L790,487.0 M803,493.0 L790,499.0" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<path d="M1210,471.0 H1236 V305.0 H1210" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<path d="M1218,465.0 V477.0" stroke="#3f5871" stroke-width="1.4" fill="none"/><path d="M1222,465.0 V477.0" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<path d="M1223,305.0 L1210,299.0 M1223,305.0 L1210,311.0" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<rect x="40" y="20" width="330" height="256" rx="5" fill="#fff" stroke="#b9c3cf"/>
+<path d="M40,50 V25 a5,5 0 0 1 5,-5 H365 a5,5 0 0 1 5,5 V50 Z" fill="#1d2b3a"/>
+<text x="52" y="40" font-size="14" font-weight="700" fill="#fff">usuarios</text>
+<text x="52" y="67.5" font-size="10" font-weight="700" fill="#9a5b00">PK</text>
+<text x="78" y="67.5" font-size="12.5" fill="#1d2b3a" font-weight="700">id</text>
+<text x="358" y="67.5" font-size="11.5" fill="#66758a" text-anchor="end">uuid</text>
+<path d="M41,74 H369" stroke="#e9edf2"/>
+<text x="78" y="89.5" font-size="12.5" fill="#1d2b3a">nombre</text>
+<text x="358" y="89.5" font-size="11.5" fill="#66758a" text-anchor="end">text</text>
+<path d="M41,96 H369" stroke="#e9edf2"/>
+<text x="52" y="111.5" font-size="10" font-weight="700" fill="#4d6b2f">UQ</text>
+<text x="78" y="111.5" font-size="12.5" fill="#1d2b3a">correo</text>
+<text x="358" y="111.5" font-size="11.5" fill="#66758a" text-anchor="end">text</text>
+<path d="M41,118 H369" stroke="#e9edf2"/>
+<text x="78" y="133.5" font-size="12.5" fill="#1d2b3a">contrasena_hash</text>
+<text x="358" y="133.5" font-size="11.5" fill="#66758a" text-anchor="end">text</text>
+<path d="M41,140 H369" stroke="#e9edf2"/>
+<text x="78" y="155.5" font-size="12.5" fill="#1d2b3a">rol</text>
+<text x="358" y="155.5" font-size="11.5" fill="#66758a" text-anchor="end">RolUsuario</text>
+<path d="M41,162 H369" stroke="#e9edf2"/>
+<text x="78" y="177.5" font-size="12.5" fill="#1d2b3a">activo</text>
+<text x="358" y="177.5" font-size="11.5" fill="#66758a" text-anchor="end">boolean</text>
+<path d="M41,184 H369" stroke="#e9edf2"/>
+<text x="78" y="199.5" font-size="12.5" fill="#1d2b3a" font-style="italic">consentimiento_en</text>
+<text x="358" y="199.5" font-size="11.5" fill="#66758a" text-anchor="end">timestamp(3)</text>
+<path d="M41,206 H369" stroke="#e9edf2"/>
+<text x="78" y="221.5" font-size="12.5" fill="#1d2b3a" font-style="italic">version_privacidad</text>
+<text x="358" y="221.5" font-size="11.5" fill="#66758a" text-anchor="end">text</text>
+<path d="M41,228 H369" stroke="#e9edf2"/>
+<text x="78" y="243.5" font-size="12.5" fill="#1d2b3a">creado_en</text>
+<text x="358" y="243.5" font-size="11.5" fill="#66758a" text-anchor="end">timestamp(3)</text>
+<path d="M41,250 H369" stroke="#e9edf2"/>
+<text x="78" y="265.5" font-size="12.5" fill="#1d2b3a">actualizado_en</text>
+<text x="358" y="265.5" font-size="11.5" fill="#66758a" text-anchor="end">timestamp(3)</text>
+<rect x="40" y="428" width="330" height="168" rx="5" fill="#fff" stroke="#b9c3cf"/>
+<path d="M40,458 V433 a5,5 0 0 1 5,-5 H365 a5,5 0 0 1 5,5 V458 Z" fill="#1d2b3a"/>
+<text x="52" y="448" font-size="14" font-weight="700" fill="#fff">sesiones</text>
+<text x="52" y="475.5" font-size="10" font-weight="700" fill="#9a5b00">PK</text>
+<text x="78" y="475.5" font-size="12.5" fill="#1d2b3a" font-weight="700">id</text>
+<text x="358" y="475.5" font-size="11.5" fill="#66758a" text-anchor="end">uuid</text>
+<path d="M41,482 H369" stroke="#e9edf2"/>
+<text x="52" y="497.5" font-size="10" font-weight="700" fill="#1f5f8b">FK</text>
+<text x="78" y="497.5" font-size="12.5" fill="#1d2b3a">usuario_id</text>
+<text x="358" y="497.5" font-size="11.5" fill="#66758a" text-anchor="end">uuid</text>
+<path d="M41,504 H369" stroke="#e9edf2"/>
+<text x="52" y="519.5" font-size="10" font-weight="700" fill="#4d6b2f">UQ</text>
+<text x="78" y="519.5" font-size="12.5" fill="#1d2b3a">jti</text>
+<text x="358" y="519.5" font-size="11.5" fill="#66758a" text-anchor="end">uuid</text>
+<path d="M41,526 H369" stroke="#e9edf2"/>
+<text x="78" y="541.5" font-size="12.5" fill="#1d2b3a">expira_en</text>
+<text x="358" y="541.5" font-size="11.5" fill="#66758a" text-anchor="end">timestamp(3)</text>
+<path d="M41,548 H369" stroke="#e9edf2"/>
+<text x="78" y="563.5" font-size="12.5" fill="#1d2b3a" font-style="italic">revocada_en</text>
+<text x="358" y="563.5" font-size="11.5" fill="#66758a" text-anchor="end">timestamp(3)</text>
+<path d="M41,570 H369" stroke="#e9edf2"/>
+<text x="78" y="585.5" font-size="12.5" fill="#1d2b3a">creado_en</text>
+<text x="358" y="585.5" font-size="11.5" fill="#66758a" text-anchor="end">timestamp(3)</text>
+<rect x="460" y="20" width="330" height="344" rx="5" fill="#fff" stroke="#b9c3cf"/>
+<path d="M460,50 V25 a5,5 0 0 1 5,-5 H785 a5,5 0 0 1 5,5 V50 Z" fill="#1d2b3a"/>
+<text x="472" y="40" font-size="14" font-weight="700" fill="#fff">archivos_digitales</text>
+<text x="472" y="67.5" font-size="10" font-weight="700" fill="#9a5b00">PK</text>
+<text x="498" y="67.5" font-size="12.5" fill="#1d2b3a" font-weight="700">id</text>
+<text x="778" y="67.5" font-size="11.5" fill="#66758a" text-anchor="end">uuid</text>
+<path d="M461,74 H789" stroke="#e9edf2"/>
+<text x="472" y="89.5" font-size="10" font-weight="700" fill="#1f5f8b">FK</text>
+<text x="498" y="89.5" font-size="12.5" fill="#1d2b3a">pieza_id</text>
+<text x="778" y="89.5" font-size="11.5" fill="#66758a" text-anchor="end">uuid</text>
+<path d="M461,96 H789" stroke="#e9edf2"/>
+<text x="498" y="111.5" font-size="12.5" fill="#1d2b3a">nombre_original</text>
+<text x="778" y="111.5" font-size="11.5" fill="#66758a" text-anchor="end">text</text>
+<path d="M461,118 H789" stroke="#e9edf2"/>
+<text x="498" y="133.5" font-size="12.5" fill="#1d2b3a">ruta_almacenamiento</text>
+<text x="778" y="133.5" font-size="11.5" fill="#66758a" text-anchor="end">text</text>
+<path d="M461,140 H789" stroke="#e9edf2"/>
+<text x="498" y="155.5" font-size="12.5" fill="#1d2b3a">tipo_mime</text>
+<text x="778" y="155.5" font-size="11.5" fill="#66758a" text-anchor="end">text</text>
+<path d="M461,162 H789" stroke="#e9edf2"/>
+<text x="498" y="177.5" font-size="12.5" fill="#1d2b3a">tamano_bytes</text>
+<text x="778" y="177.5" font-size="11.5" fill="#66758a" text-anchor="end">integer</text>
+<path d="M461,184 H789" stroke="#e9edf2"/>
+<text x="498" y="199.5" font-size="12.5" fill="#1d2b3a">estado</text>
+<text x="778" y="199.5" font-size="11.5" fill="#66758a" text-anchor="end">EstadoArchivoDigital</text>
+<path d="M461,206 H789" stroke="#e9edf2"/>
+<text x="498" y="221.5" font-size="12.5" fill="#1d2b3a" font-style="italic">motivo_rechazo</text>
+<text x="778" y="221.5" font-size="11.5" fill="#66758a" text-anchor="end">text</text>
+<path d="M461,228 H789" stroke="#e9edf2"/>
+<text x="472" y="243.5" font-size="10" font-weight="700" fill="#1f5f8b">FK</text>
+<text x="498" y="243.5" font-size="12.5" fill="#1d2b3a">subido_por_id</text>
+<text x="778" y="243.5" font-size="11.5" fill="#66758a" text-anchor="end">uuid</text>
+<path d="M461,250 H789" stroke="#e9edf2"/>
+<text x="472" y="265.5" font-size="10" font-weight="700" fill="#1f5f8b">FK</text>
+<text x="498" y="265.5" font-size="12.5" fill="#1d2b3a" font-style="italic">revisado_por_id</text>
+<text x="778" y="265.5" font-size="11.5" fill="#66758a" text-anchor="end">uuid</text>
+<path d="M461,272 H789" stroke="#e9edf2"/>
+<text x="472" y="287.5" font-size="10" font-weight="700" fill="#1f5f8b">FK</text>
+<text x="498" y="287.5" font-size="12.5" fill="#1d2b3a" font-style="italic">revisor_asignado_id</text>
+<text x="778" y="287.5" font-size="11.5" fill="#66758a" text-anchor="end">uuid</text>
+<path d="M461,294 H789" stroke="#e9edf2"/>
+<text x="498" y="309.5" font-size="12.5" fill="#1d2b3a" font-style="italic">revisado_en</text>
+<text x="778" y="309.5" font-size="11.5" fill="#66758a" text-anchor="end">timestamp(3)</text>
+<path d="M461,316 H789" stroke="#e9edf2"/>
+<text x="498" y="331.5" font-size="12.5" fill="#1d2b3a">creado_en</text>
+<text x="778" y="331.5" font-size="11.5" fill="#66758a" text-anchor="end">timestamp(3)</text>
+<path d="M461,338 H789" stroke="#e9edf2"/>
+<text x="498" y="353.5" font-size="12.5" fill="#1d2b3a">actualizado_en</text>
+<text x="778" y="353.5" font-size="11.5" fill="#66758a" text-anchor="end">timestamp(3)</text>
+<rect x="460" y="428" width="330" height="168" rx="5" fill="#fff" stroke="#b9c3cf"/>
+<path d="M460,458 V433 a5,5 0 0 1 5,-5 H785 a5,5 0 0 1 5,5 V458 Z" fill="#1d2b3a"/>
+<text x="472" y="448" font-size="14" font-weight="700" fill="#fff">eventos_pieza</text>
+<text x="472" y="475.5" font-size="10" font-weight="700" fill="#9a5b00">PK</text>
+<text x="498" y="475.5" font-size="12.5" fill="#1d2b3a" font-weight="700">id</text>
+<text x="778" y="475.5" font-size="11.5" fill="#66758a" text-anchor="end">uuid</text>
+<path d="M461,482 H789" stroke="#e9edf2"/>
+<text x="472" y="497.5" font-size="10" font-weight="700" fill="#1f5f8b">FK</text>
+<text x="498" y="497.5" font-size="12.5" fill="#1d2b3a">pieza_id</text>
+<text x="778" y="497.5" font-size="11.5" fill="#66758a" text-anchor="end">uuid</text>
+<path d="M461,504 H789" stroke="#e9edf2"/>
+<text x="472" y="519.5" font-size="10" font-weight="700" fill="#1f5f8b">FK</text>
+<text x="498" y="519.5" font-size="12.5" fill="#1d2b3a" font-style="italic">usuario_id</text>
+<text x="778" y="519.5" font-size="11.5" fill="#66758a" text-anchor="end">uuid</text>
+<path d="M461,526 H789" stroke="#e9edf2"/>
+<text x="498" y="541.5" font-size="12.5" fill="#1d2b3a">accion</text>
+<text x="778" y="541.5" font-size="11.5" fill="#66758a" text-anchor="end">text</text>
+<path d="M461,548 H789" stroke="#e9edf2"/>
+<text x="498" y="563.5" font-size="12.5" fill="#1d2b3a" font-style="italic">detalle</text>
+<text x="778" y="563.5" font-size="11.5" fill="#66758a" text-anchor="end">text</text>
+<path d="M461,570 H789" stroke="#e9edf2"/>
+<text x="498" y="585.5" font-size="12.5" fill="#1d2b3a">creado_en</text>
+<text x="778" y="585.5" font-size="11.5" fill="#66758a" text-anchor="end">timestamp(3)</text>
+<rect x="880" y="20" width="330" height="344" rx="5" fill="#fff" stroke="#b9c3cf"/>
+<path d="M880,50 V25 a5,5 0 0 1 5,-5 H1205 a5,5 0 0 1 5,5 V50 Z" fill="#1d2b3a"/>
+<text x="892" y="40" font-size="14" font-weight="700" fill="#fff">piezas</text>
+<text x="892" y="67.5" font-size="10" font-weight="700" fill="#9a5b00">PK</text>
+<text x="918" y="67.5" font-size="12.5" fill="#1d2b3a" font-weight="700">id</text>
+<text x="1198" y="67.5" font-size="11.5" fill="#66758a" text-anchor="end">uuid</text>
+<path d="M881,74 H1209" stroke="#e9edf2"/>
+<text x="892" y="89.5" font-size="10" font-weight="700" fill="#4d6b2f">UQ</text>
+<text x="918" y="89.5" font-size="12.5" fill="#1d2b3a">codigo</text>
+<text x="1198" y="89.5" font-size="11.5" fill="#66758a" text-anchor="end">text</text>
+<path d="M881,96 H1209" stroke="#e9edf2"/>
+<text x="918" y="111.5" font-size="12.5" fill="#1d2b3a">titulo</text>
+<text x="1198" y="111.5" font-size="11.5" fill="#66758a" text-anchor="end">text</text>
+<path d="M881,118 H1209" stroke="#e9edf2"/>
+<text x="918" y="133.5" font-size="12.5" fill="#1d2b3a" font-style="italic">descripcion</text>
+<text x="1198" y="133.5" font-size="11.5" fill="#66758a" text-anchor="end">text</text>
+<path d="M881,140 H1209" stroke="#e9edf2"/>
+<text x="918" y="155.5" font-size="12.5" fill="#1d2b3a">tipo</text>
+<text x="1198" y="155.5" font-size="11.5" fill="#66758a" text-anchor="end">TipoPieza</text>
+<path d="M881,162 H1209" stroke="#e9edf2"/>
+<text x="918" y="177.5" font-size="12.5" fill="#1d2b3a">estado</text>
+<text x="1198" y="177.5" font-size="11.5" fill="#66758a" text-anchor="end">EstadoPieza</text>
+<path d="M881,184 H1209" stroke="#e9edf2"/>
+<text x="918" y="199.5" font-size="12.5" fill="#1d2b3a" font-style="italic">anio</text>
+<text x="1198" y="199.5" font-size="11.5" fill="#66758a" text-anchor="end">integer</text>
+<path d="M881,206 H1209" stroke="#e9edf2"/>
+<text x="918" y="221.5" font-size="12.5" fill="#1d2b3a">restringida</text>
+<text x="1198" y="221.5" font-size="11.5" fill="#66758a" text-anchor="end">boolean</text>
+<path d="M881,228 H1209" stroke="#e9edf2"/>
+<text x="918" y="243.5" font-size="12.5" fill="#1d2b3a" font-style="italic">tema</text>
+<text x="1198" y="243.5" font-size="11.5" fill="#66758a" text-anchor="end">text</text>
+<path d="M881,250 H1209" stroke="#e9edf2"/>
+<text x="918" y="265.5" font-size="12.5" fill="#1d2b3a" font-style="italic">autor</text>
+<text x="1198" y="265.5" font-size="11.5" fill="#66758a" text-anchor="end">text</text>
+<path d="M881,272 H1209" stroke="#e9edf2"/>
+<text x="918" y="287.5" font-size="12.5" fill="#1d2b3a">palabras_clave</text>
+<text x="1198" y="287.5" font-size="11.5" fill="#66758a" text-anchor="end">text[]</text>
+<path d="M881,294 H1209" stroke="#e9edf2"/>
+<text x="892" y="309.5" font-size="10" font-weight="700" fill="#1f5f8b">FK</text>
+<text x="918" y="309.5" font-size="12.5" fill="#1d2b3a">ubicacion_id</text>
+<text x="1198" y="309.5" font-size="11.5" fill="#66758a" text-anchor="end">uuid</text>
+<path d="M881,316 H1209" stroke="#e9edf2"/>
+<text x="918" y="331.5" font-size="12.5" fill="#1d2b3a">creado_en</text>
+<text x="1198" y="331.5" font-size="11.5" fill="#66758a" text-anchor="end">timestamp(3)</text>
+<path d="M881,338 H1209" stroke="#e9edf2"/>
+<text x="918" y="353.5" font-size="12.5" fill="#1d2b3a">actualizado_en</text>
+<text x="1198" y="353.5" font-size="11.5" fill="#66758a" text-anchor="end">timestamp(3)</text>
+<rect x="880" y="428" width="330" height="190" rx="5" fill="#fff" stroke="#b9c3cf"/>
+<path d="M880,458 V433 a5,5 0 0 1 5,-5 H1205 a5,5 0 0 1 5,5 V458 Z" fill="#1d2b3a"/>
+<text x="892" y="448" font-size="14" font-weight="700" fill="#fff">ubicaciones</text>
+<text x="892" y="475.5" font-size="10" font-weight="700" fill="#9a5b00">PK</text>
+<text x="918" y="475.5" font-size="12.5" fill="#1d2b3a" font-weight="700">id</text>
+<text x="1198" y="475.5" font-size="11.5" fill="#66758a" text-anchor="end">uuid</text>
+<path d="M881,482 H1209" stroke="#e9edf2"/>
+<text x="918" y="497.5" font-size="12.5" fill="#1d2b3a">deposito</text>
+<text x="1198" y="497.5" font-size="11.5" fill="#66758a" text-anchor="end">text</text>
+<path d="M881,504 H1209" stroke="#e9edf2"/>
+<text x="918" y="519.5" font-size="12.5" fill="#1d2b3a">estanteria</text>
+<text x="1198" y="519.5" font-size="11.5" fill="#66758a" text-anchor="end">text</text>
+<path d="M881,526 H1209" stroke="#e9edf2"/>
+<text x="918" y="541.5" font-size="12.5" fill="#1d2b3a">caja</text>
+<text x="1198" y="541.5" font-size="11.5" fill="#66758a" text-anchor="end">text</text>
+<path d="M881,548 H1209" stroke="#e9edf2"/>
+<text x="918" y="563.5" font-size="12.5" fill="#1d2b3a" font-style="italic">descripcion</text>
+<text x="1198" y="563.5" font-size="11.5" fill="#66758a" text-anchor="end">text</text>
+<path d="M881,570 H1209" stroke="#e9edf2"/>
+<text x="918" y="585.5" font-size="12.5" fill="#1d2b3a">creado_en</text>
+<text x="1198" y="585.5" font-size="11.5" fill="#66758a" text-anchor="end">timestamp(3)</text>
+<path d="M881,592 H1209" stroke="#e9edf2"/>
+<text x="918" y="607.5" font-size="12.5" fill="#1d2b3a">actualizado_en</text>
+<text x="1198" y="607.5" font-size="11.5" fill="#66758a" text-anchor="end">timestamp(3)</text>
+<g font-size="11.5" fill="#66758a">
+<path d="M46,650 H92" stroke="#3f5871" stroke-width="1.4"/><path d="M54,644 V656" stroke="#3f5871" stroke-width="1.4" fill="none"/><path d="M58,644 V656" stroke="#3f5871" stroke-width="1.4" fill="none"/><path d="M79,650 L92,644 M79,650 L92,656" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<text x="102" y="654">uno a muchos</text>
+<path d="M206,650 H256" stroke="#3f5871" stroke-width="1.4" stroke-dasharray="6 4"/><path d="M214,644 V656" stroke="#3f5871" stroke-width="1.4" fill="none"/><circle cx="222" cy="650" r="4" stroke="#3f5871" stroke-width="1.4" fill="#fff"/><path d="M243,650 L256,644 M243,650 L256,656" stroke="#3f5871" stroke-width="1.4" fill="none"/>
+<text x="266" y="654">relación opcional (la FK admite NULL)</text>
+<text x="520" y="654"><tspan font-weight="700" fill="#9a5b00">PK</tspan> llave primaria   <tspan dx="14" font-weight="700" fill="#1f5f8b">FK</tspan> llave foránea   <tspan dx="14" font-weight="700" fill="#4d6b2f">UQ</tspan> valor único   <tspan dx="14" font-style="italic">cursiva</tspan>: admite NULL</text>
+</g></svg>
