@@ -75,11 +75,15 @@ export class ArchivosController {
   @Get()
   @Autenticado('ADMIN', 'PERSONAL')
   @ApiOperation({
-    summary: 'Listar escaneos; con estado=EN_REVISION es la cola de control de calidad',
+    summary:
+      'Listar escaneos; con estado=EN_REVISION es la cola. Un PERSONAL solo ve lo asignado a él o, con subidoPor=yo, lo que subió',
   })
   @ApiOkResponse({ type: ArchivosPaginadosDto })
-  listar(@Query() consulta: ListarArchivosDto): Promise<ArchivosPaginadosDto> {
-    return this.listarArchivos.ejecutar(consulta);
+  listar(
+    @Query() consulta: ListarArchivosDto,
+    @UsuarioActual() usuario: UsuarioAutenticado,
+  ): Promise<ArchivosPaginadosDto> {
+    return this.listarArchivos.ejecutar(consulta, usuario);
   }
 
   @Get('revisores')

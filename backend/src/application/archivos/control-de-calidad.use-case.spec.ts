@@ -24,6 +24,7 @@ const PIEZA_ID = '11111111-1111-1111-1111-111111111111';
 const REVISOR_ID = '44444444-4444-4444-4444-444444444444';
 const RUTA = 'escaneos/2026/11/prueba.png';
 const REVISOR = { id: REVISOR_ID, rol: 'PERSONAL' } as const;
+const ADMIN = { id: '66666666-6666-6666-6666-666666666666', rol: 'ADMIN' } as const;
 const AHORA = new Date('2026-11-12T18:00:00.000Z');
 
 function fabricarArchivo(
@@ -157,14 +158,14 @@ describe('Control de calidad', () => {
       repositorio.agregar(fabricarArchivo(), fabricarPieza());
 
       const consulta = { pagina: 1, limite: 20, orden: 'creadoEn', direccion: 'asc' } as const;
-      const cola = await new ListarArchivos(repositorio).ejecutar({
-        ...consulta,
-        estado: 'EN_REVISION',
-      });
-      const aprobados = await new ListarArchivos(repositorio).ejecutar({
-        ...consulta,
-        estado: 'APROBADO',
-      });
+      const cola = await new ListarArchivos(repositorio).ejecutar(
+        { ...consulta, estado: 'EN_REVISION' },
+        ADMIN,
+      );
+      const aprobados = await new ListarArchivos(repositorio).ejecutar(
+        { ...consulta, estado: 'APROBADO' },
+        ADMIN,
+      );
 
       expect(cola.meta.total).toBe(1);
       expect(cola.datos[0].url).toBe(`/api/v1/archivos/${ARCHIVO_ID}/contenido`);
