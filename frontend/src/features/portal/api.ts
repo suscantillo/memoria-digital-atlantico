@@ -1,4 +1,4 @@
-import { clienteApi } from '../../shared/api/cliente';
+import { BASE_API, clienteApi } from '../../shared/api/cliente';
 import type { ParametrosBuscarPiezas, PiezaPortal, PiezasPortalPaginadas } from './tipos';
 
 export const portalApi = {
@@ -15,6 +15,16 @@ export const portalApi = {
     const { data } = await clienteApi.get<PiezaPortal>(
       `/portal/piezas/${encodeURIComponent(codigo)}`,
     );
+    return data;
+  },
+
+  /**
+   * Trae un escaneo con la sesión de quien lo pide. Un PDF no se puede poner directo en la página
+   * porque la API lo entrega solo con el token (HU-15) y el navegador no lo manda por su cuenta.
+   */
+  async contenido(url: string): Promise<Blob> {
+    const ruta = url.startsWith(BASE_API) ? url.slice(BASE_API.length) : url;
+    const { data } = await clienteApi.get<Blob>(ruta, { responseType: 'blob', timeout: 60_000 });
     return data;
   },
 };

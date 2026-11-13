@@ -3,16 +3,19 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Post,
-  Res,
+  Query,
   StreamableFile,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiConflictResponse,
   ApiConsumes,
@@ -20,17 +23,27 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
-  ApiProduces,
   ApiPayloadTooLargeResponse,
+  ApiProduces,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { AprobarEscaneo } from '../../application/archivos/aprobar-escaneo.use-case';
 import { CargarEscaneo } from '../../application/archivos/cargar-escaneo.use-case';
-import { ObtenerContenidoArchivo } from '../../application/archivos/obtener-contenido-archivo.use-case';
+import { AprobarEscaneoDto } from '../../application/archivos/dto/aprobar-escaneo.dto';
+import {
+  ArchivoDigitalDto,
+  ArchivosPaginadosDto,
+} from '../../application/archivos/dto/archivo-digital.dto';
 import { CargarEscaneoDto } from '../../application/archivos/dto/cargar-escaneo.dto';
 import { EscaneoCargadoDto } from '../../application/archivos/dto/escaneo-cargado.dto';
-import type { Response } from 'express';
+import { ListarArchivosDto } from '../../application/archivos/dto/listar-archivos.dto';
+import { RechazarEscaneoDto } from '../../application/archivos/dto/rechazar-escaneo.dto';
+import { ListarArchivos } from '../../application/archivos/listar-archivos.use-case';
+import { ObtenerContenidoArchivo } from '../../application/archivos/obtener-contenido-archivo.use-case';
+import { RechazarEscaneo } from '../../application/archivos/rechazar-escaneo.use-case';
 import { Autenticado } from '../comun/decoradores/autenticado.decorator';
-import { Publica } from '../comun/decoradores/publica.decorator';
+import { SesionOpcional } from '../comun/decoradores/sesion-opcional.decorator';
 import { UsuarioActual } from '../comun/decoradores/usuario-actual.decorator';
 import { UsuarioAutenticado } from '../comun/solicitud-autenticada';
 import { InterceptorEscaneo } from './interceptor-escaneo';
@@ -45,34 +58,80 @@ interface ArchivoSubido {
 export class ArchivosController {
   constructor(
     private readonly cargarEscaneo: CargarEscaneo,
+    private readonly listarArchivos: ListarArchivos,
     private readonly obtenerContenido: ObtenerContenidoArchivo,
+    private readonly aprobarEscaneo: AprobarEscaneo,
+    private readonly rechazarEscaneo: RechazarEscaneo,
   ) {}
 
-  @Publica()
-  @Get(':id/contenido')
+  @Get()
+  @Autenticado('ADMIN', 'PERSONAL')
   @ApiOperation({
-    summary: 'Ver el escaneo aprobado de una pieza publicada (visor del portal)',
+    summary: 'Listar escaneos; con estado=EN_REVISION es la cola de control de calidad',
   })
+  @ApiOkResponse({ type: ArchivosPaginadosDto })
+  listar(@Query() consulta: ListarArchivosDto): Promise<ArchivosPaginadosDto> {
+    return this.listarArchivos.ejecutar(consulta);
+  }
+
+  @Get(':id/contenido')
+  @SesionOpcional()
+  // privada: lo que se entrega depende de quién pregunta; corta: si la pieza se despublica, deja de verse pronto
+  @Header('Cache-Control', 'private, max-age=300')
+  @Header('X-Content-Type-Options', 'nosniff')
+  @ApiOperation({
+    summary: 'Ver un escaneo: el personal, cualquiera; el público, solo lo publicado',
+  })
+  @ApiBearerAuth()
   @ApiProduces('image/jpeg', 'image/png', 'image/webp', 'image/tiff', 'application/pdf')
-  @ApiOkResponse({ description: 'El archivo, para mostrarlo en el navegador.' })
+  @ApiOkResponse({ description: 'El archivo, con el tipo que se reconoció al cargarlo.' })
+  @ApiUnauthorizedResponse({ description: 'Es un PDF y no hay sesión, o el token no es válido.' })
   @ApiNotFoundResponse({
-    description: 'No existe, no está aprobado o su pieza no está publicada o es restringida.',
+    description:
+      'No existe, o es de una pieza restringida o sin publicar y no lo pide el personal.',
   })
   async contenido(
-    @Param('id') id: string,
-    @Res({ passthrough: true }) respuesta: Response,
+    @Param('id', ParseUUIDPipe) id: string,
+    @UsuarioActual() usuario: UsuarioAutenticado | undefined,
   ): Promise<StreamableFile> {
-    const archivo = await this.obtenerContenido.ejecutar(id);
-    respuesta.set({
-      // corto: si la pieza se despublica, deja de verse pronto
-      'Cache-Control': 'public, max-age=300',
-      'X-Content-Type-Options': 'nosniff',
-    });
+    const archivo = await this.obtenerContenido.ejecutar(id, usuario?.rol ?? null);
     return new StreamableFile(archivo.flujo, {
       type: archivo.tipoMime,
-      length: archivo.tamanoBytes,
       disposition: `inline; filename*=UTF-8''${encodeURIComponent(archivo.nombreOriginal)}`,
+      length: archivo.tamanoBytes,
     });
+  }
+
+  @Post(':id/aprobar')
+  @Autenticado('ADMIN', 'PERSONAL')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Aprobar un escaneo EN_REVISION: la pieza queda PUBLICADA' })
+  @ApiOkResponse({ type: ArchivoDigitalDto })
+  @ApiNotFoundResponse({ description: 'El archivo no existe.' })
+  @ApiConflictResponse({ description: 'El escaneo ya fue revisado.' })
+  aprobar(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() _criterios: AprobarEscaneoDto,
+    @UsuarioActual() usuario: UsuarioAutenticado,
+  ): Promise<ArchivoDigitalDto> {
+    return this.aprobarEscaneo.ejecutar(id, usuario.id);
+  }
+
+  @Post(':id/rechazar')
+  @Autenticado('ADMIN', 'PERSONAL')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Rechazar un escaneo EN_REVISION con motivo: la pieza vuelve a REGISTRADA',
+  })
+  @ApiOkResponse({ type: ArchivoDigitalDto })
+  @ApiNotFoundResponse({ description: 'El archivo no existe.' })
+  @ApiConflictResponse({ description: 'El escaneo ya fue revisado.' })
+  rechazar(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() datos: RechazarEscaneoDto,
+    @UsuarioActual() usuario: UsuarioAutenticado,
+  ): Promise<ArchivoDigitalDto> {
+    return this.rechazarEscaneo.ejecutar(id, usuario.id, datos.motivoRechazo);
   }
 
   @Post()

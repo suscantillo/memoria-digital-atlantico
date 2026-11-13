@@ -1,43 +1,51 @@
-import { ErrorNoEncontrado } from '../../domain/comun/errores';
-import {
-  ArchivoPublicable,
-  ArchivosPublicos,
-  ContenidoAlmacenado,
-  LectorArchivos,
-} from './puertos';
+import { evaluarAccesoArchivo } from '../../domain/archivos/acceso-archivo';
+import { ArchivoNoEncontradoError } from '../../domain/archivos/archivo-digital.entity';
+import { ArchivoDigitalRepositorio } from '../../domain/archivos/archivo-digital.repositorio';
+import { ErrorNoAutorizado } from '../../domain/comun/errores';
+import { RolUsuario } from '../../domain/usuarios/rol-usuario';
+import { ContenidoAlmacenado, LectorArchivos } from './puertos';
 
-export class ArchivoNoDisponibleError extends ErrorNoEncontrado {
-  constructor(id: string) {
-    super(`El archivo "${id}" no existe o no está publicado.`);
+export interface ContenidoArchivo extends ContenidoAlmacenado {
+  nombreOriginal: string;
+  tipoMime: string;
+}
+
+export class SesionRequeridaParaPdfError extends ErrorNoAutorizado {
+  constructor() {
+    super('Inicia sesión para leer este documento.');
   }
 }
 
-export type ContenidoArchivo = Omit<ArchivoPublicable, 'rutaAlmacenamiento'> & ContenidoAlmacenado;
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 /**
- * Entrega el escaneo aprobado de una pieza publicada para el visor del portal (HU-14).
- * Si no se puede ver responde igual que si no existiera: así no se revela qué hay en el archivo.
+ * Entrega el escaneo según quién lo pide: el revisor (HU-10), el visor del portal (HU-14) y quien
+ * lee un PDF con su cuenta (HU-15). Lo que el público no puede ver responde igual que un archivo
+ * que no existe, para no delatar piezas restringidas ni escaneos en revisión.
  */
 export class ObtenerContenidoArchivo {
   constructor(
-    private readonly archivos: ArchivosPublicos,
+    private readonly archivos: ArchivoDigitalRepositorio,
     private readonly lector: LectorArchivos,
   ) {}
 
-  async ejecutar(id: string): Promise<ContenidoArchivo> {
-    const archivo = UUID.test(id) ? await this.archivos.buscarPublicable(id) : null;
-    if (!archivo) throw new ArchivoNoDisponibleError(id);
+  async ejecutar(archivoId: string, rol: RolUsuario | null): Promise<ContenidoArchivo> {
+    const encontrado = await this.archivos.buscarRevision(archivoId);
+    if (!encontrado) {
+      throw new ArchivoNoEncontradoError(archivoId);
+    }
+    const { archivo, pieza } = encontrado;
+
+    const acceso = evaluarAccesoArchivo(archivo, pieza, rol);
+    if (acceso === 'NO_VISIBLE') {
+      throw new ArchivoNoEncontradoError(archivoId);
+    }
+    if (acceso === 'REQUIERE_SESION') {
+      throw new SesionRequeridaParaPdfError();
+    }
 
     const contenido = await this.lector.abrir(archivo.rutaAlmacenamiento);
-    if (!contenido) throw new ArchivoNoDisponibleError(id);
-
-    return {
-      id: archivo.id,
-      nombreOriginal: archivo.nombreOriginal,
-      tipoMime: archivo.tipoMime,
-      ...contenido,
-    };
+    if (!contenido) {
+      throw new ArchivoNoEncontradoError(archivoId);
+    }
+    return { nombreOriginal: archivo.nombreOriginal, tipoMime: archivo.tipoMime, ...contenido };
   }
 }

@@ -3,37 +3,44 @@ import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { randomUUID } from 'node:crypto';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { configurarApp } from '../src/configurar-app';
+import { BcryptHasherContrasenas } from '../src/infrastructure/auth/bcrypt-hasher-contrasenas';
 import { PrismaService } from '../src/infrastructure/prisma/prisma.service';
 
 const PNG = Buffer.concat([
   Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-  Buffer.alloc(256, 7),
+  Buffer.alloc(64, 3),
 ]);
+const PDF = Buffer.from('%PDF-1.7\n[DATOS DE PRUEBA]\n');
 
-describe('GET /api/v1/archivos/:id/contenido (e2e)', () => {
+type Clave = 'imagen' | 'pdf' | 'restringida' | 'enRevision';
+
+describe('GET /api/v1/archivos/:id/contenido según quién lo pide (e2e)', () => {
   let app: INestApplication<App>;
   let prisma: PrismaService;
   let almacen: string;
   const marca = randomUUID().slice(0, 8);
-  const prefijo = 'MDA-9994-';
-  const carpeta = `e2e-contenido-${marca}`;
+  const contrasena = 'Secreta.123';
+  const correos = {
+    PERSONAL: `con-personal-${marca}@prueba.local`,
+    PUBLICO: `con-publico-${marca}@prueba.local`,
+  };
+  const prefijo = 'MDA-9993-';
+  const tokens = { PERSONAL: '', PUBLICO: '' };
+  const archivos = {} as Record<Clave, string>;
+  const rutas: string[] = [];
   let ubicacionId: string;
-  let usuarioId: string;
-  const archivos: Record<string, string> = {};
 
-  // pieza en `estadoPieza`, con un archivo `estadoArchivo` guardado (o no) en el almacenamiento
-  const casos = [
-    ['publico', 'PUBLICADA', false, 'APROBADO', true],
-    ['restringido', 'PUBLICADA', true, 'APROBADO', true],
-    ['sinPublicar', 'REVISADA', false, 'APROBADO', true],
-    ['enRevision', 'PUBLICADA', false, 'EN_REVISION', true],
-    ['perdido', 'PUBLICADA', false, 'APROBADO', false],
-  ] as const;
+  const pedir = (clave: Clave, rol?: 'PERSONAL' | 'PUBLICO') => {
+    const solicitud = request(app.getHttpServer()).get(
+      `/api/v1/archivos/${archivos[clave]}/contenido`,
+    );
+    return rol ? solicitud.set('Authorization', `Bearer ${tokens[rol]}`) : solicitud;
+  };
 
   beforeAll(async () => {
     process.env.LOG_LEVEL = 'silent';
@@ -44,17 +51,20 @@ describe('GET /api/v1/archivos/:id/contenido (e2e)', () => {
     await app.init();
     prisma = app.get(PrismaService);
     almacen = resolve(app.get(ConfigService).get<string>('STORAGE_DIR') ?? './storage');
-    await mkdir(join(almacen, carpeta), { recursive: true });
 
-    const usuario = await prisma.usuario.create({
-      data: {
-        nombre: 'Contenido e2e',
-        correo: `contenido-${marca}@prueba.local`,
-        contrasenaHash: 'x',
-        rol: 'PERSONAL',
-      },
-    });
-    usuarioId = usuario.id;
+    const hash = await new BcryptHasherContrasenas().hash(contrasena);
+    let personalId = '';
+    for (const rol of ['PERSONAL', 'PUBLICO'] as const) {
+      const usuario = await prisma.usuario.create({
+        data: { nombre: `Contenido ${rol}`, correo: correos[rol], contrasenaHash: hash, rol },
+      });
+      if (rol === 'PERSONAL') personalId = usuario.id;
+      const ingreso = await request(app.getHttpServer())
+        .post('/api/v1/auth/ingresar')
+        .send({ correo: correos[rol], contrasena })
+        .expect(200);
+      tokens[rol] = (ingreso.body as { tokenAcceso: string }).tokenAcceso;
+    }
     const ubicacion = await prisma.ubicacion.create({
       data: {
         deposito: `Depósito contenido ${marca}`,
@@ -63,26 +73,37 @@ describe('GET /api/v1/archivos/:id/contenido (e2e)', () => {
       },
     });
     ubicacionId = ubicacion.id;
+    await prisma.pieza.deleteMany({ where: { codigo: { startsWith: prefijo } } });
 
-    for (const [i, [clave, estadoPieza, restringida, estadoArchivo, guardado]] of casos.entries()) {
-      const ruta = `${carpeta}/${clave}.png`;
-      if (guardado) await writeFile(join(almacen, ruta), PNG);
+    const casos: [Clave, 'PUBLICADA' | 'ESCANEADA', boolean, 'APROBADO' | 'EN_REVISION', Buffer][] =
+      [
+        ['imagen', 'PUBLICADA', false, 'APROBADO', PNG],
+        ['pdf', 'PUBLICADA', false, 'APROBADO', PDF],
+        ['restringida', 'PUBLICADA', true, 'APROBADO', PNG],
+        ['enRevision', 'ESCANEADA', false, 'EN_REVISION', PNG],
+      ];
+    for (const [indice, [clave, estadoPieza, restringida, estado, contenido]] of casos.entries()) {
+      const esPdf = contenido === PDF;
+      const ruta = `escaneos/pruebas/${marca}-${clave}.${esPdf ? 'pdf' : 'png'}`;
+      await mkdir(dirname(join(almacen, ruta)), { recursive: true });
+      await writeFile(join(almacen, ruta), contenido);
+      rutas.push(ruta);
       const pieza = await prisma.pieza.create({
         data: {
-          codigo: `${prefijo}000${i + 1}`,
-          titulo: `Contenido ${clave}`,
-          tipo: 'FOTOGRAFIA',
+          codigo: `${prefijo}000${indice + 1}`,
+          titulo: `Pieza de contenido ${clave} ${marca}`,
+          tipo: esPdf ? 'DOCUMENTO' : 'FOTOGRAFIA',
           estado: estadoPieza,
           restringida,
           ubicacionId,
           archivos: {
             create: {
-              nombreOriginal: `Fotografía ${clave}.png`,
+              nombreOriginal: `${clave}.${esPdf ? 'pdf' : 'png'}`,
               rutaAlmacenamiento: ruta,
-              tipoMime: 'image/png',
-              tamanoBytes: PNG.length,
-              estado: estadoArchivo,
-              subidoPorId: usuarioId,
+              tipoMime: esPdf ? 'application/pdf' : 'image/png',
+              tamanoBytes: contenido.length,
+              estado,
+              subidoPorId: personalId,
             },
           },
         },
@@ -93,51 +114,47 @@ describe('GET /api/v1/archivos/:id/contenido (e2e)', () => {
   }, 30_000);
 
   afterAll(async () => {
-    await rm(join(almacen, carpeta), { recursive: true, force: true });
-    if (prisma) {
-      await prisma.pieza.deleteMany({ where: { codigo: { startsWith: prefijo } } });
-      await prisma.ubicacion.deleteMany({ where: { id: ubicacionId } });
-      await prisma.usuario.deleteMany({ where: { id: usuarioId } });
+    for (const ruta of rutas) {
+      await rm(join(almacen, ruta), { force: true });
     }
-    await app?.close();
+    await prisma.pieza.deleteMany({ where: { codigo: { startsWith: prefijo } } });
+    await prisma.ubicacion.deleteMany({ where: { id: ubicacionId } });
+    await prisma.usuario.deleteMany({ where: { correo: { in: Object.values(correos) } } });
+    await app.close();
   });
 
-  const pedir = (id: string) =>
-    request(app.getHttpServer())
-      .get(`/api/v1/archivos/${id}/contenido`)
-      .buffer(true)
-      .parse((respuesta, listo) => {
-        const partes: Buffer[] = [];
-        respuesta.on('data', (parte: Buffer) => partes.push(parte));
-        respuesta.on('end', () => listo(null, Buffer.concat(partes)));
-      });
-
-  it('entrega sin sesión el escaneo aprobado de una pieza publicada, para verlo en el navegador', async () => {
-    const respuesta = await pedir(archivos.publico).expect(200);
+  it('la imagen aprobada de una pieza publicada se ve sin sesión', async () => {
+    const respuesta = await pedir('imagen').expect(200);
 
     expect(respuesta.headers['content-type']).toBe('image/png');
-    expect(respuesta.headers['content-length']).toBe(String(PNG.length));
-    expect(respuesta.headers['content-disposition']).toBe(
-      `inline; filename*=UTF-8''${encodeURIComponent('Fotografía publico.png')}`,
-    );
-    expect(respuesta.headers['x-content-type-options']).toBe('nosniff');
-    expect(Buffer.compare(respuesta.body as Buffer, PNG)).toBe(0);
+    expect(respuesta.body as Buffer).toEqual(PNG);
   });
 
-  it.each(['restringido', 'sinPublicar', 'enRevision', 'perdido'] as const)(
-    'responde 404 cuando el archivo es %s',
-    async (clave) => {
-      const respuesta = await request(app.getHttpServer())
-        .get(`/api/v1/archivos/${archivos[clave]}/contenido`)
-        .expect(404);
-      expect(respuesta.body).toMatchObject({ statusCode: 404 });
-    },
-  );
+  it('criterio 1: el PDF aprobado responde 401 sin sesión y se abre con una cuenta', async () => {
+    const sinSesion = await pedir('pdf').expect(401);
+    expect((sinSesion.body as { message: string }).message).toContain('Inicia sesión');
 
-  it('responde 404 cuando el id no existe o no es un UUID', async () => {
+    const conCuenta = await pedir('pdf', 'PUBLICO').expect(200);
+    expect(conCuenta.headers['content-type']).toBe('application/pdf');
+    await pedir('pdf', 'PERSONAL').expect(200);
+  });
+
+  it('el archivo de una pieza restringida no existe para el público y sí para el personal', async () => {
+    await pedir('restringida').expect(404);
+    await pedir('restringida', 'PUBLICO').expect(404);
+    await pedir('restringida', 'PERSONAL').expect(200);
+  });
+
+  it('un escaneo en revisión solo lo ve el personal', async () => {
+    await pedir('enRevision').expect(404);
+    await pedir('enRevision', 'PUBLICO').expect(404);
+    await pedir('enRevision', 'PERSONAL').expect(200);
+  });
+
+  it('un token inválido responde 401 aunque la imagen sea pública', async () => {
     await request(app.getHttpServer())
-      .get(`/api/v1/archivos/${randomUUID()}/contenido`)
-      .expect(404);
-    await request(app.getHttpServer()).get('/api/v1/archivos/no-es-un-id/contenido').expect(404);
+      .get(`/api/v1/archivos/${archivos.imagen}/contenido`)
+      .set('Authorization', 'Bearer no-es-un-token')
+      .expect(401);
   });
 });

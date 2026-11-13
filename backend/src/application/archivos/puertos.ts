@@ -45,24 +45,7 @@ export interface AlmacenArchivos {
   borrar(ruta: string): Promise<void>;
 }
 
-export const ARCHIVOS_PUBLICOS = Symbol('ARCHIVOS_PUBLICOS');
 export const LECTOR_ARCHIVOS = Symbol('LECTOR_ARCHIVOS');
-
-/** Lo que el portal necesita para entregar un archivo. */
-export interface ArchivoPublicable {
-  id: string;
-  nombreOriginal: string;
-  rutaAlmacenamiento: string;
-  tipoMime: string;
-}
-
-export interface ArchivosPublicos {
-  /**
-   * El archivo solo si cualquiera puede verlo: está APROBADO y su pieza está PUBLICADA y no es
-   * restringida. En cualquier otro caso devuelve null.
-   */
-  buscarPublicable(id: string): Promise<ArchivoPublicable | null>;
-}
 
 export interface ContenidoAlmacenado {
   flujo: Readable;
