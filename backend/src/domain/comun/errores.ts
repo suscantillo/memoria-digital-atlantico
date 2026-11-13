@@ -23,6 +23,13 @@ export class ErrorConflicto extends ErrorDominio {
   }
 }
 
+/** Hay sesión, pero esta persona no puede hacer esto (403). */
+export class ErrorProhibido extends ErrorDominio {
+  constructor(mensaje: string) {
+    super(mensaje);
+  }
+}
+
 export class ErrorNoAutorizado extends ErrorDominio {
   constructor(mensaje: string) {
     super(mensaje);

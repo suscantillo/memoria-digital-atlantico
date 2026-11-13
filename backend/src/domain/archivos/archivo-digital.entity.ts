@@ -1,4 +1,5 @@
-import { ErrorConflicto, ErrorNoEncontrado, ErrorRegla } from '../comun/errores';
+import { ErrorConflicto, ErrorNoEncontrado, ErrorProhibido, ErrorRegla } from '../comun/errores';
+import { RolUsuario } from '../usuarios/rol-usuario';
 import { EstadoArchivoDigital } from './estado-archivo-digital';
 
 export interface PropiedadesArchivoDigital {
@@ -13,7 +14,15 @@ export interface PropiedadesArchivoDigital {
   subidoPorId: string;
   revisadoPorId: string | null;
   revisadoEn: Date | null;
+  /** HU-23: quién debe revisarlo; null mientras el administrador no lo asigne. */
+  revisorAsignadoId: string | null;
   creadoEn: Date;
+}
+
+/** Quién intenta revisar: basta su id y su rol. */
+export interface QuienRevisa {
+  id: string;
+  rol: RolUsuario;
 }
 
 export class ArchivoDigital {
@@ -21,6 +30,28 @@ export class ArchivoDigital {
 
   static reconstruir(props: PropiedadesArchivoDigital): ArchivoDigital {
     return new ArchivoDigital({ ...props });
+  }
+
+  /**
+   * HU-23: el administrador elige quién revisa. Se puede cambiar mientras siga EN_REVISION, pero
+   * nunca a quien lo subió: nadie revisa su propio escaneo.
+   */
+  asignarRevisor(revisorId: string): void {
+    this.exigirEnRevision();
+    if (revisorId === this.props.subidoPorId) {
+      throw new RevisorEsQuienSubioError();
+    }
+    this.props.revisorAsignadoId = revisorId;
+  }
+
+  /**
+   * HU-23: un ADMIN revisa cualquier escaneo, también uno que subió (para que el archivo no se
+   * detenga si hay una sola persona). Un PERSONAL solo el que le asignaron.
+   */
+  exigirPuedeRevisar(quien: QuienRevisa): void {
+    if (quien.rol === 'ADMIN') return;
+    if (quien.rol === 'PERSONAL' && this.props.revisorAsignadoId === quien.id) return;
+    throw new RevisionNoAsignadaError(this.props.revisorAsignadoId !== null);
   }
 
   aprobar(revisorId: string): void {
@@ -85,6 +116,9 @@ export class ArchivoDigital {
   get revisadoEn(): Date | null {
     return this.props.revisadoEn;
   }
+  get revisorAsignadoId(): string | null {
+    return this.props.revisorAsignadoId;
+  }
   get creadoEn(): Date {
     return this.props.creadoEn;
   }
@@ -99,6 +133,22 @@ export class ArchivoNoEncontradoError extends ErrorNoEncontrado {
 export class ArchivoYaRevisadoError extends ErrorConflicto {
   constructor(estado: EstadoArchivoDigital) {
     super(`Este escaneo ya fue revisado y está ${estado}.`);
+  }
+}
+
+export class RevisorEsQuienSubioError extends ErrorRegla {
+  constructor() {
+    super('Nadie revisa su propio escaneo: elige a otra persona del personal.');
+  }
+}
+
+export class RevisionNoAsignadaError extends ErrorProhibido {
+  constructor(tieneRevisor: boolean) {
+    super(
+      tieneRevisor
+        ? 'Este escaneo lo revisa otra persona del personal.'
+        : 'Este escaneo todavía no tiene revisor: solo un administrador puede revisarlo o asignarlo.',
+    );
   }
 }
 

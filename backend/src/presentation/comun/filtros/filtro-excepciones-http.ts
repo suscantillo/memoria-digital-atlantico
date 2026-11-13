@@ -12,6 +12,7 @@ import {
   ErrorDominio,
   ErrorNoAutorizado,
   ErrorNoEncontrado,
+  ErrorProhibido,
   ErrorRegla,
 } from '../../../domain/comun/errores';
 
@@ -91,6 +92,7 @@ export class FiltroExcepcionesHttp implements ExceptionFilter {
     if (error instanceof ErrorNoEncontrado) return HttpStatus.NOT_FOUND;
     if (error instanceof ErrorConflicto) return HttpStatus.CONFLICT;
     if (error instanceof ErrorNoAutorizado) return HttpStatus.UNAUTHORIZED;
+    if (error instanceof ErrorProhibido) return HttpStatus.FORBIDDEN;
     if (error instanceof ErrorRegla) return HttpStatus.UNPROCESSABLE_ENTITY;
     return HttpStatus.BAD_REQUEST;
   }

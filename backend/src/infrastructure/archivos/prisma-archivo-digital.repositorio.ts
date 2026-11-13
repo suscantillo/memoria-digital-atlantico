@@ -21,7 +21,8 @@ const DETALLE = {
   motivoRechazo: true,
   creadoEn: true,
   revisadoEn: true,
-  subidoPor: { select: { nombre: true, correo: true } },
+  subidoPor: { select: { id: true, nombre: true, correo: true } },
+  revisorAsignado: { select: { id: true, nombre: true, correo: true } },
   pieza: {
     select: {
       id: true,
@@ -48,6 +49,19 @@ const PIEZA_COMPLETA = {
 } satisfies Prisma.PiezaInclude;
 
 type FilaArchivo = Prisma.ArchivoDigitalGetPayload<object>;
+type FilaDetalle = Prisma.ArchivoDigitalGetPayload<{ select: typeof DETALLE }>;
+
+function aDetalle({ revisorAsignado, ...fila }: FilaDetalle): DetalleArchivoDigital {
+  return { ...fila, revisor: revisorAsignado };
+}
+
+function filtros(params: ParametrosListarArchivos): Prisma.ArchivoDigitalWhereInput {
+  return {
+    ...(params.estado ? { estado: params.estado } : {}),
+    ...(params.revisorId !== undefined ? { revisorAsignadoId: params.revisorId } : {}),
+    ...(params.subidoPorId ? { subidoPorId: params.subidoPorId } : {}),
+  };
+}
 
 function aEntidad(fila: FilaArchivo): ArchivoDigital {
   return ArchivoDigital.reconstruir({
@@ -62,6 +76,7 @@ function aEntidad(fila: FilaArchivo): ArchivoDigital {
     subidoPorId: fila.subidoPorId,
     revisadoPorId: fila.revisadoPorId,
     revisadoEn: fila.revisadoEn,
+    revisorAsignadoId: fila.revisorAsignadoId,
     creadoEn: fila.creadoEn,
   });
 }
@@ -73,7 +88,7 @@ export class PrismaArchivoDigitalRepositorio implements ArchivoDigitalRepositori
   async listar(
     params: ParametrosListarArchivos,
   ): Promise<ResultadoPaginado<DetalleArchivoDigital>> {
-    const where: Prisma.ArchivoDigitalWhereInput = params.estado ? { estado: params.estado } : {};
+    const where = filtros(params);
     const [total, filas] = await this.prisma.$transaction([
       this.prisma.archivoDigital.count({ where }),
       this.prisma.archivoDigital.findMany({
@@ -85,11 +100,12 @@ export class PrismaArchivoDigitalRepositorio implements ArchivoDigitalRepositori
         take: params.limite,
       }),
     ]);
-    return { datos: filas, meta: construirMeta(params, total) };
+    return { datos: filas.map(aDetalle), meta: construirMeta(params, total) };
   }
 
-  buscarDetalle(id: string): Promise<DetalleArchivoDigital | null> {
-    return this.prisma.archivoDigital.findUnique({ where: { id }, select: DETALLE });
+  async buscarDetalle(id: string): Promise<DetalleArchivoDigital | null> {
+    const fila = await this.prisma.archivoDigital.findUnique({ where: { id }, select: DETALLE });
+    return fila ? aDetalle(fila) : null;
   }
 
   async buscarPorId(id: string): Promise<ArchivoDigital | null> {
@@ -129,6 +145,31 @@ export class PrismaArchivoDigitalRepositorio implements ArchivoDigitalRepositori
         data: {
           piezaId: pieza.id,
           usuarioId: archivo.revisadoPorId,
+          accion: evento.accion,
+          detalle: evento.detalle,
+        },
+      });
+      return true;
+    });
+  }
+
+  async guardarAsignacion(
+    archivo: ArchivoDigital,
+    asignadoPorId: string,
+    evento: EventoRevision,
+  ): Promise<boolean> {
+    return this.prisma.$transaction(async (tx) => {
+      // solo mientras siga EN_REVISION: si ya lo revisaron, asignar no tiene sentido
+      const cambio = await tx.archivoDigital.updateMany({
+        where: { id: archivo.id, estado: 'EN_REVISION' },
+        data: { revisorAsignadoId: archivo.revisorAsignadoId },
+      });
+      if (cambio.count === 0) return false;
+
+      await tx.eventoPieza.create({
+        data: {
+          piezaId: archivo.piezaId,
+          usuarioId: asignadoPorId,
           accion: evento.accion,
           detalle: evento.detalle,
         },

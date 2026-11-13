@@ -2,6 +2,20 @@ import type { Readable } from 'node:stream';
 import { EstadoPieza } from '../../domain/piezas/estado-pieza';
 
 export const ESCANEOS = Symbol('ESCANEOS');
+export const REVISORES = Symbol('REVISORES');
+
+/** HU-23: una cuenta PERSONAL activa a la que se le puede asignar una revisión. */
+export interface RevisorDisponible {
+  id: string;
+  nombre: string;
+  correo: string;
+}
+
+export interface Revisores {
+  listarDisponibles(): Promise<RevisorDisponible[]>;
+  /** null si no existe, no es PERSONAL o está desactivada. */
+  buscarDisponible(id: string): Promise<RevisorDisponible | null>;
+}
 export const ALMACEN_ARCHIVOS = Symbol('ALMACEN_ARCHIVOS');
 
 export interface PiezaParaEscaneo {

@@ -5,6 +5,7 @@ import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import MenuIcon from '@mui/icons-material/Menu';
 import PlaceIcon from '@mui/icons-material/Place';
 import PublicIcon from '@mui/icons-material/Public';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import type { SvgIconComponent } from '@mui/icons-material';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -36,6 +37,9 @@ interface Seccion {
   ruta: string;
   Icono: SvgIconComponent;
   soloAdmin?: boolean;
+  /** Otro nombre para el PERSONAL: «Mis escaneos» en vez de «Escaneos». */
+  etiquetaPersonal?: string;
+  /** Contador a la derecha de la etiqueta. */
   Insignia?: ComponentType;
 }
 
@@ -73,6 +77,12 @@ export function LayoutPanel() {
       ruta: '/panel/calidad',
       Icono: FactCheckIcon,
       Insignia: PendientesCalidad,
+    },
+    {
+      etiqueta: 'Escaneos',
+      etiquetaPersonal: 'Mis escaneos',
+      ruta: '/panel/escaneos',
+      Icono: UploadFileIcon,
     },
     { etiqueta: 'Ubicaciones', ruta: '/panel/ubicaciones', Icono: PlaceIcon },
     ...(usuario?.rol === 'ADMIN'
@@ -125,8 +135,8 @@ export function LayoutPanel() {
       <List disablePadding sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
         {secciones
           .filter((s) => !s.soloAdmin || usuario?.rol === 'ADMIN')
-          .map(({ etiqueta, ruta, Icono, soloAdmin, Insignia }) => (
-            <ListItem key={etiqueta} disablePadding>
+          .map(({ etiqueta, etiquetaPersonal, ruta, Icono, soloAdmin, Insignia }) => (
+            <ListItem key={ruta} disablePadding>
               <ListItemButton
                 component={NavLink}
                 to={ruta}
@@ -150,7 +160,9 @@ export function LayoutPanel() {
                   <Icono aria-hidden />
                 </ListItemIcon>
                 <ListItemText
-                  primary={etiqueta}
+                  primary={
+                    usuario?.rol === 'PERSONAL' && etiquetaPersonal ? etiquetaPersonal : etiqueta
+                  }
                   secondary={soloAdmin ? 'Solo administrador' : undefined}
                   primaryTypographyProps={{ fontWeight: 'inherit' }}
                   secondaryTypographyProps={{ sx: { color: '#B9C3D6', fontSize: 12 } }}

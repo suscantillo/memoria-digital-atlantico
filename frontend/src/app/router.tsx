@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { PaginaCalidad } from '../features/calidad/paginas/PaginaCalidad';
+import { PaginaEscaneos } from '../features/calidad/paginas/PaginaEscaneos';
 import { PaginaCargarEscaneo } from '../features/archivos/paginas/PaginaCargarEscaneo';
 import { PaginaInventario } from '../features/inventario/paginas/PaginaInventario';
 import { PaginaIngresar } from '../features/auth/paginas/PaginaIngresar';
@@ -31,6 +32,7 @@ export const rutas = {
   panelUbicaciones: '/panel/ubicaciones',
   panelUsuarios: '/panel/usuarios',
   panelCalidad: '/panel/calidad',
+  panelEscaneos: '/panel/escaneos',
   panelNuevaPieza: '/panel/piezas/nueva',
 } as const;
 
@@ -61,6 +63,7 @@ export const enrutador = createBrowserRouter([
       { path: 'inventario', element: <PaginaInventario /> },
       { path: 'escaneo/:codigo', element: <PaginaCargarEscaneo /> },
       { path: 'calidad', element: <PaginaCalidad /> },
+      { path: 'escaneos', element: <PaginaEscaneos /> },
       { path: 'ubicaciones', element: <PaginaUbicacionesPanel /> },
       { path: 'piezas/nueva', element: <PaginaNuevaPieza /> },
       { path: 'piezas/:id', element: <PaginaFichaPieza /> },
