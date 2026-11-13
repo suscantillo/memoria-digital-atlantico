@@ -1,4 +1,4 @@
-import { ErrorConflicto, ErrorNoEncontrado, ErrorRegla } from '../comun/errores';
+﻿import { ErrorConflicto, ErrorNoEncontrado, ErrorRegla } from '../comun/errores';
 import { generarId } from '../comun/identificador';
 import { TernaUbicacion } from '../ubicaciones/ubicacion.entity';
 import { CodigoPieza } from './codigo-pieza';
@@ -8,6 +8,8 @@ import { TIPOS_PIEZA, TipoPieza } from './tipo-pieza';
 export interface UbicacionPieza extends TernaUbicacion {
   id: string;
 }
+
+export type UbicacionDePieza = UbicacionPieza;
 
 export interface ArchivoAprobadoPieza {
   id: string;
@@ -42,6 +44,26 @@ export interface PropiedadesPieza {
   archivoAprobado: ArchivoAprobadoPieza | null;
   creadoEn: Date;
   actualizadoEn: Date;
+}
+
+export interface EventoDePieza {
+  id: string;
+  usuarioId: string | null;
+  usuarioNombre: string | null;
+  accion: string;
+  detalle: string | null;
+  creadoEn: Date;
+}
+
+export interface FichaPieza {
+  pieza: Pieza;
+  ubicacion: UbicacionDePieza;
+  eventos: EventoDePieza[];
+}
+
+export interface CambiosPieza {
+  titulo?: string;
+  descripcion?: string | null;
 }
 
 export class Pieza {
