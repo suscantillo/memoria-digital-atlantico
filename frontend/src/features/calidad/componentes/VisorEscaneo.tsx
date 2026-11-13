@@ -9,9 +9,22 @@ import { colores } from '../../../app/tema';
 import { MensajeError } from '../../../shared/componentes/MensajeError';
 import { useContenidoEscaneo } from '../hooks';
 import type { ArchivoEnRevision } from '../tipos';
+import { RevisionPaginas } from './RevisionPaginas';
+
+/** Revisión página por página del PDF; sin ella el visor solo muestra (lo ya revisado). */
+export interface PaginasEnRevision {
+  revisadas: number[];
+  onCambiar: (paginas: number[]) => void;
+  onTotal: (total: number) => void;
+}
+
+interface Props {
+  archivo: ArchivoEnRevision;
+  paginas?: PaginasEnRevision;
+}
 
 /** El escaneo tal como se cargó, ocupando todo el alto disponible: es lo que se está juzgando. */
-export function VisorEscaneo({ archivo }: { archivo: ArchivoEnRevision }) {
+export function VisorEscaneo({ archivo, paginas }: Props) {
   const contenido = useContenidoEscaneo(archivo);
   const [url, setUrl] = useState<string | null>(null);
 
@@ -89,7 +102,16 @@ export function VisorEscaneo({ archivo }: { archivo: ArchivoEnRevision }) {
             <MensajeError error={contenido.error} titulo="No se pudo abrir el escaneo" />
           </Box>
         )}
-        {url && esPdf && (
+        {contenido.data && esPdf && paginas && (
+          <RevisionPaginas
+            blob={contenido.data}
+            titulo={archivo.pieza.titulo}
+            revisadas={paginas.revisadas}
+            onCambiarRevisadas={paginas.onCambiar}
+            onTotal={paginas.onTotal}
+          />
+        )}
+        {url && esPdf && !paginas && (
           <Box
             component="iframe"
             src={url}
