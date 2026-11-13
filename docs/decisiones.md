@@ -74,3 +74,41 @@ Cuando exista, `GET /ubicaciones` pasa a exigir `PERSONAL` o `ADMIN` como el res
 del dominio y el registro se rechaza si la enviada no coincide: así queda constancia de qué texto aceptó
 cada persona y una pantalla desactualizada no puede registrar consentimientos sobre un aviso viejo. Las
 cuentas internas (`ADMIN`, `PERSONAL`) no pasan por el aviso y dejan esos campos vacíos.
+
+## 14. Fuentes autoalojadas
+
+Archivo (títulos) y Figtree (texto) se instalan con Fontsource y se sirven desde la propia app en lugar
+de enlazar Google Fonts. Así el navegador del visitante no consulta a un tercero (menos datos
+personales expuestos) y la interfaz se ve igual sin conexión dentro de Docker.
+
+## 15. Las piezas restringidas no se encuentran por texto ni por década
+
+`GET /portal/piezas` muestra las piezas restringidas solo con tipo y ubicación. Si la búsqueda por texto
+o por década las alcanzara, el resultado revelaría el título o el año que el portal oculta. Por eso esos
+dos filtros las excluyen y en el listado van siempre al final, sin importar el orden pedido: ordenarlas
+por título o año también delataría el dato. El filtro por tipo sí las incluye, porque el tipo es público.
+
+## 16. Aprobar el escaneo publica la pieza
+
+En control de calidad una sola persona marca los tres criterios (legible, completa, datos correctos) y
+aprueba. Ese acto es la revisión y la publicación a la vez: `POST /archivos/:id/aprobar` deja el archivo
+`APROBADO` y la pieza `PUBLICADA`, sin detenerse en `REVISADA`. Con un solo revisor, un paso intermedio
+obligaría a pulsar dos veces para lo mismo. El estado `REVISADA` se conserva en el modelo por si el
+archivo pide después que publicar lo decida otra persona.
+
+Las reglas viven en las entidades: `ArchivoDigital` solo se revisa si está `EN_REVISION` y exige motivo
+para rechazar; `Pieza` solo cambia desde `ESCANEADA`. El repositorio guarda archivo, pieza y evento en
+una transacción y condiciona la escritura a que el archivo siga `EN_REVISION`, así dos revisiones
+simultáneas no se pisan.
+
+## 17. Una sola ruta entrega los escaneos y decide según quién pregunta
+
+`GET /archivos/:id/contenido` sirve al revisor, al visor del portal y a quien lee un PDF con su cuenta.
+En vez de tres rutas, la ruta es de sesión opcional (`@SesionOpcional`): pasa sin token, valida el que
+llegue y la regla `evaluarAccesoArchivo` del dominio decide. El personal ve todo. El público solo ve
+archivos `APROBADO` de piezas `PUBLICADA` no restringidas: las imágenes sin cuenta y los PDF con sesión,
+que es lo que pide HU-15.
+
+Lo que el público no puede ver responde 404 y no 403, igual que un archivo que no existe: un 403
+confirmaría que la pieza restringida o el escaneo en revisión están ahí. El 401 queda solo para el PDF
+publicado, porque ahí sí conviene decirle al visitante que con una cuenta lo puede leer.

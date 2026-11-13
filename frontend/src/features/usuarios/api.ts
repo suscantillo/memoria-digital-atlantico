@@ -35,7 +35,7 @@ export const usuariosApi = {
   },
 
   async reactivar(id: string): Promise<UsuarioAdministrado> {
-    const { data } = await clienteApi.patch<UsuarioAdministrado>(`/usuarios/${id}/activar`);
+    const { data } = await clienteApi.patch<UsuarioAdministrado>(`/usuarios/${id}/reactivar`);
     return data;
   },
 };

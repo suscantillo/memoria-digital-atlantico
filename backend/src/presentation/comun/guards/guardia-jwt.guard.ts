@@ -16,6 +16,7 @@ import {
   UsuarioRepositorio,
 } from '../../../domain/usuarios/usuario.repositorio';
 import { esRutaPublica } from '../decoradores/publica.decorator';
+import { esSesionOpcional } from '../decoradores/sesion-opcional.decorator';
 import { SolicitudAutenticada } from '../solicitud-autenticada';
 
 @Injectable()
@@ -34,6 +35,9 @@ export class GuardiaJwt implements CanActivate {
     const solicitud = contexto.switchToHttp().getRequest<SolicitudAutenticada>();
     const token = extraerBearer(solicitud.headers.authorization);
     if (!token) {
+      if (esSesionOpcional(this.reflector, contexto)) {
+        return true;
+      }
       throw new UnauthorizedException('Se requiere un token de acceso.');
     }
 

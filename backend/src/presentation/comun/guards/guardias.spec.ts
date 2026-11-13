@@ -5,6 +5,7 @@ import { ServicioTokensFalso } from '../../../../test/dobles/seguridad.memoria';
 import { UsuarioRepositorioMemoria } from '../../../../test/dobles/usuario-repositorio.memoria';
 import { Autenticado } from '../decoradores/autenticado.decorator';
 import { Publica } from '../decoradores/publica.decorator';
+import { SesionOpcional } from '../decoradores/sesion-opcional.decorator';
 import { SolicitudAutenticada } from '../solicitud-autenticada';
 import { GuardiaJwt } from './guardia-jwt.guard';
 import { GuardiaRoles } from './guardia-roles.guard';
@@ -20,6 +21,9 @@ class ControladorDePrueba {
 
   @Autenticado('ADMIN', 'PERSONAL')
   delPersonal() {}
+
+  @SesionOpcional()
+  conSesionOpcional() {}
 }
 
 @Publica()
@@ -84,6 +88,27 @@ describe('Guardias de autenticación y roles', () => {
       true,
     );
     await expect(pasa(ControladorDePrueba, 'delPersonal', 'acceso:u2:ADMIN')).resolves.toBe(true);
+  });
+
+  it('con sesión opcional pasa sin token y no deja usuario en la solicitud', async () => {
+    const { ctx, solicitud } = contexto(ControladorDePrueba, 'conSesionOpcional');
+    await expect(jwt.canActivate(ctx)).resolves.toBe(true);
+    expect(roles.canActivate(ctx)).toBe(true);
+    expect(solicitud.usuario).toBeUndefined();
+  });
+
+  it('con sesión opcional un token válido identifica al usuario y uno inválido da 401', async () => {
+    const { ctx, solicitud } = contexto(
+      ControladorDePrueba,
+      'conSesionOpcional',
+      'Bearer acceso:u3:PUBLICO',
+    );
+    await jwt.canActivate(ctx);
+    expect(solicitud.usuario?.rol).toBe('PUBLICO');
+
+    await expect(pasa(ControladorDePrueba, 'conSesionOpcional', 'basura')).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
   });
 
   it('deja en la solicitud el usuario del token para los controladores', async () => {

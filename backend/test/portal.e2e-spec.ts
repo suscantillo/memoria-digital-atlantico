@@ -90,6 +90,7 @@ describe('GET /api/v1/portal/piezas/:codigo (e2e)', () => {
       codigo: codigoPublica,
       tipo: 'FOTOGRAFIA',
       restringida: false,
+      digitalizada: true,
       titulo: 'Fotografía de prueba e2e',
       descripcion: 'Descripción pública e2e',
       anio: 1935,
@@ -124,14 +125,20 @@ describe('GET /api/v1/portal/piezas/:codigo (e2e)', () => {
     });
   });
 
-  it('responde 404 cuando la pieza existe pero aún no está en estado PUBLICADA', async () => {
+  it('de una pieza aún sin publicar solo dice su tipo y dónde está el original', async () => {
     const respuesta = await request(app.getHttpServer())
       .get(`/api/v1/portal/piezas/${codigoNoPublicada}`)
-      .expect(404);
+      .expect(200);
 
     expect(respuesta.body).toMatchObject({
-      statusCode: 404,
-      path: `/api/v1/portal/piezas/${codigoNoPublicada}`,
+      codigo: codigoNoPublicada,
+      tipo: 'PERIODICO',
+      digitalizada: false,
+      titulo: null,
+      descripcion: null,
+      anio: null,
+      archivo: null,
+      ubicacion: { id: ubicacionId, caja: 'Caja 01' },
     });
   });
 
