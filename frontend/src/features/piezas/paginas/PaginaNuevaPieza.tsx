@@ -55,7 +55,7 @@ export function PaginaNuevaPieza() {
       ubicacionId,
     };
     crear.mutate(datos, {
-      onSuccess: () => navegar('/panel/inventario', { replace: true }),
+      onSuccess: () => navegar('/panel/inventario?orden=recientes', { replace: true }),
     });
   };
 
