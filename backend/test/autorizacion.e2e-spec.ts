@@ -13,6 +13,8 @@ import { CLAVE_PUBLICA } from '../src/presentation/comun/decoradores/publica.dec
 // Las únicas rutas que se pueden usar sin token. Si una historia abre otra (por ejemplo
 // GET /portal/piezas), se agrega aquí a propósito.
 const RUTAS_PUBLICAS = [
+  // el visor del portal; solo entrega archivos aprobados de piezas publicadas y no restringidas
+  'GET /archivos/:id/contenido',
   'GET /health',
   'GET /portal/piezas',
   'GET /portal/piezas/:codigo',
