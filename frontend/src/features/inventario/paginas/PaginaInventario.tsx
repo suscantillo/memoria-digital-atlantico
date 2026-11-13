@@ -1,4 +1,5 @@
 import AddIcon from '@mui/icons-material/Add';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import SearchIcon from '@mui/icons-material/Search';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
@@ -237,7 +238,18 @@ function FilaPieza({ pieza, indice }: { pieza: PiezaInventario; indice: number }
             {NOMBRE_TIPO[pieza.tipo][0]}
           </Box>
           <Box sx={{ display: 'grid', gap: 0.25, minWidth: 0 }}>
-            <Box component="span" sx={{ fontWeight: 700, fontSize: 17 }}>
+            {/* el título lleva a la ficha interna: ver historial, editar y publicar */}
+            <Box
+              component={RouterLink}
+              to={`/panel/piezas/${pieza.id}`}
+              sx={{
+                fontWeight: 700,
+                fontSize: 17,
+                color: 'inherit',
+                textDecoration: 'none',
+                '&:hover': { textDecoration: 'underline' },
+              }}
+            >
               {pieza.titulo}
             </Box>
             <Box
@@ -339,6 +351,30 @@ function FilaPieza({ pieza, indice }: { pieza: PiezaInventario; indice: number }
             Ver
           </Box>
         )}
+        <Tooltip title={`Ver y editar la ficha de ${pieza.codigo}`}>
+          <Box
+            component={RouterLink}
+            to={`/panel/piezas/${pieza.id}`}
+            aria-label={`Ver y editar la ficha de ${pieza.codigo}`}
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 42,
+              height: 42,
+              mr: 0.75,
+              borderRadius: '12px',
+              bgcolor: '#FFFFFF',
+              color: colores.azulMarino,
+              border: `2px solid ${colores.azulMarino}`,
+              verticalAlign: 'middle',
+              transition: 'transform .15s',
+              '&:hover': { transform: 'translateY(-2px)' },
+            }}
+          >
+            <EditOutlinedIcon fontSize="small" />
+          </Box>
+        </Tooltip>
         <BotonQr pieza={pieza} />
       </Box>
     </Box>
