@@ -1,3 +1,4 @@
+import AddIcon from '@mui/icons-material/Add';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import SearchIcon from '@mui/icons-material/Search';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
@@ -375,19 +376,55 @@ export function PaginaInventario() {
 
   return (
     <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 3 }}>
-      <Box sx={{ animation: `${entra} .5s ${curva} both`, ...sinMovimiento }}>
-        <Typography
-          component="p"
-          sx={{ m: 0, fontFamily: MAQUINA, fontWeight: 700, fontSize: 15, color: colores.naranja }}
+      <Box
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
+          gap: 2,
+          animation: `${entra} .5s ${curva} both`,
+          ...sinMovimiento,
+        }}
+      >
+        <Box>
+          <Typography
+            component="p"
+            sx={{
+              m: 0,
+              fontFamily: MAQUINA,
+              fontWeight: 700,
+              fontSize: 15,
+              color: colores.naranja,
+            }}
+          >
+            PANEL DEL PERSONAL
+          </Typography>
+          <Typography
+            variant="h1"
+            sx={{ m: 0, fontSize: { xs: 42, md: 56 }, lineHeight: 0.95, letterSpacing: '-0.035em' }}
+          >
+            Inventario
+          </Typography>
+        </Box>
+        <Button
+          component={RouterLink}
+          to="/panel/piezas/nueva"
+          variant="contained"
+          color="secondary"
+          size="large"
+          startIcon={<AddIcon />}
+          sx={{
+            borderRadius: 999,
+            px: 3,
+            py: 1.5,
+            fontSize: 17,
+            fontWeight: 800,
+            boxShadow: `0 6px 0 ${colores.azulMarino}`,
+          }}
         >
-          PANEL DEL PERSONAL
-        </Typography>
-        <Typography
-          variant="h1"
-          sx={{ m: 0, fontSize: { xs: 42, md: 56 }, lineHeight: 0.95, letterSpacing: '-0.035em' }}
-        >
-          Inventario
-        </Typography>
+          Añadir pieza
+        </Button>
       </Box>
 
       <Box
