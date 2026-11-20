@@ -12,8 +12,14 @@ const TONO_TIPO: Record<TipoPieza, { fondo: string; texto: string }> = {
   DOCUMENTO: { fondo: '#DCE3F2', texto: colores.azulMarino },
 };
 
+interface Props {
+  pieza: PiezaPortal;
+  /** Al abrir la ficha; en el celular cierra el chat para que se vea la página. */
+  onAbrir?: () => void;
+}
+
 /** Una pieza que recomienda Miga: lleva a su ficha pública. */
-export function TarjetaRecomendacion({ pieza }: { pieza: PiezaPortal }) {
+export function TarjetaRecomendacion({ pieza, onAbrir }: Props) {
   const [fallo, setFallo] = useState(false);
   const tono = TONO_TIPO[pieza.tipo];
   const imagen = pieza.archivo?.tipoMime.startsWith('image/') && !fallo ? pieza.archivo.url : null;
@@ -24,6 +30,7 @@ export function TarjetaRecomendacion({ pieza }: { pieza: PiezaPortal }) {
     <Box
       component={RouterLink}
       to={`/p/${encodeURIComponent(pieza.codigo)}`}
+      onClick={onAbrir}
       aria-label={`${titulo}. ${tipo}${pieza.anio ? ` de ${pieza.anio}` : ''}. Ver ficha`}
       sx={{
         height: '100%',
