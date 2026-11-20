@@ -10,6 +10,7 @@ import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import { NavLink, Outlet, Link as RouterLink, useNavigate } from 'react-router-dom';
 import { colores } from '../../app/tema';
+import { AsistenteMiga } from '../../features/asistente/componentes/AsistenteMiga';
 import { useAuth } from '../auth/useAuth';
 import { EnlaceSaltar, ID_CONTENIDO } from '../componentes/EnlaceSaltar';
 import { Isotipo } from '../componentes/Isotipo';
@@ -273,6 +274,9 @@ export function LayoutPublico() {
           </Box>
         )}
       </Box>
+
+      {/* Miga, el asistente de IA, flota abajo a la derecha en todas las páginas del portal */}
+      <AsistenteMiga />
     </Box>
   );
 }
