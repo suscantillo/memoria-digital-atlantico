@@ -14,6 +14,7 @@ import {
   ErrorNoEncontrado,
   ErrorProhibido,
   ErrorRegla,
+  ErrorServicioNoDisponible,
 } from '../../../domain/comun/errores';
 
 export interface RespuestaError {
@@ -94,6 +95,7 @@ export class FiltroExcepcionesHttp implements ExceptionFilter {
     if (error instanceof ErrorNoAutorizado) return HttpStatus.UNAUTHORIZED;
     if (error instanceof ErrorProhibido) return HttpStatus.FORBIDDEN;
     if (error instanceof ErrorRegla) return HttpStatus.UNPROCESSABLE_ENTITY;
+    if (error instanceof ErrorServicioNoDisponible) return HttpStatus.SERVICE_UNAVAILABLE;
     return HttpStatus.BAD_REQUEST;
   }
 }

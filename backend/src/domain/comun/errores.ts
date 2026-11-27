@@ -35,3 +35,10 @@ export class ErrorNoAutorizado extends ErrorDominio {
     super(mensaje);
   }
 }
+
+/** Un servicio externo del que depende la acción no está configurado o no responde (503). */
+export class ErrorServicioNoDisponible extends ErrorDominio {
+  constructor(mensaje: string) {
+    super(mensaje);
+  }
+}
