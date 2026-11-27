@@ -55,7 +55,9 @@ export function LayoutPublico() {
     { ruta: '/', etiqueta: 'Inicio', Icono: HomeIcon, fin: true },
     { ruta: '/explorar', etiqueta: 'Explorar', Icono: SearchIcon, fin: false },
     { ruta: '/escanear', etiqueta: 'Escanear', Icono: QrCodeScannerIcon, fin: false },
-    ...(sesionPublica ? [] : [{ ruta: cuenta.ruta, etiqueta: cuenta.corta, Icono: PersonIcon }]),
+    sesionPublica
+      ? { ruta: '/mi-cuenta', etiqueta: 'Mi cuenta', Icono: PersonIcon, fin: false }
+      : { ruta: cuenta.ruta, etiqueta: cuenta.corta, Icono: PersonIcon, fin: false },
   ];
   const columnasMovil = enlacesMovil.length + (sesionPublica ? 1 : 0);
 
@@ -139,9 +141,15 @@ export function LayoutPublico() {
             </Button>
             {sesionPublica && usuario ? (
               <>
-                <Typography variant="body2" sx={{ px: 1.5, fontWeight: 600 }}>
-                  {usuario.nombre} ({usuario.rol})
-                </Typography>
+                <Button
+                  component={NavLink}
+                  to="/mi-cuenta"
+                  startIcon={<PersonIcon />}
+                  aria-label={`Mi cuenta: ${usuario.nombre}`}
+                  sx={estiloPildora}
+                >
+                  {usuario.nombre}
+                </Button>
                 <Button
                   variant="contained"
                   startIcon={<LogoutIcon />}

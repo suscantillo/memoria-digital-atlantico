@@ -4,7 +4,10 @@ import { ErrorNoEncontrado } from '../../domain/comun/errores';
 import { ResultadoPaginado, construirMeta } from '../../domain/comun/paginacion';
 import { RolUsuario } from '../../domain/usuarios/rol-usuario';
 import { Usuario } from '../../domain/usuarios/usuario.entity';
-import { CorreoUsuarioDuplicadoError } from '../../domain/usuarios/usuario.errores';
+import {
+  CorreoUsuarioDuplicadoError,
+  CuentaConHistorialError,
+} from '../../domain/usuarios/usuario.errores';
 import {
   ParametrosListadoUsuarios,
   UsuarioRepositorio,
@@ -155,6 +158,21 @@ export class PrismaUsuarioRepositorio implements UsuarioRepositorio {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
         throw new ErrorNoEncontrado(`No se encontró el usuario "${id}".`);
+      }
+      throw error;
+    }
+  }
+
+  async eliminar(id: string): Promise<void> {
+    try {
+      await this.prisma.usuario.delete({ where: { id } });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        throw new ErrorNoEncontrado(`No se encontró el usuario "${id}".`);
+      }
+      // archivos_digitales.subido_por_id no deja borrar a quien subió un escaneo
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new CuentaConHistorialError();
       }
       throw error;
     }

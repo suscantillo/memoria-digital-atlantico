@@ -110,6 +110,14 @@ export class Usuario {
     return this.props.activo;
   }
 
+  /**
+   * Solo las cuentas del portal se eliminan a sí mismas (Ley 1581). Las del personal firman el
+   * historial de las piezas: esas las desactiva el ADMIN y no se borran.
+   */
+  puedeEliminarSuCuenta(): boolean {
+    return this.props.rol === 'PUBLICO';
+  }
+
   tieneAlgunRol(roles: readonly RolUsuario[]): boolean {
     return roles.includes(this.props.rol);
   }

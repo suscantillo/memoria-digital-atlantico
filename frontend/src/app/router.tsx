@@ -4,6 +4,7 @@ import { PaginaEscaneos } from '../features/calidad/paginas/PaginaEscaneos';
 import { PaginaCargarEscaneo } from '../features/archivos/paginas/PaginaCargarEscaneo';
 import { PaginaInventario } from '../features/inventario/paginas/PaginaInventario';
 import { PaginaIngresar } from '../features/auth/paginas/PaginaIngresar';
+import { PaginaMiCuenta } from '../features/auth/paginas/PaginaMiCuenta';
 import { PaginaFichaPieza } from '../features/piezas/paginas/PaginaFichaPieza';
 import { PaginaNuevaPieza } from '../features/piezas/paginas/PaginaNuevaPieza';
 import { PaginaPrivacidad } from '../features/auth/paginas/PaginaPrivacidad';
@@ -27,6 +28,7 @@ export const rutas = {
   ingresar: '/ingresar',
   registro: '/registro',
   privacidad: '/privacidad',
+  miCuenta: '/mi-cuenta',
   panel: '/panel',
   panelInventario: '/panel/inventario',
   panelUbicaciones: '/panel/ubicaciones',
@@ -47,6 +49,14 @@ export const enrutador = createBrowserRouter([
       { path: rutas.ingresar, element: <PaginaIngresar /> },
       { path: rutas.registro, element: <PaginaRegistro /> },
       { path: rutas.privacidad, element: <PaginaPrivacidad /> },
+      {
+        path: rutas.miCuenta,
+        element: (
+          <RutaProtegida>
+            <PaginaMiCuenta />
+          </RutaProtegida>
+        ),
+      },
       // Dentro del layout público, para que quien se pierda conserve el menú.
       { path: '*', element: <PaginaNoEncontrada /> },
     ],

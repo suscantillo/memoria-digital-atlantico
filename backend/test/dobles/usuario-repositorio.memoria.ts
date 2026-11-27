@@ -119,4 +119,11 @@ export class UsuarioRepositorioMemoria implements UsuarioRepositorio {
     this.usuarios.set(id, actualizado);
     return Promise.resolve(actualizado);
   }
+
+  eliminar(id: string): Promise<void> {
+    if (!this.usuarios.delete(id)) {
+      return Promise.reject(new ErrorNoEncontrado(`No se encontró el usuario "${id}".`));
+    }
+    return Promise.resolve();
+  }
 }

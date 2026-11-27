@@ -89,7 +89,9 @@ function Palabra({ texto, retraso }: { texto: string; retraso: number }) {
 }
 
 export function PaginaInicio() {
-  const { state } = useLocation() as { state?: { sinPermiso?: boolean } };
+  const { state } = useLocation() as {
+    state?: { sinPermiso?: boolean; cuentaEliminada?: boolean };
+  };
   const navegar = useNavigate();
   const [mouse, setMouse] = useState<Mouse>({ x: 0, y: 0 });
   // noSsr: hay que saberlo en el primer render, antes de decidir si se muestra el telón
@@ -141,6 +143,13 @@ export function PaginaInicio() {
       {state?.sinPermiso && (
         <Alert severity="warning" role="alert">
           Tu cuenta no tiene permiso para entrar al panel.
+        </Alert>
+      )}
+
+      {state?.cuentaEliminada && (
+        <Alert severity="success" role="status">
+          Eliminamos tu cuenta y cerramos tus sesiones. Puedes seguir consultando el archivo sin
+          cuenta.
         </Alert>
       )}
 
