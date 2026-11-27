@@ -23,4 +23,6 @@ export interface UsuarioRepositorio {
   /** `roles`: a qué cuentas aplica; por defecto las del personal. */
   desactivar(id: string, fecha: Date, roles?: RolUsuario[]): Promise<Usuario>;
   reactivar(id: string, roles?: RolUsuario[]): Promise<Usuario>;
+  /** Borra la cuenta y, en cascada, sus sesiones. */
+  eliminar(id: string): Promise<void>;
 }

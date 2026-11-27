@@ -53,6 +53,8 @@ En español, bajo `/api/v1`. Las historias usan estos nombres tal cual.
 | `/auth/refrescar`                  | POST   | pública, lleva el refresh token | Rota la sesión: revoca la anterior y devuelve tokens nuevos.                                                                                                                            |
 | `/auth/salir`                      | POST   | pública, lleva el refresh token | Revoca la sesión. Responde 204 aunque el token ya no sirva.                                                                                                                             |
 | `/auth/yo`                         | GET    | con token de acceso             | Usuario autenticado.                                                                                                                                                                    |
+| `/auth/cuenta`                     | GET    | con token de acceso             | Lo que el sistema guarda de la persona (nombre, correo, rol, consentimiento y alta), sin el hash de la contraseña. Ley 1581.                                                            |
+| `/auth/cuenta`                     | DELETE | `PUBLICO`                       | Con `contrasena`: una cuenta `PUBLICO` se elimina con sus sesiones. 422 si la contraseña no coincide; 403 para el personal, que lo desactiva el `ADMIN`.                                |
 | `/ubicaciones`                     | GET    | `PERSONAL`, `ADMIN`             | Listado paginado con filtros y orden.                                                                                                                                                   |
 | `/ubicaciones`                     | POST   | `PERSONAL`, `ADMIN`             | Registra una ubicación.                                                                                                                                                                 |
 | `/portal/piezas`                   | GET    | pública                         | Busca piezas `PUBLICADA` por texto, tipo y década; paginado y con orden.                                                                                                                |
@@ -76,7 +78,7 @@ Documentación en `/docs`.
 
 ### Previstas
 
-`/auth/cuenta`, `/usuarios` y `/piezas`.
+`/usuarios` y `/piezas`.
 
 Todas las rutas de panel exigen `PERSONAL` o `ADMIN`. Solo son públicas `/portal/*`, `/auth/registro`,
 `/auth/ingresar`, `/auth/refrescar` y `/health`.
