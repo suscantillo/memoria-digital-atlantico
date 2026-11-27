@@ -11,6 +11,7 @@ describe('POST /api/v1/asistente/preguntas (e2e)', () => {
   beforeAll(async () => {
     process.env.LOG_LEVEL = 'silent';
     // Sin clave: así se comporta un `docker compose up` sin configurar el asistente.
+    process.env.GEMINI_API_KEY = '';
     process.env.ANTHROPIC_API_KEY = '';
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = configurarApp(
