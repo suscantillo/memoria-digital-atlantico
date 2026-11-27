@@ -12,6 +12,7 @@ import { PiezasModule } from './presentation/piezas/piezas.module';
 import { GuardiaJwt } from './presentation/comun/guards/guardia-jwt.guard';
 import { GuardiaRoles } from './presentation/comun/guards/guardia-roles.guard';
 import { ArchivosModule } from './presentation/archivos/archivos.module';
+import { AsistenteModule } from './presentation/asistente/asistente.module';
 import { InventarioModule } from './presentation/inventario/inventario.module';
 import { PortalModule } from './presentation/portal/portal.module';
 import { QrModule } from './presentation/qr/qr.module';
@@ -58,6 +59,7 @@ const RUTAS_SIN_LOG = new Set(['/api/v1/health']);
     PiezasModule,
     UbicacionesModule,
     PortalModule,
+    AsistenteModule,
     QrModule,
     InventarioModule,
     ArchivosModule,
