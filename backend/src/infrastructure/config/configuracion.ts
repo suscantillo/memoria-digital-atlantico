@@ -13,6 +13,9 @@ export interface Configuracion {
   JWT_REFRESH_TTL: string;
   PUBLIC_WEB_URL: string;
   STORAGE_DIR: string;
+  /** Vacía: el asistente responde 503 y el portal usa su modo búsqueda. */
+  ANTHROPIC_API_KEY: string;
+  ASISTENTE_MODELO: string;
 }
 
 /** Ej: 15m, 7d */
@@ -33,6 +36,8 @@ export const esquemaConfiguracion = Joi.object<Configuracion, true>({
   JWT_REFRESH_TTL: Joi.string().pattern(PATRON_DURACION).default('7d'),
   PUBLIC_WEB_URL: Joi.string().uri().required(),
   STORAGE_DIR: Joi.string().default('./storage'),
+  ANTHROPIC_API_KEY: Joi.string().allow('').default(''),
+  ASISTENTE_MODELO: Joi.string().default('claude-opus-5-5'),
 }).unknown(true);
 
 const MULTIPLICADORES: Record<string, number> = {

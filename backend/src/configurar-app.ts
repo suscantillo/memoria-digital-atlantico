@@ -1,6 +1,7 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Express } from 'express';
 import { Logger } from 'nestjs-pino';
 import { Configuracion } from './infrastructure/config/configuracion';
 import { FiltroExcepcionesHttp } from './presentation/comun/filtros/filtro-excepciones-http';
@@ -12,6 +13,9 @@ export function configurarApp<T extends INestApplication>(app: T): T {
   const config = app.get<ConfigService<Configuracion, true>>(ConfigService);
 
   app.useLogger(app.get(Logger));
+  // nginx reenvía las peticiones desde la red interna de Docker: sin esto, todas las visitas tendrían
+  // la IP de nginx y el límite de preguntas al asistente sería uno solo para todo el portal.
+  (app.getHttpAdapter().getInstance() as Express).set('trust proxy', 'loopback, uniquelocal');
   app.setGlobalPrefix(PREFIJO_API);
   app.useGlobalPipes(
     new ValidationPipe({

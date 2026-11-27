@@ -19,6 +19,7 @@ const RUTAS_PUBLICAS = [
   'GET /health',
   'GET /portal/piezas',
   'GET /portal/piezas/:codigo',
+  'POST /asistente/preguntas',
   'POST /auth/ingresar',
   'POST /auth/refrescar',
   'POST /auth/registro',
