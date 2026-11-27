@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { PreguntarAsistente } from '../../application/asistente/preguntar-asistente.use-case';
 import { MODELO_ASISTENTE, ModeloAsistente } from '../../application/asistente/puertos';
 import { PIEZA_REPOSITORIO, PiezaRepositorio } from '../../domain/piezas/pieza.repositorio';
@@ -9,7 +10,14 @@ import { Configuracion } from '../../infrastructure/config/configuracion';
 import { PrismaPiezaRepositorio } from '../../infrastructure/piezas/prisma-pieza.repositorio';
 import { AsistenteController } from './asistente.controller';
 
+// Cada pregunta cuesta dos llamadas a la API de Anthropic y la ruta es pública: se limita por IP.
+const LIMITES_POR_IP = [
+  { name: 'minuto', ttl: 60_000, limit: 5 },
+  { name: 'hora', ttl: 3_600_000, limit: 40 },
+];
+
 @Module({
+  imports: [ThrottlerModule.forRoot(LIMITES_POR_IP)],
   controllers: [AsistenteController],
   providers: [
     { provide: PIEZA_REPOSITORIO, useClass: PrismaPiezaRepositorio },
