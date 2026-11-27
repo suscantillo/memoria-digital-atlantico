@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { CerrarSesion } from '../../application/auth/cerrar-sesion.use-case';
+import { EliminarMiCuenta } from '../../application/auth/eliminar-mi-cuenta.use-case';
 import { IniciarSesion } from '../../application/auth/iniciar-sesion.use-case';
+import { ObtenerMiCuenta } from '../../application/auth/obtener-mi-cuenta.use-case';
 import { ObtenerPerfil } from '../../application/auth/obtener-perfil.use-case';
 import {
   HASHER_CONTRASENAS,
@@ -53,6 +55,17 @@ import { AuthController } from './auth.controller';
       provide: ObtenerPerfil,
       useFactory: (usuarios: UsuarioRepositorio) => new ObtenerPerfil(usuarios),
       inject: [USUARIO_REPOSITORIO],
+    },
+    {
+      provide: ObtenerMiCuenta,
+      useFactory: (usuarios: UsuarioRepositorio) => new ObtenerMiCuenta(usuarios),
+      inject: [USUARIO_REPOSITORIO],
+    },
+    {
+      provide: EliminarMiCuenta,
+      useFactory: (usuarios: UsuarioRepositorio, hasher: HasherContrasenas) =>
+        new EliminarMiCuenta(usuarios, hasher),
+      inject: [USUARIO_REPOSITORIO, HASHER_CONTRASENAS],
     },
   ],
 })

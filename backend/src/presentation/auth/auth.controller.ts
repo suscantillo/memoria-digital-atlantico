@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import {
   ApiConflictResponse,
   ApiCreatedResponse,
@@ -7,8 +7,12 @@ import {
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
+  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { CerrarSesion } from '../../application/auth/cerrar-sesion.use-case';
+import { EliminarMiCuentaDto } from '../../application/auth/dto/eliminar-mi-cuenta.dto';
+import { MiCuentaDto } from '../../application/auth/dto/mi-cuenta.dto';
+import { EliminarMiCuenta } from '../../application/auth/eliminar-mi-cuenta.use-case';
 import { IniciarSesionDto } from '../../application/auth/dto/iniciar-sesion.dto';
 import { RefrescarSesionDto } from '../../application/auth/dto/refrescar-sesion.dto';
 import { RegistrarUsuarioDto } from '../../application/auth/dto/registrar-usuario.dto';
@@ -16,6 +20,7 @@ import { SesionIniciadaDto } from '../../application/auth/dto/sesion-iniciada.dt
 import { UsuarioDto } from '../../application/auth/dto/usuario.dto';
 import { UsuarioRegistradoDto } from '../../application/auth/dto/usuario-registrado.dto';
 import { IniciarSesion } from '../../application/auth/iniciar-sesion.use-case';
+import { ObtenerMiCuenta } from '../../application/auth/obtener-mi-cuenta.use-case';
 import { ObtenerPerfil } from '../../application/auth/obtener-perfil.use-case';
 import { RefrescarSesion } from '../../application/auth/refrescar-sesion.use-case';
 import { RegistrarUsuario } from '../../application/auth/registrar-usuario.use-case';
@@ -33,6 +38,8 @@ export class AuthController {
     private readonly refrescarSesion: RefrescarSesion,
     private readonly cerrarSesion: CerrarSesion,
     private readonly obtenerPerfil: ObtenerPerfil,
+    private readonly obtenerMiCuenta: ObtenerMiCuenta,
+    private readonly eliminarMiCuenta: EliminarMiCuenta,
   ) {}
 
   @Post('registro')
@@ -80,5 +87,29 @@ export class AuthController {
   @ApiOkResponse({ type: UsuarioDto })
   yo(@UsuarioActual() usuario: UsuarioAutenticado): Promise<UsuarioDto> {
     return this.obtenerPerfil.ejecutar(usuario.id);
+  }
+
+  @Get('cuenta')
+  @Autenticado()
+  @ApiOperation({ summary: 'Ver los datos que el sistema guarda de mí (Ley 1581)' })
+  @ApiOkResponse({ type: MiCuentaDto })
+  cuenta(@UsuarioActual() usuario: UsuarioAutenticado): Promise<MiCuentaDto> {
+    return this.obtenerMiCuenta.ejecutar(usuario.id);
+  }
+
+  @Delete('cuenta')
+  @Autenticado('PUBLICO')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Eliminar mi cuenta del portal y revocar sus sesiones (Ley 1581)',
+  })
+  @ApiNoContentResponse({ description: 'La cuenta y sus sesiones se eliminaron.' })
+  @ApiUnprocessableEntityResponse({ description: 'La contraseña no es correcta.' })
+  @ApiConflictResponse({ description: 'La cuenta tiene escaneos a su nombre en el archivo.' })
+  eliminarCuenta(
+    @UsuarioActual() usuario: UsuarioAutenticado,
+    @Body() datos: EliminarMiCuentaDto,
+  ): Promise<void> {
+    return this.eliminarMiCuenta.ejecutar(usuario.id, datos);
   }
 }
