@@ -45,4 +45,17 @@ describe('POST /api/v1/asistente/preguntas (e2e)', () => {
       .send({ pregunta: 'a'.repeat(501) })
       .expect(400);
   });
+
+  it('después de 5 preguntas en un minuto desde la misma IP responde 429', async () => {
+    const estados: number[] = [];
+    for (let intento = 0; intento < 6; intento++) {
+      const respuesta = await request(app.getHttpServer())
+        .post('/api/v1/asistente/preguntas')
+        .send({ pregunta: 'carnaval' });
+      estados.push(respuesta.status);
+    }
+
+    // las tres pruebas anteriores ya gastaron tres preguntas del mismo minuto
+    expect(estados).toEqual([503, 503, 429, 429, 429, 429]);
+  });
 });
