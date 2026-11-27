@@ -16,8 +16,9 @@ export interface ConfiguracionAsistente {
   modelo: string;
 }
 
+// El flash completo de la capa gratis suele pasar de los 25 s; el lite responde en uno o dos.
 const MODELO_POR_DEFECTO: Record<ProveedorAsistente, string> = {
-  gemini: 'gemini-flash-latest',
+  gemini: 'gemini-flash-lite-latest',
   anthropic: 'claude-opus-5-5',
 };
 
