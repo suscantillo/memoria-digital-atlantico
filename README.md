@@ -183,10 +183,32 @@ aprobación de otra persona del equipo para fusionarse.
 - Reglas del repositorio y cómo contribuir: [CONTRIBUTING.md](CONTRIBUTING.md)
 - Actas y plantillas: `docs/actas` y `docs/plantillas`
 
+## Despliegue
+
+- Portal: https://memoria-digital-atlantico.vercel.app
+- Frontend en Vercel: `frontend/vercel.json` reenvía `/api` y `/docs` al backend y sirve la SPA.
+- Backend y PostgreSQL en una VM Always Free de Oracle (Ubuntu 24.04, ARM), con Caddy delante para
+  el HTTPS: `deploy/docker-compose.prod.yml`. PostgreSQL no publica puertos.
+
+Cada push a `main` con el CI en verde dispara el workflow `Deploy`: entra por SSH a la VM, corre
+`deploy/actualizar.sh` con ese commit (el backend aplica migraciones y semilla al arrancar), espera a
+`/api/v1/health` y después publica el frontend en Vercel. Si el CI falla, no se despliega nada.
+
+Para montar una VM nueva:
+
+1. Crear la VM con los puertos 80 y 443 abiertos en la Security List y un dominio que apunte a su IP.
+2. `ssh ubuntu@IP 'bash -s' < deploy/preparar-vm.sh "<llave pública del CI>"`: instala Docker, abre
+   el firewall, crea el usuario `deploy`, clona el repo en `/opt/memoria-digital` y programa un
+   respaldo diario de la base (`deploy/respaldar-db.sh`, guarda 14 días en `~deploy/respaldos`).
+3. En la VM, copiar `deploy/.env.example` a `deploy/.env` y llenarlo. Sin un valor obligatorio no arranca.
+4. `sudo -u deploy /opt/memoria-digital/deploy/actualizar.sh`.
+5. En GitHub, secretos `VM_SSH_KEY`, `VM_KNOWN_HOSTS` y `VERCEL_TOKEN`, y variables `VM_HOST`,
+   `DOMINIO_API`, `VERCEL_ORG_ID` y `VERCEL_PROJECT_ID`.
+
 ## Limitaciones conocidas
 
-- Pensado para correr en local: sin HTTPS, con secretos de desarrollo y sin límite de intentos de
-  ingreso. Antes de publicarlo en un servidor hay que resolver esas tres cosas.
+- Sin límite de intentos de ingreso: en producción las cuentas sembradas deben tener contraseñas
+  largas (`SEED_*` en `deploy/.env`).
 - Las personas todavía no pueden ver ni eliminar su propia cuenta (HU-04).
 - Un PDF en control de calidad se revisa página por página; con documentos muy largos es lento.
 
