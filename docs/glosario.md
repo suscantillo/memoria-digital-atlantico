@@ -57,6 +57,7 @@ En español, bajo `/api/v1`. Las historias usan estos nombres tal cual.
 | `/ubicaciones`                     | POST   | `PERSONAL`, `ADMIN`             | Registra una ubicación.                                                                                                                                                                 |
 | `/portal/piezas`                   | GET    | pública                         | Busca piezas `PUBLICADA` por texto, tipo y década; paginado y con orden.                                                                                                                |
 | `/portal/piezas/:codigo`           | GET    | pública                         | Ficha pública de una pieza `PUBLICADA` por su código.                                                                                                                                   |
+| `/asistente/preguntas`             | POST   | pública                         | Con `pregunta` (hasta 500 caracteres): Miga recomienda hasta 4 piezas `PUBLICADA` no restringidas. 503 sin IA y 429 tras 5 preguntas por minuto o 40 por hora por IP.                   |
 | `/piezas`                          | GET    | `PERSONAL`, `ADMIN`             | Inventario: filtra por tipo, estado, caja y texto, con páginas y orden.                                                                                                                 |
 | `/archivos`                        | POST   | `PERSONAL`, `ADMIN`             | Carga el escaneo de una pieza `REGISTRADA`: queda `EN_REVISION` y la pieza `ESCANEADA`.                                                                                                 |
 | `/archivos`                        | GET    | `PERSONAL`, `ADMIN`             | Escaneos con páginas y orden; con `estado=EN_REVISION` es la cola. Filtros `revisor` (`yo`, `ninguno` o un id) y `subidoPor=yo`. Un `PERSONAL` solo ve lo asignado a él o lo que subió. |
@@ -78,8 +79,8 @@ Documentación en `/docs`.
 
 `/auth/cuenta`, `/usuarios` y `/piezas`.
 
-Todas las rutas de panel exigen `PERSONAL` o `ADMIN`. Solo son públicas `/portal/*`, `/auth/registro`,
-`/auth/ingresar`, `/auth/refrescar` y `/health`.
+Todas las rutas de panel exigen `PERSONAL` o `ADMIN`. Solo son públicas `/portal/*`, `/asistente/preguntas`,
+`/auth/registro`, `/auth/ingresar`, `/auth/refrescar` y `/health`.
 `/archivos/:id/contenido` es de sesión opcional: responde sin token, valida el que llegue y decide
 qué entrega según quién pregunta.
 
