@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Prepara una VM Ubuntu 24.04 de Oracle para el backend. Se corre una sola vez, como ubuntu:
-#   ssh ubuntu@IP 'bash -s' < deploy/preparar-vm.sh "<llave pública del CI>"
+#   ssh ubuntu@IP "bash -s -- '$(cat llave_ci.pub)'" < deploy/preparar-vm.sh
+# (ssh une los argumentos en un solo texto: sin las comillas simples la llave llega partida)
 # Deja Docker, el firewall abierto en 80/443, el usuario deploy y el repo en /opt/memoria-digital.
 set -euo pipefail
 

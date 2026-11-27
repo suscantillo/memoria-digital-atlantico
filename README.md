@@ -197,7 +197,7 @@ Cada push a `main` con el CI en verde dispara el workflow `Deploy`: entra por SS
 Para montar una VM nueva:
 
 1. Crear la VM con los puertos 80 y 443 abiertos en la Security List y un dominio que apunte a su IP.
-2. `ssh ubuntu@IP 'bash -s' < deploy/preparar-vm.sh "<llave pública del CI>"`: instala Docker, abre
+2. `ssh ubuntu@IP "bash -s -- '$(cat llave_ci.pub)'" < deploy/preparar-vm.sh`: instala Docker, abre
    el firewall, crea el usuario `deploy`, clona el repo en `/opt/memoria-digital` y programa un
    respaldo diario de la base (`deploy/respaldar-db.sh`, guarda 14 días en `~deploy/respaldos`).
 3. En la VM, copiar `deploy/.env.example` a `deploy/.env` y llenarlo. Sin un valor obligatorio no arranca.
