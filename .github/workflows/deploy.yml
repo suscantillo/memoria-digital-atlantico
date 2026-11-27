@@ -1,0 +1,68 @@
+name: Deploy
+
+# Corre cuando el CI termina en verde sobre main: primero el backend en la VM, después el frontend en
+# Vercel, para que el frontend nuevo nunca llame a una API que todavía no existe.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  backend:
+    name: backend
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    environment: produccion
+    env:
+      COMMIT: ${{ github.event.workflow_run.head_sha || github.sha }}
+    steps:
+      - name: Llave SSH de la VM
+        run: |
+          install -d -m 700 ~/.ssh
+          echo "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/id_ed25519
+          echo "${{ secrets.VM_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519
+      - name: Actualizar el backend
+        run: ssh deploy@${{ vars.VM_HOST }} "/opt/memoria-digital/deploy/actualizar.sh $COMMIT"
+      - name: Comprobar la API
+        run: curl -fsS --retry 10 --retry-delay 5 --retry-all-errors "https://${{ vars.DOMINIO_API }}/api/v1/health"
+
+  frontend:
+    name: frontend
+    needs: backend
+    runs-on: ubuntu-latest
+    environment: produccion
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Instalar la CLI de Vercel
+        run: npm install --global vercel@67.0.0
+      - name: Traer la configuración del proyecto
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+      - name: Build
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+      - name: Publicar
+        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+      - name: Comprobar el portal y la API a través de Vercel
+        run: |
+          curl -fsS -o /dev/null https://memoria-digital-atlantico.vercel.app/
+          curl -fsS https://memoria-digital-atlantico.vercel.app/api/v1/health
