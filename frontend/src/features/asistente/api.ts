@@ -7,11 +7,13 @@ import type { PreguntaAsistente, RespuestaAsistente } from './tipos';
 
 const MAXIMO_PIEZAS = 4;
 
-/** Errores con los que Miga sigue respondiendo con el buscador: la ruta no existe o la IA no está. */
+/** Errores con los que Miga sigue con el buscador: no hay ruta, no hay IA o se llegó al límite. */
 function usarBuscador(error: unknown) {
   if (!isAxiosError(error)) return false;
   const estado = error.response?.status;
-  return estado === undefined || estado === 404 || estado === 501 || estado === 503;
+  return (
+    estado === undefined || estado === 404 || estado === 429 || estado === 501 || estado === 503
+  );
 }
 
 /**
