@@ -1,4 +1,5 @@
 import * as Joi from 'joi';
+import { PROVEEDORES_ASISTENTE, ProveedorAsistente } from '../asistente/crear-modelo-asistente';
 
 export type EntornoEjecucion = 'development' | 'test' | 'production';
 
@@ -13,8 +14,11 @@ export interface Configuracion {
   JWT_REFRESH_TTL: string;
   PUBLIC_WEB_URL: string;
   STORAGE_DIR: string;
-  /** Vacía: el asistente responde 503 y el portal usa su modo búsqueda. */
+  ASISTENTE_PROVEEDOR: ProveedorAsistente;
+  /** Vacía la clave del proveedor elegido: el asistente responde 503 y el portal usa su modo búsqueda. */
+  GEMINI_API_KEY: string;
   ANTHROPIC_API_KEY: string;
+  /** Vacío: el modelo por defecto del proveedor. */
   ASISTENTE_MODELO: string;
 }
 
@@ -36,8 +40,12 @@ export const esquemaConfiguracion = Joi.object<Configuracion, true>({
   JWT_REFRESH_TTL: Joi.string().pattern(PATRON_DURACION).default('7d'),
   PUBLIC_WEB_URL: Joi.string().uri().required(),
   STORAGE_DIR: Joi.string().default('./storage'),
+  ASISTENTE_PROVEEDOR: Joi.string()
+    .valid(...PROVEEDORES_ASISTENTE)
+    .default('gemini'),
+  GEMINI_API_KEY: Joi.string().allow('').default(''),
   ANTHROPIC_API_KEY: Joi.string().allow('').default(''),
-  ASISTENTE_MODELO: Joi.string().default('claude-opus-5-5'),
+  ASISTENTE_MODELO: Joi.string().allow('').default(''),
 }).unknown(true);
 
 const MULTIPLICADORES: Record<string, number> = {
